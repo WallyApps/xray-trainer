@@ -1,0 +1,742 @@
+<meta charset="utf-8">
+<title>X-Ray Trainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root {
+    --ink: #0d1219;
+    --panel: #151d29;
+    --panel-2: #1a2433;
+    --line: #263140;
+    --bone: #e9e4d8;
+    --muted: #8b95a3;
+    --amber: #e0a458;
+    --amber-dim: rgba(224, 164, 88, 0.14);
+    --green: #6fb07f;
+    --green-dim: rgba(111, 176, 127, 0.15);
+    --serif: Georgia, 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--ink); }
+  body {
+    font-family: var(--sans);
+    color: var(--bone);
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- header ---------- */
+  header {
+    padding: 20px 0 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  header h1 { font-family: var(--serif); font-size: 22px; font-weight: 400; font-style: italic; letter-spacing: 0.01em; }
+  header h1 span { color: var(--amber); }
+  .streak {
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .streak b { color: var(--amber); font-size: 15px; }
+
+  /* ---------- tabs ---------- */
+  nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(13, 18, 25, 0.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-inner { max-width: 560px; margin: 0 auto; display: flex; }
+  nav button {
+    flex: 1; background: none; border: none; color: var(--muted);
+    font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 14px 0 12px; cursor: pointer; border-top: 2px solid transparent;
+  }
+  nav button.on { color: var(--amber); border-top-color: var(--amber); }
+
+  main { display: none; }
+  main.on { display: block; }
+
+  .eyebrow {
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+    margin: 26px 0 10px;
+  }
+  .eyebrow.first { margin-top: 20px; }
+
+  /* ---------- cards ---------- */
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px; margin-bottom: 10px;
+  }
+  .card .tag {
+    display: inline-block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--amber); background: var(--amber-dim); border-radius: 4px; padding: 3px 8px; margin-bottom: 10px;
+  }
+  .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .card p { font-size: 14px; line-height: 1.55; color: var(--bone); }
+  .card p.sub { color: var(--muted); margin-top: 6px; }
+  .card p.use { margin-top: 8px; font-size: 13.5px; line-height: 1.5; }
+  .card p.use b { color: var(--amber); font-weight: 600; }
+
+  .donebtn {
+    margin-top: 12px; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--bone);
+    font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .donebtn.done { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+
+  /* ---------- daily check ---------- */
+  .check {
+    display: flex; gap: 12px; align-items: flex-start; cursor: pointer;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 8px;
+  }
+  .check .box {
+    flex: none; width: 20px; height: 20px; margin-top: 1px; border-radius: 6px;
+    border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--ink);
+  }
+  .check.on .box { background: var(--green); border-color: var(--green); }
+  .check .q { font-family: var(--serif); font-style: italic; font-size: 15px; line-height: 1.45; }
+  .check.on .q { color: var(--muted); }
+
+  .allclear {
+    text-align: center; padding: 14px; border-radius: 10px; margin-top: 14px;
+    background: var(--green-dim); border: 1px solid var(--green); color: var(--green);
+    font-size: 14px; font-weight: 600; display: none;
+  }
+  .allclear.show { display: block; }
+
+  /* ---------- library ---------- */
+  .cat {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .cat > button {
+    width: 100%; background: none; border: none; color: var(--bone); cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 16px; font-family: var(--sans); text-align: left;
+  }
+  .cat > button .name { font-size: 15px; font-weight: 600; }
+  .cat > button .count { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
+  .cat .items { display: none; border-top: 1px solid var(--line); }
+  .cat.open .items { display: block; }
+  .item { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .item:last-child { border-bottom: none; }
+  .item h4 { font-size: 14.5px; font-weight: 600; margin-bottom: 4px; }
+  .item .read { font-size: 13.5px; line-height: 1.5; color: var(--bone); }
+  .item .use { font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 5px; }
+  .item .use::before { content: 'USE — '; color: var(--amber); font-size: 10px; letter-spacing: 0.12em; }
+
+  .quizlaunch {
+    width: 100%; padding: 15px; border-radius: 10px; cursor: pointer; margin: 4px 0 18px;
+    background: var(--amber); border: none; color: var(--ink);
+    font-family: var(--sans); font-size: 15px; font-weight: 700; letter-spacing: 0.02em;
+  }
+
+  /* ---------- quiz ---------- */
+  #quiz {
+    position: fixed; inset: 0; z-index: 100; background: var(--ink);
+    display: none; flex-direction: column; padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  }
+  #quiz.on { display: flex; }
+  .qtop { display: flex; justify-content: space-between; align-items: center; max-width: 560px; margin: 0 auto 14px; width: 100%; }
+  .qtop .prog { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .qtop .close { background: none; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); padding: 7px 14px; font-size: 13px; cursor: pointer; }
+  .qcard {
+    flex: 1; max-width: 560px; margin: 0 auto; width: 100%;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 28px 22px; text-align: center; cursor: pointer;
+  }
+  .qcard .qcat { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); margin-bottom: 14px; }
+  .qcard .qcue { font-family: var(--serif); font-style: italic; font-size: 24px; line-height: 1.3; text-wrap: balance; }
+  .qcard .qans { font-size: 15px; line-height: 1.55; margin-top: 18px; display: none; }
+  .qcard .qhint { font-size: 12px; color: var(--muted); margin-top: 22px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .qcard.flipped .qans { display: block; }
+  .qbtns { display: none; gap: 10px; max-width: 560px; margin: 14px auto 0; width: 100%; }
+  .qbtns.show { display: flex; }
+  .qbtns button {
+    flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 700;
+    font-family: var(--sans); border: 1px solid var(--line); background: var(--panel-2);
+  }
+  .qbtns .miss { color: #d98b7e; }
+  .qbtns .hit { color: var(--green); }
+  .qcard.mc { justify-content: flex-start; text-align: left; align-items: stretch; overflow-y: auto; cursor: default; }
+  .qcard.mc .qcat { text-align: left; }
+  .qcard.mc .qcue { font-family: var(--sans); font-style: normal; font-size: 16.5px; line-height: 1.5; text-wrap: initial; }
+  .opt {
+    display: block; width: 100%; text-align: left; margin-top: 8px; cursor: pointer;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; color: var(--bone); font-family: var(--sans); font-size: 13.5px; line-height: 1.45;
+  }
+  .opt.right { border-color: var(--green); background: var(--green-dim); }
+  .opt.wrong { border-color: #d98b7e; background: rgba(217, 139, 126, 0.12); }
+  .opt:disabled { cursor: default; opacity: 1; }
+  .qwhy { display: none; margin-top: 14px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+  .qwhy.show { display: block; }
+  .qwhy::before { content: 'WHY — '; color: var(--amber); font-size: 10px; letter-spacing: 0.12em; }
+  .qnext {
+    display: none; width: 100%; margin-top: 14px; padding: 14px; border-radius: 10px; cursor: pointer;
+    background: var(--amber); border: none; color: var(--ink); font-family: var(--sans); font-size: 14px; font-weight: 700;
+  }
+  .qnext.show { display: block; }
+  .qdone { text-align: center; }
+  .qdone .big { font-family: var(--serif); font-style: italic; font-size: 26px; margin-bottom: 10px; }
+  .qdone p { color: var(--muted); font-size: 14px; }
+
+  /* ---------- confidence ---------- */
+  .principle {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px; margin-bottom: 10px;
+  }
+  .principle h4 { font-size: 14.5px; font-weight: 600; margin-bottom: 5px; }
+  .principle p { font-family: var(--serif); font-style: italic; font-size: 14.5px; line-height: 1.55; color: var(--bone); }
+  .mantra {
+    border: 1px solid var(--amber); background: var(--amber-dim); border-radius: 12px;
+    padding: 20px 18px; margin-top: 4px;
+  }
+  .mantra .lbl { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amber); margin-bottom: 8px; }
+  .mantra p { font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.45; text-wrap: balance; }
+
+  footer { margin-top: 30px; text-align: center; color: var(--muted); font-size: 11px; letter-spacing: 0.1em; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>X-Ray <span>Trainer</span></h1>
+    <div class="streak">Streak <b id="streakN">0</b></div>
+  </header>
+
+  <!-- ==================== TODAY ==================== -->
+  <main id="tab-today" class="on">
+    <div class="eyebrow first" id="todayDate"></div>
+
+    <div class="mantra">
+      <div class="lbl">Today's frame</div>
+      <p id="mantraText"></p>
+    </div>
+
+    <div class="eyebrow">Always-on anchor</div>
+    <div class="card">
+      <h3>The 3-second scan</h3>
+      <p>Every new person you talk to today: <b style="color:var(--amber)">Feet → Hands → Blink.</b> Where are the feet pointed, how tense are the fingers, fast or slow blinking. Three seconds, every single time, until it runs without you.</p>
+      <p class="sub">Habit-stacking on every greeting is what makes profiling automatic instead of something you remember to do.</p>
+    </div>
+
+    <div class="eyebrow">Today's profiling rep</div>
+    <div class="card">
+      <span class="tag" id="pdrillTag"></span>
+      <h3 id="pdrillName"></h3>
+      <p id="pdrillDo"></p>
+      <p class="sub" id="pdrillWhy"></p>
+      <button class="donebtn" id="pdrillBtn" onclick="toggleDrill('p')">Mark done</button>
+    </div>
+
+    <div class="eyebrow">Today's confidence rep</div>
+    <div class="card">
+      <span class="tag">Confidence</span>
+      <h3 id="cdrillName"></h3>
+      <p id="cdrillDo"></p>
+      <p class="sub" id="cdrillWhy"></p>
+      <button class="donebtn" id="cdrillBtn" onclick="toggleDrill('c')">Mark done</button>
+    </div>
+
+    <div class="eyebrow">Today's recall quiz</div>
+    <div class="card">
+      <span class="tag">Memory</span>
+      <h3>Daily quiz</h3>
+      <p id="quizDueLine"></p>
+      <p class="sub">Spaced repetition: nail a card and it returns in 1 → 2 → 4 → 7 → 14 days. Miss it and it resets to daily. This is what burns it in permanently.</p>
+      <button class="donebtn" id="quizBtn" onclick="startQuiz()">Start quiz</button>
+    </div>
+
+    <div class="eyebrow">The daily check — ask yourself</div>
+    <div id="dailyChecks"></div>
+
+    <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
+    <footer>Two reps + the quiz = day counts toward your streak</footer>
+  </main>
+
+  <!-- ==================== PROFILING ==================== -->
+  <main id="tab-profiling">
+    <div class="eyebrow first">Drill yourself</div>
+    <button class="quizlaunch" id="quizLaunch" onclick="startQuiz()">Start daily quiz</button>
+    <div class="eyebrow">The library</div>
+    <div id="library"></div>
+    <footer>Context × clusters. One data point is nothing — find a second.</footer>
+  </main>
+
+  <!-- ==================== CONFIDENCE ==================== -->
+  <main id="tab-confidence">
+    <div class="eyebrow first">The operating system</div>
+    <div id="principles"></div>
+    <footer>Confidence = safety. Composure = authority.</footer>
+  </main>
+</div>
+
+<!-- ==================== QUIZ OVERLAY ==================== -->
+<div id="quiz">
+  <div class="qtop">
+    <div class="prog" id="qProg"></div>
+    <button class="close" onclick="closeQuiz()">Close</button>
+  </div>
+  <div class="qcard" id="qCard" onclick="flipCard()">
+    <div class="qcat" id="qCat"></div>
+    <div class="qcue" id="qCue"></div>
+    <div class="qans" id="qAns"></div>
+    <div class="qhint" id="qHint">Tap to reveal</div>
+  </div>
+  <div class="qbtns" id="qBtns">
+    <button class="miss" onclick="gradeCard(false)">Missed it</button>
+    <button class="hit" onclick="gradeCard(true)">Got it</button>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <button class="on" onclick="showTab('today', this)">Today</button>
+    <button onclick="showTab('profiling', this)">Profiling</button>
+    <button onclick="showTab('confidence', this)">Confidence</button>
+  </div>
+</nav>
+
+<script>
+/* =====================================================================
+   CONTENT — everything from the 6MX audiobook + Chase Hughes podcasts.
+   ADD NEW MATERIAL HERE as you finish the book: just append objects to
+   these arrays. Everything else (quiz, daily rotation) updates itself.
+   ===================================================================== */
+
+const LIBRARY = [
+  { cat: 'Foundations', items: [
+    { name: 'The four truths', read: 'Everyone is suffering and insecure. Everyone is wearing a mask. Everyone is pretending not to wear a mask. Everyone is a product of childhood suffering and reward.', use: 'Read every person through this lens before you read a single cue.' },
+    { name: 'Lens of reasons', read: 'Actions are products of childhood experiences of pain and reward. Behavior has reasons, not verdicts.', use: 'When someone acts badly, ask what built that — it kills judgment and sharpens observation.' },
+    { name: 'Context × clusters', read: 'One data point means nothing. A cue only counts when it clusters with a second cue AND fits the context of the moment.', use: 'See one flag? Hunt for the second before you conclude anything.' },
+    { name: 'Baseline, then change', read: 'Movement of bodies creates moods. Read their normal early, then watch for CHANGES — and identify exactly what caused each change.', use: 'The change is the message. The trigger is the meaning.' },
+  ]},
+  { cat: 'Eyes', items: [
+    { name: 'Blink rate', read: 'Roughly 9 blinks/min in normal conversation. Stress spikes it toward 70/min. Calm focus drops it to ~3/min. Count blinks for 15 seconds and multiply by 4 — or just note fast vs slow.', use: 'Rate suddenly slows = they locked in (interest). Rate spikes at a topic (a contract term, a question) = stress — that\'s what they\'re hiding. Find what causes the change and use it.' },
+    { name: 'Positive / negative side', read: 'People look and gesture to one side for positive memories and the other for negative. Recounting a great vacation while looking right = right is their positive side.', use: 'Closing? Lean and gesture on THEIR positive side while describing benefits. Want a topic to feel negative? Move it to the negative side.' },
+    { name: 'Eye home', read: 'Everyone has a home position their eyes go to when accessing real memories. Find it with easy memory questions. Strong emotional memories often pull the eyes downward instead.', use: 'You ask a recall question and their eyes skip their home position — possible fabrication, not recall.' },
+    { name: 'Shutter speed', read: 'Eyelid closing speed tracks fear: quicker shutter = more fear. Watch for changes in shutter speed, not the absolute speed.', use: 'A shutter change mid-conversation = fear just went up or down. Find the trigger.' },
+    { name: 'Pupil dilation', read: 'Pupils dilate at threats, at attraction, and at things they like; they constrict at things they don\'t. Only readable in steady light — sunlight or light changes wreck it.', use: 'Steady light + a topic makes pupils bloom = they like it. Constriction = pull back.' },
+    { name: 'Confirmation glance', read: 'In groups, people glance at the person whose approval they need — after they speak, or toward the real decision-maker before anyone answers. A glance BEFORE speaking can flag deception.', use: 'The glance target is who you actually need to persuade.' },
+    { name: 'Eyebrow flash', read: 'A quick up-and-apart eyebrow flash signals "I\'m not a threat" and triggers liking. Flash one and most people flash back.', use: 'If they return it, they\'ve shown compliance — the door is open.' },
+  ]},
+  { cat: 'Face', items: [
+    { name: 'Lip compression', read: 'Pressed lips = a concealed opinion, objection, or disagreement being held back — often without them knowing they\'re showing it.', use: 'Note the exact topic that compressed the lips. That\'s the unspoken objection you need to surface and handle.' },
+    { name: 'Object insertion', read: 'Pen, straw, finger, glasses arm going into the mouth = need for reassurance.', use: 'You\'ve got work to do — identify the subject causing it and apply reassurance there.' },
+    { name: 'True vs false expressions', read: 'Real expressions fade off the face; false ones drop off abruptly. False expressions are also asymmetrical — stronger on one side — except contempt, which is naturally a half-face expression.', use: 'A smile that vanishes instantly + a glance at someone else for approval = performance, not feeling.' },
+    { name: 'Artificial smile', read: 'A fake smile doesn\'t reach the upper face. The mouth smiles; the eyes don\'t.', use: 'Watch the eyes, not the mouth.' },
+    { name: 'Nostril flaring', read: 'Adrenaline is up: excitement, happiness, anger — or attraction (they want to take in more of you, even your breath).', use: 'Context decides which. Cluster it with a second cue.' },
+    { name: 'Hushing', read: 'Any behavior that covers the mouth from view. The person wants to stay quiet — respect, discomfort, stress, or deception.', use: 'Ask yourself what they just heard or said when the hand came up.' },
+  ]},
+  { cat: 'Body', items: [
+    { name: 'Crossed arms — the exceptions', read: 'Crossed arms alone mean little. Palms flat against the body = self-reassurance / insecurity. Fists inside the cross = anger or disagreement.', use: 'The hands inside the cross are the real signal, not the cross.' },
+    { name: 'Finger tension', read: 'Fingers mirror psychology: relaxed fingers, relaxed mind. Tense fingers, tense mind.', use: 'A fast, silent read you can take from across a room.' },
+    { name: 'Digital extension', read: 'Fingers extending away from the palm — opening out of a fist — = comfort, relaxation, agreement.', use: 'Note the topic that opened their hands. Bring it back up right before you ask for the favor.' },
+    { name: 'Digital flexion', read: 'Fingers curling inward (not full fists) = discomfort or disagreement rising.', use: 'Mark the context, contrast against their later behavior.' },
+    { name: 'Genital protection / fig leaf', read: 'Hands retracting toward or held in front of the groin = vulnerability, insecurity, feeling threatened. For women, often a single-arm wrap across the lower abdomen gripping the forearm.', use: 'Watch the MOVEMENT into it — the moment it happens, the context created it.' },
+    { name: 'Fidgeting', read: 'Small repetitive movements of feet and hands = adrenaline. Either excitement or boredom — context decides.', use: 'Excited fidgeting during your pitch is fine. Bored fidgeting means change gears now.' },
+    { name: 'Feet honesty', read: 'Feet broadcast intent. They point at the leader or person of interest. Pointed at you = engaged. Pointed at the exit = they\'ve already left.', use: 'Trust feet over faces. Faces are trained; feet aren\'t.' },
+    { name: 'Arms behind back', read: 'One hand clasping the other arm behind the back = self-restraint. An exposed abdomen generally = truthfulness, comfort, or confidence that nothing bad will happen.', use: 'Restraint clasp during your ask = they\'re holding something back.' },
+    { name: 'Dominant-side tells', read: 'Find their dominant side (wallet pocket, watch hand — imagine a red circle in front of that shoulder). Dominant leg sliding back = subtly ready for conflict. Dominant shoulder pulling back a couple inches = strong disagreement.', use: 'Shoulder retreat mid-negotiation = you just hit a wall they didn\'t voice.' },
+    { name: 'Breathing location', read: 'Belly breathing = fully relaxed. Chest breathing = normal, or disagreement. Can\'t see the chest? Watch the face/shoulders rise. The SHIFT is the signal.', use: 'A shift to belly breathing during a topic = that topic matters to them / they just relaxed. Gold for sales.' },
+    { name: 'Shoulder shrugs', read: 'Shrug = submission, apology, or "I don\'t know." Shoulders riding high = fear or anxiety (protecting the neck) — watch if they rise when a certain person walks in. Single-sided shrug = low confidence in what they\'re saying.', use: 'A single-sided shrug on a statement = they don\'t believe it themselves.' },
+    { name: 'Barrier behavior', read: 'Placing an object (water bottle, phone, menu) between you, buttoning a jacket, pulling a shirt closed = they need protection from you or the conversation.', use: 'Remove your own barriers first. Then get theirs removed with creativity — hand them something, move the object naturally.' },
+    { name: 'Hands to chest', read: 'Hands coming to the chest while speaking = felt sincerity about what\'s being said.', use: 'A sincerity marker worth trusting — cluster it.' },
+    { name: 'Hygienic / preening behavior', read: 'Lip licking, adjusting hair, straightening posture, fixing clothes — grooming to look better and seem more trustworthy. Shows pride, excitement, or attraction.', use: 'Preening when you walk up = they care what you think of them.' },
+    { name: 'Elbows in', read: 'Elbows pulling inward toward the torso (mostly while seated) = fear — the body protecting its arteries.', use: 'Elbow closure at a topic = threat response. Reassure before proceeding.' },
+    { name: 'Palms down', read: 'Open, visible palms = sincerity. Palms rotating downward = disagreement, stress, or objection depending on context.', use: 'Palms flip down while they say "sounds good" — it doesn\'t sound good.' },
+    { name: 'Throat & neck', read: 'The throat rises (a visible swallow) under stress. Touching the neck or throat = doubt or a need for reassurance.', use: 'Ask the stressful question, watch the throat. Neck touch = find and resolve the doubt.' },
+  ]},
+  { cat: 'Deception — verbal', items: [
+    { name: 'Hesitancy & echo', read: 'An unusual pause after a question, or repeating your question back verbatim — both buy time to construct an answer.', use: 'Truth doesn\'t need assembly time on simple questions.' },
+    { name: 'Psychological distancing', read: 'Guilt makes language soften: downplaying words, avoiding names, gentler verbs ("that thing that happened" instead of "when I took it").', use: 'Missing names and softened verbs in a story = distance from guilt.' },
+    { name: 'Pitch rise', read: 'Deceptive statements come out slightly higher-pitched than the rest of the conversation. Very subtle.', use: 'Listen for the sentence that sits above their baseline pitch.' },
+    { name: 'Speed increase', read: 'Liars speed up deceptive sentences — minimizing time spent in the stress and avoiding getting cut off.', use: 'The rushed sentence in an otherwise even story is the one to re-ask.' },
+    { name: 'Pronoun absence', read: 'Deceptive stories drop pronouns. "Went to the store, came back" instead of "I went to the store."', use: 'No "I" in a first-person story = they\'re not in it.' },
+    { name: 'Resume statement', read: 'Asked about something, they answer with all the reasons they\'d NEVER do it — their character resume — instead of a denial of the act.', use: '"I\'ve worked here ten years, I go to church…" is not "I didn\'t do it."' },
+    { name: 'Non-contraction', read: 'Under deception people drop contractions: "I did not" instead of "I didn\'t." Formality creeps into the denial.', use: 'Compare against how they normally talk.' },
+    { name: 'Question reversal', read: 'They answer your question with the question: "Did I take it? Would I take it?" — a non-answer statement.', use: 'A reversed question is not a denial. Ask again, plainly.' },
+    { name: 'Ambiguity', read: 'Answering with something adjacent to the question instead of the question. Never a direct answer.', use: 'Notice when your actual question remains unanswered after their answer.' },
+    { name: 'Politeness spike', read: 'A sudden rise in respect and formality toward the questioner right after a hard question.', use: '"Yes sir, absolutely sir" appearing from nowhere = pressure response.' },
+    { name: 'Over-apologizing', read: 'A spike in apologies: "I\'m sorry, I apologize, I don\'t know what else you want."', use: 'Apology volume replacing answer content is a flag.' },
+    { name: 'The small confession', read: 'Guilt creates a need to confess. A small unrelated confession is often offered to sway you off course — and asked about one thing, they confess to another.', use: 'Minimize the small one ("that\'s nothing") — the bigger confession becomes more likely.' },
+    { name: 'Exclusion qualifiers', read: '"To the best of my knowledge… as far as I recall… as far as I\'m aware" — on questions they would reasonably, obviously know the answer to.', use: 'Memory hedges on non-memory questions = escape hatches being built.' },
+    { name: 'Chronology tell', read: 'Truthful people lead stories with the emotional peak. A recollection told in strict chronological order with no emotional lead is a flag.', use: '"So first I woke up, then I…" on a dramatic event = possibly built, not remembered.' },
+    { name: 'The two rules of lie detection', read: 'You\'re looking for discomfort and stress while people speak — and one data point is never enough; find another. Warning: when you LIKE someone you only see truth (confirmation bias).', use: 'Especially suspicious of your own read when you like the person.' },
+  ]},
+  { cat: 'Needs — the mask they wear', items: [
+    { name: 'The master question', read: 'See every person through the lens of: "What do they want me to think about them?" Figure that out and you\'ve found their biggest insecurity — what they fear you\'d see without the mask.', use: 'This one question generates the whole profile.' },
+    { name: 'Significance', read: 'Talks about achievements — the CEO recounting everything they\'ve built. Needs to feel important.', use: 'Pump their tires. Acknowledge the achievement before anything else.' },
+    { name: 'Acceptance', read: 'Always talking about groups. Heavy use of "we" in their language. Needs to belong.', use: 'Make them part of the in-group: "people like us."' },
+    { name: 'Approval', read: 'Says things engineered to get you to tell them they\'re okay or doing a good job — "I always suck on these podcasts…" is fishing.', use: 'Give the approval freely and early. Never make them fish twice.' },
+    { name: 'Pity / Intelligence / Power', read: 'Pity: leads with struggles and bad luck. Intelligence: needs you to see them as smart. Power/strength: needs to be seen as strong and in control.', use: 'Feed the need shown: sympathize, defer to their smarts, respect their strength.' },
+  ]},
+  { cat: 'Face-saving — getting honesty', items: [
+    { name: 'Socialize it', read: 'Make the behavior universal: "I gotta be honest with you — when everyone sees what happened, you\'re good. Anyone would\'ve done the same."', use: 'Confession becomes safe when the act is normal.' },
+    { name: 'Minimize it', read: '"When I heard this story I knew you were most likely a really good person. You\'ll probably walk away — I see this all the time, it\'s nothing."', use: 'Shrink the act until admitting it costs nothing.' },
+    { name: 'Rationalize it', read: 'Give them a good reason they did it: "Your boss is a rock. I don\'t blame you."', use: 'A justified act is easier to own.' },
+    { name: 'Project it', read: 'Move the blame outward: "I don\'t think this is your fault. When things like this happen it\'s not your fault." Or contrast down: "If it\'s the big illegal thing, tell me — but if it\'s just the mistake…"', use: 'Someone else\'s fault + not a big deal = the two doors every confession walks through.' },
+  ]},
+];
+
+/* SCENARIOS — multiple-choice situations. ONLY APPEND new ones at the end
+   (their position is their save-ID for spaced repetition). a = index of the
+   correct option. */
+const SCENARIOS = [
+  { cat: 'Eyes', q: 'Mid-negotiation you name your rate. His blink rate jumps from slow to rapid and stays there. What just happened?', opts: ['He\'s bored and tuning out', 'The rate triggered stress — that number is the sticking point', 'He\'s impressed and excited', 'Nothing — blink rate is random'], a: 1, why: 'Blink spikes toward 70/min under stress. The change arrived with the number — that\'s your trigger. Handle the rate objection before anything else.' },
+  { cat: 'Eyes', q: 'A customer tells you about her terrible morning while looking to her right and gesturing with her right hand. When you close later, what do you do?', opts: ['Lean and gesture toward her right side', 'Avoid gesturing at all', 'Position your pitch on her LEFT side — her positive side', 'Speak faster to change the mood'], a: 2, why: 'Right side mapped to negative. Deliver benefits positioned and gestured on the opposite — positive — side.' },
+  { cat: 'Eyes', q: 'You\'ve figured out his eye home is about 3 o\'clock. You ask where he was Saturday night and his eyes go somewhere completely different. What\'s the read?', opts: ['He\'s accessing a strong positive memory', 'He\'s bored', 'Possible fabrication — eyes skipped the memory position', 'He has something in his eye'], a: 2, why: 'Eyes that skip home on a recall question suggest constructing, not remembering. One flag though — find a second.' },
+  { cat: 'Eyes', q: 'You\'re pitching three people. Every time either of the talkers finishes speaking, they glance at the quiet one in the corner. Who do you persuade?', opts: ['The one who talks most', 'The friendliest one', 'Whoever asked the first question', 'The quiet one — the confirmation glances point at the decision-maker'], a: 3, why: 'Confirmation glances reveal whose approval everyone needs. That\'s your real audience.' },
+  { cat: 'Eyes', q: 'Steady indoor light. As you describe the summer training package, his pupils visibly widen. What\'s happening?', opts: ['He likes what he\'s hearing — interest/desire', 'He\'s threatened by you', 'The light changed', 'He\'s lying'], a: 0, why: 'In steady light, dilation = interest, attraction, liking. Constriction = pull-back.' },
+  { cat: 'Eyes', q: 'You give a scout a quick eyebrow flash across the room and he flashes back. What did you just get?', opts: ['A warning to back off', 'Nothing meaningful', 'A compliance signal — he\'s open to you; go say hi', 'Proof he\'s the decision-maker'], a: 2, why: 'A returned eyebrow flash = "not a threat, I accept you." The door is open — walk through it.' },
+  { cat: 'Eyes', q: 'Halfway through your pitch his blink rate drops from normal (~9/min) to almost nothing. Read?', opts: ['He locked in — calm, focused interest', 'He\'s about to fall asleep', 'He\'s furious', 'He\'s deceiving you'], a: 0, why: 'Calm focus drops blink rate toward 3/min. Whatever you just said is working — stay on it.' },
+  { cat: 'Face', q: 'You propose your fee. The brand rep nods and says "great" — but her lips press into a thin line. What do you trust?', opts: ['The words — she said great', 'The nod — body beats lips', 'The lip compression — there\'s a withheld objection; surface it now', 'Nothing, keep pitching'], a: 2, why: 'Lip compression = concealed disagreement, often unconscious. "Before we lock it — anything about the number that doesn\'t sit right?"' },
+  { cat: 'Face', q: 'The investor puts the end of his pen in his mouth right after you mention the 18-month timeline. What does he need?', opts: ['A break', 'Reassurance about the timeline — that\'s your work now', 'A better pen', 'To be left alone to decide'], a: 1, why: 'Object insertion = need for reassurance. Identify the subject that caused it and reassure on exactly that.' },
+  { cat: 'Face', q: 'His smile snaps off his face the instant you look away, and it was stronger on one side. What did you just see?', opts: ['A genuine smile', 'A false expression — real ones fade, fake ones drop and sit asymmetric', 'Contempt, definitely', 'A nervous tic'], a: 1, why: 'False expressions drop instead of fading and sit stronger on one side. (Contempt is the one naturally half-faced expression.)' },
+  { cat: 'Face', q: 'She\'s smiling at your joke but her eyes haven\'t moved at all. Read?', opts: ['She\'s genuinely delighted', 'Artificial smile — the upper face isn\'t participating', 'She\'s attracted to you', 'She didn\'t hear you'], a: 1, why: 'Fake smiles live in the mouth. Real ones reach the eyes. Watch the eyes, not the teeth.' },
+  { cat: 'Face', q: 'Girl you just met: nostrils flare slightly, then she fixes her hair and straightens her posture. Cluster read?', opts: ['She\'s angry', 'Adrenaline + preening = attraction cluster', 'She\'s bored', 'She\'s lying about something'], a: 1, why: 'Nostril flare = adrenaline; hygienic/preening behavior = wanting to look good for someone present. Together, in this context: attraction.' },
+  { cat: 'Face', q: 'Coach asks the room who saw what happened. One guy\'s hand drifts up over his mouth. What\'s the read?', opts: ['He\'s about to speak', 'Hushing — he wants to stay quiet; he likely knows something', 'He\'s tired', 'He disagrees with the coach'], a: 1, why: 'Hushing = covering the mouth to keep it shut — respect, stress, or concealment. He\'s the one to talk to privately.' },
+  { cat: 'Body', q: 'Across the table he crosses his arms — and his hands are balled into fists inside the cross. Versus palms flat on his ribs, this means…', opts: ['He\'s cold', 'Anger or hard disagreement — fists change everything', 'He needs reassurance', 'He\'s relaxed and settling in'], a: 1, why: 'The cross means little; the hands inside it are the signal. Fists = anger/disagreement. Palms flat on the body = self-reassurance/insecurity.' },
+  { cat: 'Body', q: 'As you talk about his summer plans, his fingers uncurl and spread open away from his palms. What do you do with that?', opts: ['Nothing, it\'s noise', 'Change the subject — you\'re losing him', 'Note the topic — bring it back up right before you make your ask', 'Ask him if he\'s nervous'], a: 2, why: 'Digital extension = comfort and agreement. That topic opens him up. Replay it just before the favor.' },
+  { cat: 'Body', q: 'Coach is nodding along to your case for more ice time, but his feet are pointed at the door. Real status?', opts: ['He\'s convinced', 'The conversation is already over in his mind — wrap fast or reset it', 'He wants you to leave with him', 'Feet don\'t mean anything'], a: 1, why: 'Feet broadcast intent — faces are trained, feet aren\'t. Pointed at the exit = he\'s left. Land your one key point and release him.' },
+  { cat: 'Body', q: 'Mid-conversation she picks up her water bottle and sets it down directly between you. What just happened, and your move?', opts: ['She\'s thirsty — ignore it', 'A barrier went up — something you said made her need protection; soften, and get it removed creatively', 'She\'s marking territory', 'She wants to leave'], a: 1, why: 'Barrier behavior = need for protection from you or the topic. Remove your own barriers first; hand her something so the bottle naturally moves.' },
+  { cat: 'Body', q: 'The moment you bring up money, he buttons his suit jacket. Read?', opts: ['He\'s about to stand up and leave', 'Habit, means nothing', 'Barrier behavior — the money topic made him close up', 'He\'s showing dominance'], a: 2, why: 'Closing the jacket = pulling a shield across. The topic triggered it. Reassure before pushing the number.' },
+  { cat: 'Body', q: 'The GM has been chest-breathing all meeting. When you mention your development plan, his breathing drops into his belly. What did you find?', opts: ['He\'s falling asleep', 'The thing that actually matters to him — drive that topic', 'He\'s hiding anger', 'His lunch settling'], a: 1, why: 'A shift to abdominal breathing = genuine relaxation/engagement. That shift marks what\'s important to him. Gold — stay there.' },
+  { cat: 'Body', q: '"I\'m a hundred percent sure it\'ll get done" — said with one shoulder shrugging. Believe him?', opts: ['Yes — he said 100%', 'No — a single-sided shrug means he doesn\'t believe his own sentence', 'Yes if he smiled too', 'Only if he repeats it'], a: 1, why: 'The single-sided shrug leaks low confidence in what\'s being said. His body just contradicted his mouth.' },
+  { cat: 'Body', q: 'Your teammate\'s shoulders visibly rise every time a particular vet walks into the room. What are you seeing?', opts: ['Respect', 'Fear/anxiety around that person — shoulders rise to protect the neck', 'He\'s cold', 'Excitement'], a: 1, why: 'Raised shoulders = threat response. If it\'s person-triggered, that person is the threat. Useful to know in any locker room.' },
+  { cat: 'Body', q: 'You quote the price and his dominant-side shoulder pulls back a couple of inches. Read?', opts: ['Strong disagreement just landed — you hit a wall he didn\'t voice', 'He\'s stretching', 'He\'s reaching for his wallet', 'He agrees but is playing it cool'], a: 0, why: 'Dominant shoulder retreat = strong disagreement. Address it now: "Something about that number feels off — talk to me."' },
+  { cat: 'Body', q: 'While apologizing, he brings both hands flat against his chest. Read?', opts: ['He\'s being theatrical', 'Chest pain', 'Sincerity — hands to chest marks felt truth', 'Deception — too much display'], a: 2, why: 'Hands to chest while speaking = the person feels sincere about what they\'re saying. Worth trusting — but cluster it.' },
+  { cat: 'Body', q: 'Seated across from you, his elbows suddenly pull in tight to his torso as you raise last season\'s benching. What happened?', opts: ['Fear — the body is protecting its arteries; that topic is a threat', 'He\'s making room at the table', 'Boredom', 'He\'s about to stand'], a: 0, why: 'Elbow closure = fear response. Reassure before you go further, or you\'ll get a defensive answer, not a real one.' },
+  { cat: 'Body', q: 'He says "sounds good" — while his palms rotate to face the floor. Trust the words?', opts: ['Yes, words are explicit', 'No — palms turning down signal objection/disagreement; it does not sound good', 'Only if he\'s smiling', 'Palms mean nothing seated'], a: 1, why: 'Downward-turning palms = stress/objection depending on context. The deal is not closed. Find the objection.' },
+  { cat: 'Body', q: 'You ask "so the budget\'s already approved?" and her hand goes to the side of her neck. Read and move?', opts: ['She\'s admiring her necklace', 'Doubt — the budget is NOT solid; reassure and requalify before building on it', 'She\'s attracted to you', 'She\'s lying about her name'], a: 1, why: 'Neck/throat touch = doubt or need for reassurance. Whatever was just said is shaky. Requalify now, not after you\'ve built the deal on it.' },
+  { cat: 'Body', q: 'You ask about the trade rumors and his hands drift down to clasp in front of his groin. What did the question do?', opts: ['Relaxed him', 'Made him feel vulnerable/threatened — the fig leaf went up on that trigger', 'Bored him', 'Nothing — that\'s a natural stance'], a: 1, why: 'Genital protection = vulnerability. The MOVEMENT into the position, right at your question, is the tell. The rumors are a sore spot.' },
+  { cat: 'Deception', q: '"Did you take the money?" — "Did I take the money? Would I really do that?" What kind of answer is that?', opts: ['A denial', 'An honest clarification', 'Question reversal — a non-answer; ask again plainly', 'Proof of innocence'], a: 2, why: 'Reversing the question back is not a denial. Truthful people usually just deny. Re-ask, flat and simple.' },
+  { cat: 'Deception', q: 'His story: "Went to the rink, skated, left around ten, drove home." What\'s missing?', opts: ['Timestamps', 'Pronouns — no "I" anywhere; he\'s not placing himself in the story', 'Witnesses', 'Details about the car'], a: 1, why: 'Pronoun absence is a classic deception marker. People distance themselves from stories they weren\'t truthfully in.' },
+  { cat: 'Deception', q: 'A guy who normally talks loose and casual suddenly says "I did not touch your equipment." Flag?', opts: ['No — clear denial', 'Non-contraction — formality creeping into a denial is a stress marker', 'Yes, because he\'s angry', 'Only if he repeats it'], a: 1, why: '"I did not" instead of his normal "I didn\'t" = the denial is being performed. Compare against HIS baseline speech.' },
+  { cat: 'Deception', q: 'You ask where he was Friday. He answers: "I\'ve been on this team three years, I go to church, ask anyone about my character." What is that?', opts: ['A resume statement — reasons he WOULDN\'T do it, instead of "I didn\'t do it"', 'A solid alibi', 'An emotional appeal, but honest', 'A confession'], a: 0, why: 'Character resumes replace denials when there\'s no clean denial to give. Notice he never answered where he was.' },
+  { cat: 'Deception', q: '"To the best of my knowledge, I wasn\'t in the building that day." He would obviously know. Read?', opts: ['Careful, honest speech', 'Exclusion qualifier — a memory hedge on a non-memory question is an escape hatch', 'Normal legal caution', 'He forgot'], a: 1, why: '"As far as I recall / to the best of my knowledge" on things a person would certainly know = deniability being built in advance.' },
+  { cat: 'Deception', q: 'Asked about the fight, he recounts the whole night in perfect chronological order — wake-up to bedtime — with zero emotion up front. Flag?', opts: ['No — organized memory = honest memory', 'Yes — truthful recall usually LEADS with the emotional peak; strict chronology suggests construction', 'Only if he stutters', 'Yes, because long answers are always lies'], a: 1, why: 'Real memories are organized by emotion, not clock. "So first I woke up…" on a dramatic event is a build, not a recall.' },
+  { cat: 'Deception', q: 'Right after your hard question, he shifts to "yes sir, absolutely sir, whatever you need sir." He\'s never called you sir. Read?', opts: ['You\'ve earned his respect', 'Politeness spike — a pressure response worth flagging', 'He\'s mocking you', 'He wants a favor'], a: 1, why: 'A sudden spike in politeness/formality right after a threatening question = stress management, not manners.' },
+  { cat: 'Deception', q: 'You ask about the missing gear and he confesses to something small and unrelated — "honestly, I did borrow tape without asking once." Your move?', opts: ['Punish the tape thing', 'Accept it and move on — case closed', 'Minimize it ("that\'s nothing") — the small confession is a decoy, and minimizing invites the bigger one', 'Accuse him directly of everything'], a: 2, why: 'Guilt needs to confess and often offers a small sacrifice first. Wave it off as no big deal and the need to confess the real thing grows.' },
+  { cat: 'Deception', q: 'You catch ONE verbal deception flag in his story. What\'s the rule?', opts: ['One flag = liar, call it out', 'One data point is nothing — hunt for a second before concluding anything', 'Ignore it, verbal flags don\'t count', 'Ask him if he\'s lying'], a: 1, why: 'Context × clusters. Single cues have innocent explanations; clusters don\'t. Two flags on the same subject = a lead.' },
+  { cat: 'Deception', q: 'You really like this person. What does that do to your lie detection?', opts: ['Improves it — you know them better', 'Nothing', 'Wrecks it — liking creates confirmation bias; you\'ll only see truth', 'Makes them more honest with you'], a: 2, why: 'When you like someone you unconsciously filter for truth. Be MOST suspicious of your read when you most want them to be honest.' },
+  { cat: 'Deception', q: 'One sentence in his otherwise even story comes out faster and slightly higher-pitched. What do you do?', opts: ['Nothing — people vary', 'That\'s the sentence to circle back and re-ask — speed + pitch rise mark the stress point', 'Interrupt immediately', 'Assume the whole story is false'], a: 1, why: 'Liars rush deceptive sentences (minimize stress time) and pitch rises under load. Re-ask THAT line later and watch what happens.' },
+  { cat: 'Needs', q: 'Five minutes in, he\'s mentioned his championship ring, his business, and "guys I\'ve mentored" — unprompted. Which need, and your play?', opts: ['Approval — reassure him', 'Acceptance — include him', 'Significance — acknowledge the achievements FIRST, then talk business', 'Pity — sympathize'], a: 2, why: 'Achievement broadcasting = significance need. Pump the tires before anything else and he\'s with you. Skip it and he\'ll fight you on everything.' },
+  { cat: 'Needs', q: 'Her language is all "we," "our group," "the girls and I." Which mask, and how do you connect?', opts: ['Significance — praise her wins', 'Acceptance — make her part of the in-group: "people like us"', 'Power — defer to her', 'Intelligence — ask her opinion'], a: 1, why: 'Group-heavy language = acceptance need. Belonging is the currency. Never make her feel outside the circle.' },
+  { cat: 'Needs', q: '"I\'m going on this podcast tomorrow and I always suck at these…" What is he actually doing, and what do you do?', opts: ['Being humble — agree he might suck', 'Fishing for approval — grant it immediately and genuinely; never make him fish twice', 'Asking for podcast tips', 'Showing significance'], a: 1, why: 'Self-deprecation that begs contradiction = approval need. Feed it fast. Making them fish twice breaks rapport.' },
+  { cat: 'Needs', q: 'What\'s the master question that generates a whole profile of anyone in front of you?', opts: ['"What are they hiding?"', '"What do they want from me?"', '"What do they want me to THINK about them?" — the mask points at the insecurity', '"Are they lying?"'], a: 2, why: 'The image they\'re managing reveals exactly what they fear you\'d otherwise see. Find the mask, find the person.' },
+  { cat: 'Face-saving', q: 'You need a teammate to admit he broke curfew. Which line uses SOCIALIZING to make confession safe?', opts: ['"Everyone on this team would\'ve done the same thing in your spot."', '"This is nothing, I see it all the time."', '"Coach is a hard-ass, I don\'t blame you."', '"I know this wasn\'t your fault."'], a: 0, why: 'Socialize = make the act universal. (The others are minimize, rationalize, and project — all four doors work; know which one you\'re opening.)' },
+  { cat: 'Face-saving', q: '"Your boss is a rock — honestly I don\'t blame you." Which face-saving tool is that?', opts: ['Minimizing', 'Rationalizing — giving them a justified reason they did it', 'Socializing', 'Projecting'], a: 1, why: 'Rationalize = supply the good reason. A justified act is easier to own out loud.' },
+  { cat: 'Face-saving', q: 'Every confession walks through the same two doors. What are they?', opts: ['Fear and greed', '"Someone else\'s fault" and "not a big deal"', 'Anger and shame', 'Trust and time'], a: 1, why: 'Externalize the blame, shrink the act. Build both doors and people walk through them on their own.' },
+  { cat: 'Confidence', q: 'Night before camp, you catch yourself running the "what if I embarrass myself" movie. Per Chase, what IS that, and the fix?', opts: ['Healthy preparation — keep going', 'Worry = a mental rehearsal of failure; cancel it with one deliberate rep of it going well', 'A sign to train harder', 'Intuition warning you'], a: 1, why: 'Every worry is a rep FOR failure. You don\'t suppress it — you out-rep it with the positive version.' },
+  { cat: 'Confidence', q: 'You walk into a room full of scouts and feel the nerves spike. The fastest move?', opts: ['Rehearse your talking points internally', 'Flip to observation mode — profile THEM; self-focus is the anxious mode, and you can\'t do both at once', 'Find a corner and breathe', 'Leave and reset'], a: 1, why: 'Attention on yourself = anxiety. Attention outward = calm + data. Profiling the room is literally the cure for nerves.' },
+  { cat: 'Confidence', q: '"Somebody\'s gonna laugh at you" pops into your head before you speak up. The Chase move?', opts: ['Argue with the thought', 'Obey it and stay quiet', 'Hear it as fiction — a 6-year-old tugging your hand; consider the source and smile', 'Repeat a positive affirmation ten times'], a: 2, why: 'You don\'t fight the thought, you demote the narrator. The moment you hear it as fiction is the moment your mind changes.' },
+  { cat: 'Confidence', q: 'In any room, the only two comparisons Chase allows you to make are…', opts: ['Who\'s richest and who\'s fittest', 'Can I be more COMFORTABLE and move SLOWER than the other person?', 'Who\'s smartest and who\'s toughest', 'None — never compare anything'], a: 1, why: 'Hierarchy thinking creates fear of judgment. Comfort and pool-speed are the whole scoreboard — both are competitions with yourself.' },
+];
+
+const PROFILING_DRILLS = [
+  { tag: 'Eyes', name: 'Blink baseline ×3', do: 'Get a blink rate on 3 different people today: count blinks for 15 seconds, multiply by 4. Or just log fast / normal / slow.', why: '~9/min is normal conversation. 70 is stress. 3 is locked-in focus.' },
+  { tag: 'Eyes', name: 'Catch the blink shift', do: 'In one real conversation, find the exact moment the blink rate changes — then name what caused it.', why: 'The change is the message; the trigger is the meaning.' },
+  { tag: 'Eyes', name: 'Map a positive side', do: 'In one conversation, figure out which side someone looks/gestures to for positive memories vs negative ones.', why: 'Next time you need a yes, you\'ll know which side to lean and gesture from.' },
+  { tag: 'Eyes', name: 'Find an eye home', do: 'Ask someone two easy memory questions ("what\'d you do this weekend?") and locate where their eyes go to access real memories.', why: 'Eyes that skip home on a recall question = possible fabrication.' },
+  { tag: 'Eyes', name: 'Spot the decision-maker', do: 'In any group today, watch confirmation glances — who looks at whom after speaking?', why: 'The glance target is who you actually need to persuade.' },
+  { tag: 'Eyes', name: 'Eyebrow flash ×5', do: 'Give 5 eyebrow flashes to people today. Count how many flash back.', why: 'A returned flash = they\'ve signaled compliance and liking.' },
+  { tag: 'Face', name: 'Catch a lip compression', do: 'Spot one lip compression today and guess exactly what opinion or objection is being held back.', why: 'Lips leak objections people don\'t even know they have.' },
+  { tag: 'Face', name: 'Reassurance rep', do: 'Spot one object insertion or neck/throat touch, identify the subject causing the doubt, and apply reassurance.', why: 'See the need, meet the need — that\'s the whole skill.' },
+  { tag: 'Face', name: 'Fake smile hunt', do: 'Catch one smile today that doesn\'t reach the eyes, or drops off the face instead of fading.', why: 'Real expressions fade. False ones drop.' },
+  { tag: 'Body', name: 'Feet check ×3', do: 'In 3 conversations today, check where everyone\'s feet point — at each other, at the leader, or at the exit?', why: 'Faces are trained. Feet aren\'t.' },
+  { tag: 'Body', name: 'Break a barrier', do: 'Notice one barrier someone places between you (bottle, phone, crossed arms) and get it removed creatively — or remove yours first.', why: 'Barriers gone = defenses down.' },
+  { tag: 'Body', name: 'Breathing read ×2', do: 'Identify chest vs belly breathing on 2 people. Bonus: catch a shift and name the trigger.', why: 'A shift to belly breathing marks what actually matters to them.' },
+  { tag: 'Body', name: 'Shoulder watch', do: 'Spot one single-sided shrug or one set of shoulders riding high today, and name what caused it.', why: 'Single-sided shrug = they don\'t believe their own sentence.' },
+  { tag: 'Body', name: 'Hands tell the story', do: 'Watch one person\'s fingers through a whole conversation — mark each digital extension (opening) and flexion (curling) moment.', why: 'Fingers are a live comfort meter.' },
+  { tag: 'Deception', name: 'Two-flag audit', do: 'In one story you hear today, listen for at least 2 verbal deception flags (pronoun absence, non-contractions, speed, pitch) before forming any judgment.', why: 'One data point is nothing. Two is a lead.' },
+  { tag: 'Needs', name: 'Read the mask', do: 'Pick one person and answer: what do they want me to think about them? Which need is it — significance, acceptance, approval, pity, intelligence, power?', why: 'The mask points straight at the insecurity.' },
+  { tag: 'Needs', name: 'Feed a need', do: 'Identify someone\'s dominant need today and feed it once, deliberately — pump tires, grant approval, include them.', why: 'Meeting the need builds instant rapport they can\'t explain.' },
+  { tag: 'Eyes', name: 'Pupil check', do: 'In steady light, watch someone\'s pupils when a topic they love comes up.', why: 'Dilation = interest and attraction. Constriction = pull-back.' },
+  { tag: 'Body', name: 'Preening spotter', do: 'Catch one hygienic behavior today — hair fix, posture straighten, clothing adjust — and name what triggered it.', why: 'Preening = they care what someone present thinks of them.' },
+  { tag: 'Body', name: 'Tension scan', do: 'Three times today, silently scan someone\'s hands from across the room: relaxed or tense fingers?', why: 'A psychology read you can take at distance in one second.' },
+];
+
+const CONFIDENCE_DRILLS = [
+  { name: 'Pool speed day', do: 'Move slower than everyone around you all day — walk, talk, turn your head, reach for things like you\'re moving through water.', why: 'Never move faster than you would in a pool. Slow = safe = authority.' },
+  { name: 'One social injury', do: 'Deliberately do one small thing that risks looking silly. Then notice: nothing happened.', why: 'Being fine with social injury is the foundation. Every rep proves the fear is fiction.' },
+  { name: 'The fiction filter', do: 'Every self-critical thought today, hear it as a 6-year-old tugging your hand saying "somebody\'s gonna laugh at you." Consider the source. Smile at it.', why: 'The moment you hear it as fiction is the moment your mind changes.' },
+  { name: 'Forgiveness rep', do: 'Pick one old memory that still stings. Forgive yourself for it completely — so completely it feels delusional.', why: 'Real confidence only lives in a body that feels safe in itself.' },
+  { name: 'Step into the role', do: 'Pick a role for today — pro, captain, host, coach — and act from its permission all day, like a firefighter running into a building.', why: 'Give yourself permission by stepping into a role. Roles grant what waiting never will.' },
+  { name: 'Comfort contest', do: 'In every room you enter today, quietly win one competition: most comfortable person here.', why: 'The only comparison allowed. Comfort is the whole scoreboard.' },
+  { name: 'Cancel the outsourcing', do: 'Catch one moment today where you look to someone else for approval. Stop, and grant it to yourself instead.', why: 'If others can raise your confidence, others can take it. Stop being programmable.' },
+  { name: 'Worry = rehearsal', do: 'Every time you catch yourself worrying today, run one positive mental rep of the same situation going fine.', why: 'Worrying is mentally rehearsing failure. One positive rep cancels it.' },
+  { name: 'Observation mode', do: 'The moment you feel self-conscious today, flip your attention outward and profile someone instead.', why: 'Focusing on yourself is the anxious mode. Get into observation mode — it\'s not about you.' },
+  { name: 'Google Maps zoom', do: 'Once today, take your biggest current problem and zoom out on it like Google Maps — street, city, country, planet.', why: 'Zoom out far enough and you\'ll realize you don\'t have problems.' },
+  { name: 'Everyone likes you', do: 'Greet 3 strangers today operating on the assumption they already like you — eyebrow flash, easy pace.', why: 'Everyone likes you, and if they have a problem with you, that\'s theirs.' },
+  { name: 'No-hierarchy day', do: 'Catch every status comparison you make today and replace it with collaboration: what could we build, not who\'s above whom.', why: 'Hierarchical thinking creates fear of judgment. It will ruin your life. Drop the ladder.' },
+  { name: 'Drop the bag', do: 'Notice any shame you\'re carrying today and set it down: feeling bad now cannot change the past — believing it can is its own arrogance.', why: 'Shame = narcissism. Carrying the bag helps no one.' },
+  { name: 'Identity check', do: 'Write or say one sentence: "I\'m the type of person that…" — and act in line with it all day.', why: 'The Olympic athlete loses the weight because being fat isn\'t their identity. Identity drives behavior.' },
+];
+
+const MANTRAS = [
+  'Confidence is a generalized expectation of good outcomes — not perfect ones. Just: I will be okay.',
+  'Can I move slower than the other person today?',
+  'Am I okay with social injury?',
+  'Am I delusionally self-forgiving?',
+  'Confidence = safety. Composure = authority. When your body says "I have nothing to prove," people lean in.',
+  'Nothing matters. Everyone likes you. If they have a problem with you, it\'s theirs.',
+  'Do not fear — the most repeated command in every religious text. Find a way to love more.',
+  'You do not need the world\'s permission to act like you belong. Then you are no longer programmable.',
+  'Get into observation mode. Self-focus is the anxious mode.',
+  'Zoom out like Google Maps and you\'ll realize you don\'t have problems.',
+  'Everything I have ever done, I have forgiven.',
+  'Everyone is suffering. Everyone is wearing a mask. Read the mask, find the person.',
+];
+
+const DAILY_CHECKS = [
+  'Can I move slower than the other person today?',
+  'Am I okay with social injury?',
+  'Am I delusionally self-forgiving?',
+  'Can I be more comfortable than anyone else in the room?',
+];
+
+const CONFIDENCE_PRINCIPLES = [
+  { h: 'Confidence = safety', p: 'Confidence is a generalized expectation of good outcomes — not perfect ones. Just knowing you\'ll be okay. Composure = authority: when your body says "I have nothing to prove," people lean into it.' },
+  { h: 'Hear it as fiction', p: 'Imagine walking through a mall holding a 6-year-old\'s hand, and every five steps he says "somebody\'s gonna laugh at you." You\'d laugh — because of the source. Your self-doubt is that kid. The moment you hear it as fiction is the moment your mind changes.' },
+  { h: 'Radical self-forgiveness', p: 'Real confidence only lives in a body that feels safe in itself. Get so forgiving of yourself and your past that others would call you delusional. Everything you\'ve ever done — forgiven.' },
+  { h: 'Step into a role', p: 'A firefighter has permission to run into a burning building because of the role. Give yourself permission the same way — step into the role and act from it.' },
+  { h: 'Stop outsourcing', p: 'If other people can raise your confidence, other people can take it away. You do not need the world\'s permission to act like you belong. Then you are no longer programmable.' },
+  { h: 'Kill hierarchy thinking', p: 'Seeing the world through hierarchy creates fear of judgment and turns collaboration into competition. It will ruin your life. The only comparison allowed: can I be more comfortable — and slower — than the other person in the room?' },
+  { h: 'Observation mode', p: 'Don\'t focus on yourself — that\'s the narcissistic, anxious mode. Get curious. Get into observation mode. Profile the room instead of monitoring yourself.' },
+  { h: 'Worry is rehearsal for failure', p: 'Every worry is a mental rep of things going wrong. Cancel each one with a positive rep of the same moment going fine.' },
+  { h: 'Shame = narcissism', p: 'Believing that feeling bad now can change the past means believing you\'re that powerful. Carrying the bag around to punish yourself is self-importance in disguise. Set it down.' },
+  { h: 'Pool speed', p: 'Never move faster than you would in a pool. Slowness reads as safety, and safety reads as status.' },
+  { h: 'Identity drives behavior', p: 'An Olympic athlete who starts gaining weight does whatever it takes to lose it — because "fat" isn\'t their identity. Decide who you are, and behavior follows. I\'m the type of person that…' },
+  { h: 'Zoom out', p: 'Zoom out on your problems like Google Maps — street, city, country, planet — and you\'ll realize you don\'t have problems. Do not fear. Find a way to love more.' },
+];
+
+/* =====================================================================
+   APP LOGIC — nothing below needs touching when adding content.
+   ===================================================================== */
+
+const dayIndex = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+const todayKey = new Date().toISOString().slice(0, 10);
+
+function load() {
+  try { return JSON.parse(localStorage.getItem('xray') || '{}'); } catch (e) { return {}; }
+}
+function save(s) { localStorage.setItem('xray', JSON.stringify(s)); }
+
+let state = load();
+if (state.today !== todayKey) {
+  state.today = todayKey;
+  state.p = false; state.c = false; state.q = false; state.checks = [false, false, false, false];
+  state.counted = false;
+  save(state);
+}
+if (!state.checks) state.checks = [false, false, false, false];
+
+/* ---- today tab ---- */
+const pd = PROFILING_DRILLS[dayIndex % PROFILING_DRILLS.length];
+const cd = CONFIDENCE_DRILLS[dayIndex % CONFIDENCE_DRILLS.length];
+
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+document.getElementById('mantraText').textContent = MANTRAS[dayIndex % MANTRAS.length];
+document.getElementById('pdrillTag').textContent = pd.tag;
+document.getElementById('pdrillName').textContent = pd.name;
+document.getElementById('pdrillDo').textContent = pd.do;
+document.getElementById('pdrillWhy').textContent = pd.why;
+document.getElementById('cdrillName').textContent = cd.name;
+document.getElementById('cdrillDo').textContent = cd.do;
+document.getElementById('cdrillWhy').textContent = cd.why;
+
+const checksEl = document.getElementById('dailyChecks');
+DAILY_CHECKS.forEach((q, i) => {
+  const d = document.createElement('div');
+  d.className = 'check';
+  d.innerHTML = '<div class="box">✓</div><div class="q">' + q + '</div>';
+  d.onclick = () => { state.checks[i] = !state.checks[i]; save(state); render(); };
+  checksEl.appendChild(d);
+});
+
+function checkDayComplete() {
+  if (state.p && state.c && state.q && !state.counted) {
+    state.counted = true;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    state.streak = (state.lastComplete === yesterday) ? (state.streak || 0) + 1 : 1;
+    state.lastComplete = todayKey;
+  }
+}
+
+function toggleDrill(which) {
+  state[which] = !state[which];
+  checkDayComplete();
+  save(state);
+  render();
+}
+
+function render() {
+  const pb = document.getElementById('pdrillBtn'), cb = document.getElementById('cdrillBtn');
+  pb.textContent = state.p ? '✓ Done' : 'Mark done';
+  pb.classList.toggle('done', !!state.p);
+  cb.textContent = state.c ? '✓ Done' : 'Mark done';
+  cb.classList.toggle('done', !!state.c);
+  document.querySelectorAll('.check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
+  const due = dueCount();
+  document.getElementById('quizDueLine').textContent = due + ' cards due today — cue flashcards + real-world scenarios.';
+  const qb = document.getElementById('quizBtn');
+  qb.textContent = state.q ? '✓ Done today — run it again anytime' : 'Start quiz';
+  qb.classList.toggle('done', !!state.q);
+  document.getElementById('quizLaunch').textContent = 'Start daily quiz — ' + due + ' due';
+  document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q));
+  let streak = state.streak || 0;
+  if (streak > 0 && state.lastComplete !== todayKey) {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (state.lastComplete !== yesterday) { streak = 0; state.streak = 0; save(state); }
+  }
+  document.getElementById('streakN').textContent = streak;
+}
+
+/* ---- profiling library ---- */
+const libEl = document.getElementById('library');
+LIBRARY.forEach(cat => {
+  const c = document.createElement('div');
+  c.className = 'cat';
+  const items = cat.items.map(it =>
+    '<div class="item"><h4>' + it.name + '</h4><div class="read">' + it.read + '</div>' +
+    (it.use ? '<div class="use">' + it.use + '</div>' : '') + '</div>'
+  ).join('');
+  c.innerHTML = '<button><span class="name">' + cat.cat + '</span><span class="count">' + cat.items.length + '</span></button><div class="items">' + items + '</div>';
+  c.querySelector('button').onclick = () => c.classList.toggle('open');
+  libEl.appendChild(c);
+});
+
+/* ---- confidence tab ---- */
+const prinEl = document.getElementById('principles');
+CONFIDENCE_PRINCIPLES.forEach(pr => {
+  const d = document.createElement('div');
+  d.className = 'principle';
+  d.innerHTML = '<h4>' + pr.h + '</h4><p>' + pr.p + '</p>';
+  prinEl.appendChild(d);
+});
+
+/* ---- tabs ---- */
+function showTab(name, btn) {
+  document.querySelectorAll('main').forEach(m => m.classList.remove('on'));
+  document.getElementById('tab-' + name).classList.add('on');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  window.scrollTo(0, 0);
+}
+
+/* ---- quiz: spaced repetition (Leitner boxes) over flashcards + scenarios ----
+   Every card lives in a box 0–5. Correct → next box, wrong → back to box 0.
+   The box sets how many days until the card is due again. */
+const INTERVALS = [0, 1, 2, 4, 7, 14];
+const DECK_SIZE = 12;
+
+function allCards() {
+  const cards = [];
+  LIBRARY.forEach(cat => cat.items.forEach(it =>
+    cards.push({ id: 'f:' + it.name, type: 'flash', cat: cat.cat, cue: it.name, ans: it.read })));
+  SCENARIOS.forEach((s, i) =>
+    cards.push({ id: 's:' + i, type: 'mc', cat: s.cat + ' · scenario', q: s.q, opts: s.opts, a: s.a, why: s.why }));
+  return cards;
+}
+function dueDay(id) { const e = (state.srs || {})[id]; return e ? e.due : 0; }
+function dueCount() { return allCards().filter(c => dueDay(c.id) <= dayIndex).length; }
+function gradeSRS(id, hit) {
+  state.srs = state.srs || {};
+  const box = hit ? Math.min(((state.srs[id] || {}).box || 0) + 1, 5) : 0;
+  state.srs[id] = { box, due: dayIndex + INTERVALS[box] };
+  save(state);
+}
+
+let deck = [], qi = 0, hits = 0, answered = false;
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function startQuiz() {
+  const all = allCards();
+  deck = shuffle(all.filter(c => dueDay(c.id) <= dayIndex)).slice(0, DECK_SIZE);
+  if (deck.length < DECK_SIZE) {
+    // Nothing (or not much) due — top up with the cards due soonest.
+    const rest = shuffle(all.filter(c => dueDay(c.id) > dayIndex)).sort((a, b) => dueDay(a.id) - dueDay(b.id));
+    deck = deck.concat(rest.slice(0, DECK_SIZE - deck.length));
+  }
+  shuffle(deck);
+  qi = 0; hits = 0;
+  document.getElementById('quiz').classList.add('on');
+  showCard();
+}
+function showCard() {
+  const card = document.getElementById('qCard');
+  document.getElementById('qBtns').classList.remove('show');
+  card.classList.remove('flipped');
+  if (qi >= deck.length) {
+    if (!state.q) { state.q = true; checkDayComplete(); save(state); }
+    render();
+    document.getElementById('qProg').textContent = 'Done';
+    card.classList.remove('mc');
+    card.onclick = null;
+    card.innerHTML = '<div class="qdone"><div class="big">' + hits + ' / ' + deck.length + '</div><p>' +
+      (hits === deck.length ? 'Perfect read. Now go use it on a real human.' : 'Missed cards come back tomorrow — and keep coming back until you own them.') + '</p></div>';
+    return;
+  }
+  const q = deck[qi];
+  answered = false;
+  document.getElementById('qProg').textContent = 'Card ' + (qi + 1) + ' of ' + deck.length;
+  if (q.type === 'flash') {
+    card.classList.remove('mc');
+    card.onclick = flipCard;
+    card.innerHTML = '<div class="qcat">' + q.cat + '</div><div class="qcue">' + q.cue +
+      '</div><div class="qans" id="qAns">' + q.ans + '</div><div class="qhint" id="qHint">Tap to reveal</div>';
+  } else {
+    card.classList.add('mc');
+    card.onclick = null;
+    card.innerHTML = '<div class="qcat">' + q.cat + '</div><div class="qcue">' + q.q + '</div>' +
+      q.opts.map((o, i) => '<button class="opt" onclick="answerMC(' + i + ')">' + o + '</button>').join('') +
+      '<div class="qwhy" id="qWhy">' + q.why + '</div>' +
+      '<button class="qnext" id="qNext" onclick="nextCard()">Next</button>';
+  }
+}
+function answerMC(i) {
+  if (answered) return;
+  answered = true;
+  const q = deck[qi];
+  document.querySelectorAll('#qCard .opt').forEach((el, j) => {
+    el.disabled = true;
+    if (j === q.a) el.classList.add('right');
+    else if (j === i) el.classList.add('wrong');
+  });
+  document.getElementById('qWhy').classList.add('show');
+  document.getElementById('qNext').classList.add('show');
+  gradeSRS(q.id, i === q.a);
+  if (i === q.a) hits++;
+}
+function nextCard() { qi++; showCard(); }
+function flipCard() {
+  document.getElementById('qCard').classList.add('flipped');
+  const hint = document.getElementById('qHint');
+  if (hint) hint.style.display = 'none';
+  document.getElementById('qBtns').classList.add('show');
+}
+function gradeCard(hit) {
+  gradeSRS(deck[qi].id, hit);
+  if (hit) hits++;
+  qi++;
+  showCard();
+}
+function closeQuiz() {
+  document.getElementById('quiz').classList.remove('on');
+  render();
+}
+
+render();
+</script>
