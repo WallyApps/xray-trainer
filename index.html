@@ -531,27 +531,30 @@ const SCENARIOS = [
   { cat: 'Hockey', q: 'Warmups: you notice you\'re white-knuckling the stick. What does it mean and what do you do?', opts: ['Grip harder — channel it', 'Tension in fingers = tension in mind. Open the hands, one belly breath, drop to pool speed', 'Ignore it, it\'ll pass', 'Switch sticks'], a: 1, why: 'Read yourself like you read others — the hands broadcast the mind. Digital extension + belly breathing + slow movement tells your body it\'s safe.' },
 ];
 
+/* Each drill's `unit` = the Learn-path unit that teaches it (index into UNITS).
+   The daily rep only draws from units you've unlocked, so field practice
+   follows study. */
 const PROFILING_DRILLS = [
-  { tag: 'Eyes', name: 'Blink baseline ×3', do: 'Get a blink rate on 3 different people today: count blinks for 15 seconds, multiply by 4. Or just log fast / normal / slow.', look: 'A blink every 6–7 seconds = normal conversation. A blink every second or two = stressed. Barely blinking = calm and locked in.', why: '~9/min is normal conversation. 70 is stress. 3 is locked-in focus.' },
-  { tag: 'Eyes', name: 'Catch the blink shift', do: 'In one real conversation, find the exact moment the blink rate changes — then name what caused it.', look: 'Rate suddenly speeds up = the topic just hit stress or concealment. Rate suddenly slows = interest spiked. Whatever was said in that exact moment is your intel.', why: 'The change is the message; the trigger is the meaning.' },
-  { tag: 'Eyes', name: 'Map a positive side', do: 'In one conversation, figure out which side someone looks/gestures to for positive memories vs negative ones.', look: 'Watch their eyes and gesturing hand when they recount something good vs something bad — each goes to a consistent side. Note which side is which.', why: 'Next time you need a yes, you\'ll know which side to lean and gesture from.' },
-  { tag: 'Eyes', name: 'Find an eye home', do: 'Ask someone two easy memory questions ("what\'d you do this weekend?") and locate where their eyes go to access real memories.', look: 'Their eyes will settle in the same spot (say, 3 o\'clock) on every honest recall — that\'s home. Later: a memory question that sends eyes somewhere ELSE = possible fabrication.', why: 'Eyes that skip home on a recall question = possible fabrication.' },
-  { tag: 'Eyes', name: 'Spot the decision-maker', do: 'In any group today, watch confirmation glances — who looks at whom after speaking?', look: 'After someone speaks, their eyes dart to one person for a beat — checking approval. Whoever collects those glances holds the real power, even if they never talk.', why: 'The glance target is who you actually need to persuade.' },
-  { tag: 'Eyes', name: 'Eyebrow flash ×5', do: 'Give 5 eyebrow flashes to people today. Count how many flash back.', look: 'A quick up-and-apart of both brows as you make eye contact. Flashed back = they\'re open to you, approach works. Nothing back = closed for now, warm up first.', why: 'A returned flash = they\'ve signaled compliance and liking.' },
-  { tag: 'Face', name: 'Catch a lip compression', do: 'Spot one lip compression today and guess exactly what opinion or objection is being held back.', look: 'Lips pressed into a thin, tight line — often while nodding or staying quiet. Whatever was said the second they compressed = the objection being swallowed.', why: 'Lips leak objections people don\'t even know they have.' },
-  { tag: 'Face', name: 'Reassurance rep', do: 'Spot one object insertion or neck/throat touch, identify the subject causing the doubt, and apply reassurance.', look: 'Pen/straw/finger to the mouth, or a hand drifting to the neck or throat = doubt just appeared. The topic on the table right then is what needs reassuring.', why: 'See the need, meet the need — that\'s the whole skill.' },
-  { tag: 'Face', name: 'Fake smile hunt', do: 'Catch one smile today that doesn\'t reach the eyes, or drops off the face instead of fading.', look: 'Real: eyes crinkle, smile fades out slowly. Fake: mouth only, eyes dead, drops off the face instantly, often stronger on one side.', why: 'Real expressions fade. False ones drop.' },
-  { tag: 'Body', name: 'Feet check ×3', do: 'In 3 conversations today, check where everyone\'s feet point — at each other, at the leader, or at the exit?', look: 'Pointed at you = engaged. Angled at the door = they\'ve mentally left. Everyone\'s feet aimed at one person = that\'s the leader of the group.', why: 'Faces are trained. Feet aren\'t.' },
-  { tag: 'Body', name: 'Break a barrier', do: 'Notice one barrier someone places between you (bottle, phone, crossed arms) and get it removed creatively — or remove yours first.', look: 'An object slid between you, a jacket buttoned, arms crossing right after a topic lands = they need protection from it. Barrier comes down = defenses down, you\'re back in.', why: 'Barriers gone = defenses down.' },
-  { tag: 'Body', name: 'Breathing read ×2', do: 'Identify chest vs belly breathing on 2 people. Bonus: catch a shift and name the trigger.', look: 'Watch the shoulders/chest rise = chest breathing (normal or guarded). Belly moving instead = fully relaxed. A SHIFT to belly mid-conversation marks the topic that truly matters to them.', why: 'A shift to belly breathing marks what actually matters to them.' },
-  { tag: 'Body', name: 'Shoulder watch', do: 'Spot one single-sided shrug or one set of shoulders riding high today, and name what caused it.', look: 'One shoulder shrugging alone while they state something = they don\'t buy their own words. Both shoulders creeping up toward the ears = anxiety or fear — note who or what triggered it.', why: 'Single-sided shrug = they don\'t believe their own sentence.' },
-  { tag: 'Body', name: 'Hands tell the story', do: 'Watch one person\'s fingers through a whole conversation — mark each digital extension (opening) and flexion (curling) moment.', look: 'Fingers spreading open, away from the palm = comfort and agreement rising. Fingers curling in toward a fist = discomfort or disagreement building. Note which topics cause each.', why: 'Fingers are a live comfort meter.' },
-  { tag: 'Deception', name: 'Two-flag audit', do: 'In one story you hear today, listen for at least 2 verbal deception flags (pronoun absence, non-contractions, speed, pitch) before forming any judgment.', look: 'Missing "I" in their own story, "did not" instead of "didn\'t", one sentence rushed or higher-pitched than the rest, your question repeated back. Two or more on the same subject = a lead.', why: 'One data point is nothing. Two is a lead.' },
-  { tag: 'Needs', name: 'Read the mask', do: 'Pick one person and answer: what do they want me to think about them? Which need is it — significance, acceptance, approval, pity, intelligence, power?', look: 'Bragging about achievements = significance. Constant "we"/group talk = acceptance. Fishing for "you\'re doing great" = approval. Leading with struggles = pity. Correcting people = intelligence. Controlling the room = power.', why: 'The mask points straight at the insecurity.' },
-  { tag: 'Needs', name: 'Feed a need', do: 'Identify someone\'s dominant need today and feed it once, deliberately — pump tires, grant approval, include them.', look: 'You\'ll know you read it right by the response: they visibly warm up, lean in, talk more, open up. Wrong feed gets a polite nothing.', why: 'Meeting the need builds instant rapport they can\'t explain.' },
-  { tag: 'Eyes', name: 'Pupil check', do: 'In steady light, watch someone\'s pupils when a topic they love comes up.', look: 'Pupils blooming wide = they like what they\'re hearing (or you). Shrinking to pinpoints = pull-back or dislike. Only trust it in steady, unchanging light.', why: 'Dilation = interest and attraction. Constriction = pull-back.' },
-  { tag: 'Body', name: 'Preening spotter', do: 'Catch one hygienic behavior today — hair fix, posture straighten, clothing adjust — and name what triggered it.', look: 'Hair smoothed, posture straightened, shirt tugged into place right as someone appears = they care what that person thinks. Pride, excitement, or attraction — context decides.', why: 'Preening = they care what someone present thinks of them.' },
-  { tag: 'Body', name: 'Tension scan', do: 'Three times today, silently scan someone\'s hands from across the room: relaxed or tense fingers?', look: 'Loose, open, slow-moving fingers = at ease. White knuckles, curled fingers, gripping = stress, anger, or disagreement brewing. The hands broadcast the mind.', why: 'A psychology read you can take at distance in one second.' },
+  { unit: 1, tag: 'Eyes', name: 'Blink baseline ×3', do: 'Get a blink rate on 3 different people today: count blinks for 15 seconds, multiply by 4. Or just log fast / normal / slow.', look: 'A blink every 6–7 seconds = normal conversation. A blink every second or two = stressed. Barely blinking = calm and locked in.', why: '~9/min is normal conversation. 70 is stress. 3 is locked-in focus.' },
+  { unit: 1, tag: 'Eyes', name: 'Catch the blink shift', do: 'In one real conversation, find the exact moment the blink rate changes — then name what caused it.', look: 'Rate suddenly speeds up = the topic just hit stress or concealment. Rate suddenly slows = interest spiked. Whatever was said in that exact moment is your intel.', why: 'The change is the message; the trigger is the meaning.' },
+  { unit: 1, tag: 'Eyes', name: 'Map a positive side', do: 'In one conversation, figure out which side someone looks/gestures to for positive memories vs negative ones.', look: 'Watch their eyes and gesturing hand when they recount something good vs something bad — each goes to a consistent side. Note which side is which.', why: 'Next time you need a yes, you\'ll know which side to lean and gesture from.' },
+  { unit: 1, tag: 'Eyes', name: 'Find an eye home', do: 'Ask someone two easy memory questions ("what\'d you do this weekend?") and locate where their eyes go to access real memories.', look: 'Their eyes will settle in the same spot (say, 3 o\'clock) on every honest recall — that\'s home. Later: a memory question that sends eyes somewhere ELSE = possible fabrication.', why: 'Eyes that skip home on a recall question = possible fabrication.' },
+  { unit: 2, tag: 'Eyes', name: 'Spot the decision-maker', do: 'In any group today, watch confirmation glances — who looks at whom after speaking?', look: 'After someone speaks, their eyes dart to one person for a beat — checking approval. Whoever collects those glances holds the real power, even if they never talk.', why: 'The glance target is who you actually need to persuade.' },
+  { unit: 2, tag: 'Eyes', name: 'Eyebrow flash ×5', do: 'Give 5 eyebrow flashes to people today. Count how many flash back.', look: 'A quick up-and-apart of both brows as you make eye contact. Flashed back = they\'re open to you, approach works. Nothing back = closed for now, warm up first.', why: 'A returned flash = they\'ve signaled compliance and liking.' },
+  { unit: 3, tag: 'Face', name: 'Catch a lip compression', do: 'Spot one lip compression today and guess exactly what opinion or objection is being held back.', look: 'Lips pressed into a thin, tight line — often while nodding or staying quiet. Whatever was said the second they compressed = the objection being swallowed.', why: 'Lips leak objections people don\'t even know they have.' },
+  { unit: 3, tag: 'Face', name: 'Reassurance rep', do: 'Spot one object insertion or neck/throat touch, identify the subject causing the doubt, and apply reassurance.', look: 'Pen/straw/finger to the mouth, or a hand drifting to the neck or throat = doubt just appeared. The topic on the table right then is what needs reassuring.', why: 'See the need, meet the need — that\'s the whole skill.' },
+  { unit: 3, tag: 'Face', name: 'Fake smile hunt', do: 'Catch one smile today that doesn\'t reach the eyes, or drops off the face instead of fading.', look: 'Real: eyes crinkle, smile fades out slowly. Fake: mouth only, eyes dead, drops off the face instantly, often stronger on one side.', why: 'Real expressions fade. False ones drop.' },
+  { unit: 4, tag: 'Body', name: 'Feet check ×3', do: 'In 3 conversations today, check where everyone\'s feet point — at each other, at the leader, or at the exit?', look: 'Pointed at you = engaged. Angled at the door = they\'ve mentally left. Everyone\'s feet aimed at one person = that\'s the leader of the group.', why: 'Faces are trained. Feet aren\'t.' },
+  { unit: 5, tag: 'Body', name: 'Break a barrier', do: 'Notice one barrier someone places between you (bottle, phone, crossed arms) and get it removed creatively — or remove yours first.', look: 'An object slid between you, a jacket buttoned, arms crossing right after a topic lands = they need protection from it. Barrier comes down = defenses down, you\'re back in.', why: 'Barriers gone = defenses down.' },
+  { unit: 5, tag: 'Body', name: 'Breathing read ×2', do: 'Identify chest vs belly breathing on 2 people. Bonus: catch a shift and name the trigger.', look: 'Watch the shoulders/chest rise = chest breathing (normal or guarded). Belly moving instead = fully relaxed. A SHIFT to belly mid-conversation marks the topic that truly matters to them.', why: 'A shift to belly breathing marks what actually matters to them.' },
+  { unit: 5, tag: 'Body', name: 'Shoulder watch', do: 'Spot one single-sided shrug or one set of shoulders riding high today, and name what caused it.', look: 'One shoulder shrugging alone while they state something = they don\'t buy their own words. Both shoulders creeping up toward the ears = anxiety or fear — note who or what triggered it.', why: 'Single-sided shrug = they don\'t believe their own sentence.' },
+  { unit: 4, tag: 'Body', name: 'Hands tell the story', do: 'Watch one person\'s fingers through a whole conversation — mark each digital extension (opening) and flexion (curling) moment.', look: 'Fingers spreading open, away from the palm = comfort and agreement rising. Fingers curling in toward a fist = discomfort or disagreement building. Note which topics cause each.', why: 'Fingers are a live comfort meter.' },
+  { unit: 6, tag: 'Deception', name: 'Two-flag audit', do: 'In one story you hear today, listen for at least 2 verbal deception flags (pronoun absence, non-contractions, speed, pitch) before forming any judgment.', look: 'Missing "I" in their own story, "did not" instead of "didn\'t", one sentence rushed or higher-pitched than the rest, your question repeated back. Two or more on the same subject = a lead.', why: 'One data point is nothing. Two is a lead.' },
+  { unit: 8, tag: 'Needs', name: 'Read the mask', do: 'Pick one person and answer: what do they want me to think about them? Which need is it — significance, acceptance, approval, pity, intelligence, power?', look: 'Bragging about achievements = significance. Constant "we"/group talk = acceptance. Fishing for "you\'re doing great" = approval. Leading with struggles = pity. Correcting people = intelligence. Controlling the room = power.', why: 'The mask points straight at the insecurity.' },
+  { unit: 8, tag: 'Needs', name: 'Feed a need', do: 'Identify someone\'s dominant need today and feed it once, deliberately — pump tires, grant approval, include them.', look: 'You\'ll know you read it right by the response: they visibly warm up, lean in, talk more, open up. Wrong feed gets a polite nothing.', why: 'Meeting the need builds instant rapport they can\'t explain.' },
+  { unit: 2, tag: 'Eyes', name: 'Pupil check', do: 'In steady light, watch someone\'s pupils when a topic they love comes up.', look: 'Pupils blooming wide = they like what they\'re hearing (or you). Shrinking to pinpoints = pull-back or dislike. Only trust it in steady, unchanging light.', why: 'Dilation = interest and attraction. Constriction = pull-back.' },
+  { unit: 5, tag: 'Body', name: 'Preening spotter', do: 'Catch one hygienic behavior today — hair fix, posture straighten, clothing adjust — and name what triggered it.', look: 'Hair smoothed, posture straightened, shirt tugged into place right as someone appears = they care what that person thinks. Pride, excitement, or attraction — context decides.', why: 'Preening = they care what someone present thinks of them.' },
+  { unit: 4, tag: 'Body', name: 'Tension scan', do: 'Three times today, silently scan someone\'s hands from across the room: relaxed or tense fingers?', look: 'Loose, open, slow-moving fingers = at ease. White knuckles, curled fingers, gripping = stress, anger, or disagreement brewing. The hands broadcast the mind.', why: 'A psychology read you can take at distance in one second.' },
 ];
 
 const CONFIDENCE_DRILLS = [
@@ -650,26 +653,38 @@ if (state.today !== todayKey) {
   state.today = todayKey;
   state.p = false; state.c = false; state.q = false; state.checks = [false, false, false, false];
   state.counted = false;
+  state.pdrill = null;
   save(state);
 }
 if (!state.checks) state.checks = [false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
 
-/* ---- today tab ---- */
-const pd = PROFILING_DRILLS[dayIndex % PROFILING_DRILLS.length];
-const cd = CONFIDENCE_DRILLS[dayIndex % CONFIDENCE_DRILLS.length];
-
-document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-document.getElementById('mantraText').textContent = MANTRAS[dayIndex % MANTRAS.length];
-document.getElementById('pdrillTag').textContent = pd.tag;
-document.getElementById('pdrillName').textContent = pd.name;
-document.getElementById('pdrillDo').textContent = pd.do;
-document.getElementById('pdrillLook').textContent = pd.look;
-document.getElementById('pdrillWhy').textContent = pd.why;
-document.getElementById('cdrillName').textContent = cd.name;
-document.getElementById('cdrillDo').textContent = cd.do;
-document.getElementById('cdrillWhy').textContent = cd.why;
+/* ---- today tab ----
+   The profiling rep is drawn only from Learn-path units you've unlocked, and
+   pinned for the day so it doesn't swap mid-day when you beat a unit. Runs as
+   a function (called at the bottom) because it needs UNITS. */
+function initToday() {
+  const eligible = PROFILING_DRILLS.filter(d => unitUnlocked(d.unit));
+  const pool = eligible.length ? eligible : PROFILING_DRILLS.filter(d => d.unit === 1);
+  let pd = pool.find(d => d.name === state.pdrill);
+  if (!pd) {
+    pd = pool[dayIndex % pool.length];
+    state.pdrill = pd.name;
+    save(state);
+  }
+  const cd = CONFIDENCE_DRILLS[dayIndex % CONFIDENCE_DRILLS.length];
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  document.getElementById('mantraText').textContent = MANTRAS[dayIndex % MANTRAS.length];
+  document.getElementById('pdrillTag').textContent = pd.tag;
+  document.getElementById('pdrillName').textContent = pd.name;
+  document.getElementById('pdrillDo').textContent = pd.do;
+  document.getElementById('pdrillLook').textContent = pd.look;
+  document.getElementById('pdrillWhy').textContent = pd.why;
+  document.getElementById('cdrillName').textContent = cd.name;
+  document.getElementById('cdrillDo').textContent = cd.do;
+  document.getElementById('cdrillWhy').textContent = cd.why;
+}
 
 const checksEl = document.getElementById('dailyChecks');
 DAILY_CHECKS.forEach((q, i) => {
@@ -968,5 +983,6 @@ function closeQuiz() {
   render();
 }
 
+initToday();
 render();
 </script>
