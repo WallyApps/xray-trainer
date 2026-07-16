@@ -284,13 +284,13 @@
       <button class="donebtn" id="cdrillBtn" onclick="toggleDrill('c')">Mark done</button>
     </div>
 
-    <div class="eyebrow">Today's recall quiz</div>
+    <div class="eyebrow">Today's review</div>
     <div class="card">
       <span class="tag">Memory</span>
-      <h3>Daily quiz</h3>
+      <h3>Daily review</h3>
       <p id="quizDueLine"></p>
-      <p class="sub">Spaced repetition: nail a card and it returns in 1 → 2 → 4 → 7 → 14 days. Miss it and it resets to daily. This is what burns it in permanently. (Passing a lesson in the Learn tab also checks this box.)</p>
-      <button class="donebtn" id="quizBtn" onclick="startQuiz()">Start quiz</button>
+      <p class="sub">Covers only what you've learned on the path. Nail a card and it returns in 1 → 2 → 4 → 7 → 14 days; miss it and it resets to daily. This is what makes it permanent. (Passing a lesson also checks this box.)</p>
+      <button class="donebtn" id="quizBtn">Start review</button>
     </div>
 
     <div class="eyebrow">The daily check — ask yourself</div>
@@ -321,8 +321,8 @@
 
   <!-- ==================== PROFILING ==================== -->
   <main id="tab-profiling">
-    <div class="eyebrow first">Drill yourself</div>
-    <button class="quizlaunch" id="quizLaunch" onclick="startQuiz()">Start daily quiz</button>
+    <div class="eyebrow first">Review what you've learned</div>
+    <button class="quizlaunch" id="quizLaunch">Daily review</button>
     <div class="eyebrow">The library</div>
     <div id="library"></div>
     <footer>Context × clusters. One data point is nothing — find a second.</footer>
@@ -330,7 +330,7 @@
 
   <!-- ==================== CONFIDENCE ==================== -->
   <main id="tab-confidence">
-    <div class="eyebrow first">The operating system</div>
+    <div class="eyebrow first">The playbook</div>
     <div id="principles"></div>
     <footer>Confidence = safety. Composure = authority.</footer>
   </main>
@@ -597,38 +597,52 @@ const DAILY_CHECKS = [
 ];
 
 const CONFIDENCE_PRINCIPLES = [
-  { h: 'Confidence = safety', p: 'Confidence is a generalized expectation of good outcomes — not perfect ones. Just knowing you\'ll be okay. Composure = authority: when your body says "I have nothing to prove," people lean into it.' },
-  { h: 'Hear it as fiction', p: 'Imagine walking through a mall holding a 6-year-old\'s hand, and every five steps he says "somebody\'s gonna laugh at you." You\'d laugh — because of the source. Your self-doubt is that kid. The moment you hear it as fiction is the moment your mind changes.' },
-  { h: 'Radical self-forgiveness', p: 'Real confidence only lives in a body that feels safe in itself. Get so forgiving of yourself and your past that others would call you delusional. Everything you\'ve ever done — forgiven.' },
-  { h: 'Step into a role', p: 'A firefighter has permission to run into a burning building because of the role. Give yourself permission the same way — step into the role and act from it.' },
-  { h: 'Stop outsourcing', p: 'If other people can raise your confidence, other people can take it away. You do not need the world\'s permission to act like you belong. Then you are no longer programmable.' },
-  { h: 'Kill hierarchy thinking', p: 'Seeing the world through hierarchy creates fear of judgment and turns collaboration into competition. It will ruin your life. The only comparison allowed: can I be more comfortable — and slower — than the other person in the room?' },
-  { h: 'Observation mode', p: 'Don\'t focus on yourself — that\'s the narcissistic, anxious mode. Get curious. Get into observation mode. Profile the room instead of monitoring yourself.' },
-  { h: 'Worry is rehearsal for failure', p: 'Every worry is a mental rep of things going wrong. Cancel each one with a positive rep of the same moment going fine.' },
-  { h: 'Shame = narcissism', p: 'Believing that feeling bad now can change the past means believing you\'re that powerful. Carrying the bag around to punish yourself is self-importance in disguise. Set it down.' },
-  { h: 'Pool speed', p: 'Never move faster than you would in a pool. Slowness reads as safety, and safety reads as status.' },
-  { h: 'Identity drives behavior', p: 'An Olympic athlete who starts gaining weight does whatever it takes to lose it — because "fat" isn\'t their identity. Decide who you are, and behavior follows. I\'m the type of person that…' },
-  { h: 'Zoom out', p: 'Zoom out on your problems like Google Maps — street, city, country, planet — and you\'ll realize you don\'t have problems. Do not fear. Find a way to love more.' },
+  { cat: 'The operating system', items: [
+    { h: 'Confidence = safety', p: 'Confidence is a generalized expectation of good outcomes — not perfect ones. Just knowing you\'ll be okay. Composure = authority: when your body says "I have nothing to prove," people lean into it.' },
+    { h: 'Hear it as fiction', p: 'Imagine walking through a mall holding a 6-year-old\'s hand, and every five steps he says "somebody\'s gonna laugh at you." You\'d laugh — because of the source. Your self-doubt is that kid. The moment you hear it as fiction is the moment your mind changes.' },
+    { h: 'Radical self-forgiveness', p: 'Real confidence only lives in a body that feels safe in itself. Get so forgiving of yourself and your past that others would call you delusional. Everything you\'ve ever done — forgiven.' },
+    { h: 'Step into a role', p: 'A firefighter has permission to run into a burning building because of the role. Give yourself permission the same way — step into the role and act from it.' },
+    { h: 'Stop outsourcing', p: 'If other people can raise your confidence, other people can take it away. You do not need the world\'s permission to act like you belong. Then you are no longer programmable.' },
+    { h: 'Kill hierarchy thinking', p: 'Seeing the world through hierarchy creates fear of judgment and turns collaboration into competition. It will ruin your life. The only comparison allowed: can I be more comfortable — and slower — than the other person in the room?' },
+  ]},
+  { cat: 'The weapons', items: [
+    { h: 'Observation mode', p: 'Don\'t focus on yourself — that\'s the narcissistic, anxious mode. Get curious. Get into observation mode. Profile the room instead of monitoring yourself.' },
+    { h: 'Worry is rehearsal for failure', p: 'Every worry is a mental rep of things going wrong. Cancel each one with a positive rep of the same moment going fine.' },
+    { h: 'Shame = narcissism', p: 'Believing that feeling bad now can change the past means believing you\'re that powerful. Carrying the bag around to punish yourself is self-importance in disguise. Set it down.' },
+    { h: 'Pool speed', p: 'Never move faster than you would in a pool. Slowness reads as safety, and safety reads as status.' },
+    { h: 'Identity drives behavior', p: 'An Olympic athlete who starts gaining weight does whatever it takes to lose it — because "fat" isn\'t their identity. Decide who you are, and behavior follows. I\'m the type of person that…' },
+    { h: 'Zoom out', p: 'Zoom out on your problems like Google Maps — street, city, country, planet — and you\'ll realize you don\'t have problems. Do not fear. Find a way to love more.' },
+  ]},
 ];
+const PRIN_FLAT = CONFIDENCE_PRINCIPLES.flatMap(g => g.items);
 
 /* HOCKEY — Chase's system translated to the ice. Shown on the Hockey tab
    and quizzed in the Learn path's Hockey unit + daily review. */
 const HOCKEY = [
-  { name: 'Flow lives in a safe body', read: 'Your brain only releases flow when it isn\'t bracing for judgment. Confidence = safety applies double on the ice: a body afraid of embarrassment plays stiff, grips the stick, and thinks instead of reads.', use: 'Everything below is about removing threat, not adding hype.' },
-  { name: 'Next-shift amnesia', read: 'Radical self-forgiveness at game speed: the mistake is forgiven — completely, delusionally — before the next faceoff. Feeling bad about the last shift cannot change it; carrying it is shame, and shame is ego.', use: 'One physical reset: exhale, open the hands, eyes back on the play. Done means done.' },
-  { name: 'Observation mode is the flow switch', read: 'Flow is 100% external attention. Self-monitoring — "how did that look, what does coach think" — is the anxious mode, and you cannot read the ice while watching yourself.', use: 'The instant you notice self-focus, flip it: read the D\'s feet, the goalie\'s depth, the soft ice. Profiling the game IS flow.' },
-  { name: 'Worry is rehearsal for failure', read: 'Every pre-game "what if" loop is a failure rep your nervous system records. You don\'t suppress it — you cancel it with a deliberate rep of the same moment going right.', use: 'Night before and morning of: catch the loop, run the positive version once, move on.' },
-  { name: 'Step into the role', read: 'A firefighter runs into buildings because the role grants permission. Decide your player identity — "I\'m the type of player that…" — and play with the role\'s permission instead of waiting to feel ready.', use: 'Same identity line, every game, before you step on.' },
-  { name: 'Pool speed between whistles', read: 'Never move faster than you would in a pool — between whistles, on the bench, in the room. Explode in the play; be glacial everywhere else. Composure = authority, and everyone is reading you: opponents, refs, coaches, scouts.', use: 'Slow head turns, slow water bottle, slow line changes to the bench walk. Panic never shows.' },
-  { name: 'The comfort contest', read: 'The only competition allowed beyond the scoreboard: be the most comfortable player on the ice. Not the biggest or loudest — the one whose body says "I have nothing to prove."', use: 'Ask it every period: am I the most comfortable guy out here right now?' },
-  { name: 'Social injury immunity', read: 'Fear of the turnover makes you play not-to-lose: chip it out, hide from the puck, safe plays only. Being genuinely OK with looking bad is what unlocks playing to win.', use: 'Want the puck after your worst shift. That\'s the rep.' },
-  { name: 'The bench reset', read: 'Apply the breathing-location cue to yourself: one full belly breath on the bench, shoulders pulled down out of your ears, hands open on your knees. You\'re telling your own nervous system "safe."', use: 'Every bench sit, win or lose the shift. It compounds.' },
-  { name: 'No hierarchy on the ice', read: 'Ranking yourself against the guy across from you — "he\'s a better skater, he\'s got a contract" — creates fear of judgment mid-play. He\'s not above or below you. He\'s data: feet, hands, fatigue.', use: 'Turn every intimidating opponent into a profiling subject and the fear converts to curiosity.' },
-  { name: 'Read the ice like a room', read: 'Opponents leak everything: shoulders riding high = tight and afraid. Bent over, mouth open = gassed, beat him wide. Goalie fidgeting and re-strapping after a goal = not safe in his body, shoot now. A frustrated opponent slamming his stick = baitable.', use: 'One profiling read per shift. Fatigue and fear are the two that pay.' },
-  { name: 'Never show your tells', read: 'Everything you read in them, they can read in you. After a mistake or a hit: slow blink, shoulders down, easy pace. The opponent who can\'t rattle you stops trying.', use: 'Your body language is a message you\'re always sending. Author it.' },
-  { name: 'Identity drives behavior', read: 'The Olympic athlete who starts gaining weight does whatever it takes — because "fat" isn\'t their identity. Decide you\'re a pro who thrives under pressure and behavior follows the decision.', use: 'You don\'t rise to the occasion; you sink to your identity. Set it deliberately.' },
-  { name: 'Generalized expectation on skates', read: 'Confidence isn\'t predicting a perfect game — it\'s the settled knowledge that you\'ll be OK either way. That safety is what lets you take the risk the highlight play requires.', use: 'Pre-game sentence: "However this goes, I\'m OK — so I\'m swinging."' },
+  { cat: 'Before the game', items: [
+    { name: 'Worry is rehearsal for failure', read: 'Every pre-game "what if" loop is a failure rep your nervous system records. You don\'t suppress it — you cancel it with a deliberate rep of the same moment going right.', use: 'Night before and morning of: catch the loop, run the positive version once, move on.' },
+    { name: 'Step into the role', read: 'A firefighter runs into buildings because the role grants permission. Decide your player identity — "I\'m the type of player that…" — and play with the role\'s permission instead of waiting to feel ready.', use: 'Same identity line, every game, before you step on.' },
+    { name: 'Identity drives behavior', read: 'The Olympic athlete who starts gaining weight does whatever it takes — because "fat" isn\'t their identity. Decide you\'re a pro who thrives under pressure and behavior follows the decision.', use: 'You don\'t rise to the occasion; you sink to your identity. Set it deliberately.' },
+    { name: 'Generalized expectation on skates', read: 'Confidence isn\'t predicting a perfect game — it\'s the settled knowledge that you\'ll be OK either way. That safety is what lets you take the risk the highlight play requires.', use: 'Pre-game sentence: "However this goes, I\'m OK — so I\'m swinging."' },
+  ]},
+  { cat: 'In the play — flow', items: [
+    { name: 'Flow lives in a safe body', read: 'Your brain only releases flow when it isn\'t bracing for judgment. Confidence = safety applies double on the ice: a body afraid of embarrassment plays stiff, grips the stick, and thinks instead of reads.', use: 'Everything in this tab is about removing threat, not adding hype.' },
+    { name: 'Observation mode is the flow switch', read: 'Flow is 100% external attention. Self-monitoring — "how did that look, what does coach think" — is the anxious mode, and you cannot read the ice while watching yourself.', use: 'The instant you notice self-focus, flip it: read the D\'s feet, the goalie\'s depth, the soft ice. Profiling the game IS flow.' },
+    { name: 'Next-shift amnesia', read: 'Radical self-forgiveness at game speed: the mistake is forgiven — completely, delusionally — before the next faceoff. Feeling bad about the last shift cannot change it; carrying it is shame, and shame is ego.', use: 'One physical reset: exhale, open the hands, eyes back on the play. Done means done.' },
+    { name: 'Social injury immunity', read: 'Fear of the turnover makes you play not-to-lose: chip it out, hide from the puck, safe plays only. Being genuinely OK with looking bad is what unlocks playing to win.', use: 'Want the puck after your worst shift. That\'s the rep.' },
+  ]},
+  { cat: 'Between whistles', items: [
+    { name: 'Pool speed between whistles', read: 'Never move faster than you would in a pool — between whistles, on the bench, in the room. Explode in the play; be glacial everywhere else. Composure = authority, and everyone is reading you: opponents, refs, coaches, scouts.', use: 'Slow head turns, slow water bottle, slow walk to the bench. Panic never shows.' },
+    { name: 'The bench reset', read: 'Apply the breathing-location cue to yourself: one full belly breath on the bench, shoulders pulled down out of your ears, hands open on your knees. You\'re telling your own nervous system "safe."', use: 'Every bench sit, win or lose the shift. It compounds.' },
+    { name: 'Never show your tells', read: 'Everything you read in them, they can read in you. After a mistake or a hit: slow blink, shoulders down, easy pace. The opponent who can\'t rattle you stops trying.', use: 'Your body language is a message you\'re always sending. Author it.' },
+    { name: 'The comfort contest', read: 'The only competition allowed beyond the scoreboard: be the most comfortable player on the ice. Not the biggest or loudest — the one whose body says "I have nothing to prove."', use: 'Ask it every period: am I the most comfortable guy out here right now?' },
+  ]},
+  { cat: 'Reading the ice', items: [
+    { name: 'Read the ice like a room', read: 'Opponents leak everything: shoulders riding high = tight and afraid. Bent over, mouth open = gassed, beat him wide. Goalie fidgeting and re-strapping after a goal = not safe in his body, shoot now. A frustrated opponent slamming his stick = baitable.', use: 'One profiling read per shift. Fatigue and fear are the two that pay.' },
+    { name: 'No hierarchy on the ice', read: 'Ranking yourself against the guy across from you — "he\'s a better skater, he\'s got a contract" — creates fear of judgment mid-play. He\'s not above or below you. He\'s data: feet, hands, fatigue.', use: 'Turn every intimidating opponent into a profiling subject and the fear converts to curiosity.' },
+  ]},
 ];
+const HOCKEY_FLAT = HOCKEY.flatMap(g => g.items);
 
 /* LEARN PATH — Duolingo-style units. Each unit: facts (quizzed as generated
    MCs) + a scenario category. 3 lessons of 7 questions beat a unit; 6/7 passes
@@ -718,12 +732,25 @@ function render() {
   cb.textContent = state.c ? '✓ Done' : 'Mark done';
   cb.classList.toggle('done', !!state.c);
   document.querySelectorAll('.check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
-  const due = dueCount();
-  document.getElementById('quizDueLine').textContent = due + ' cards due today — cue flashcards + real-world scenarios.';
   const qb = document.getElementById('quizBtn');
-  qb.textContent = state.q ? '✓ Done today — run it again anytime' : 'Start quiz';
-  qb.classList.toggle('done', !!state.q);
-  document.getElementById('quizLaunch').textContent = 'Start daily quiz — ' + due + ' due';
+  const launch = document.getElementById('quizLaunch');
+  const goLearn = () => showTab('learn', document.querySelectorAll('nav button')[1]);
+  if (!reviewPool().length) {
+    document.getElementById('quizDueLine').textContent = 'Review only quizzes what you\'ve already learned. Pass your first lesson on the Learn path to unlock it.';
+    qb.textContent = 'Go to the Learn path';
+    qb.classList.remove('done');
+    qb.onclick = goLearn;
+    launch.textContent = 'Daily review — pass a lesson to unlock';
+    launch.onclick = goLearn;
+  } else {
+    const due = dueCount();
+    document.getElementById('quizDueLine').textContent = due + ' of your learned cards are due today.';
+    qb.textContent = state.q ? '✓ Done today — run it again anytime' : 'Start review';
+    qb.classList.toggle('done', !!state.q);
+    qb.onclick = startQuiz;
+    launch.textContent = 'Daily review — ' + due + ' due';
+    launch.onclick = startQuiz;
+  }
   document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q));
   renderLearn();
   let streak = state.streak || 0;
@@ -734,42 +761,29 @@ function render() {
   document.getElementById('streakN').textContent = streak;
 }
 
-/* ---- profiling library ---- */
-const libEl = document.getElementById('library');
-LIBRARY.forEach(cat => {
-  const c = document.createElement('div');
-  c.className = 'cat';
-  const items = cat.items.map(it =>
-    '<div class="item"><h4>' + it.name + '</h4><div class="read">' + it.read + '</div>' +
-    (it.use ? '<div class="use">' + it.use + '</div>' : '') + '</div>'
-  ).join('');
-  c.innerHTML = '<button><span class="name">' + cat.cat + '</span><span class="count">' + cat.items.length + '</span></button><div class="items">' + items + '</div>';
-  c.querySelector('button').onclick = () => c.classList.toggle('open');
-  libEl.appendChild(c);
-});
-
-/* ---- confidence tab ---- */
-const prinEl = document.getElementById('principles');
-CONFIDENCE_PRINCIPLES.forEach(pr => {
-  const d = document.createElement('div');
-  d.className = 'principle';
-  d.innerHTML = '<h4>' + pr.h + '</h4><p>' + pr.p + '</p>';
-  prinEl.appendChild(d);
-});
-
-/* ---- hockey tab ---- */
-const hockeyEl = document.getElementById('hockeyCards');
-HOCKEY.forEach(h => {
-  const d = document.createElement('div');
-  d.className = 'card';
-  d.innerHTML = '<h3>' + h.name + '</h3><p>' + h.read + '</p>' + (h.use ? '<p class="use"><b>Use it:</b> ' + h.use + '</p>' : '');
-  hockeyEl.appendChild(d);
-});
+/* ---- grouped fold-out sections (X-Ray, Mind, Hockey all share this) ---- */
+function buildAccordion(hostId, groups) {
+  const host = document.getElementById(hostId);
+  groups.forEach(g => {
+    const c = document.createElement('div');
+    c.className = 'cat';
+    const items = g.items.map(it =>
+      '<div class="item"><h4>' + it.name + '</h4><div class="read">' + it.read + '</div>' +
+      (it.use ? '<div class="use">' + it.use + '</div>' : '') + '</div>'
+    ).join('');
+    c.innerHTML = '<button><span class="name">' + g.cat + '</span><span class="count">' + g.items.length + '</span></button><div class="items">' + items + '</div>';
+    c.querySelector('button').onclick = () => c.classList.toggle('open');
+    host.appendChild(c);
+  });
+}
+buildAccordion('library', LIBRARY);
+buildAccordion('principles', CONFIDENCE_PRINCIPLES.map(g => ({ cat: g.cat, items: g.items.map(p => ({ name: p.h, read: p.p })) })));
+buildAccordion('hockeyCards', HOCKEY);
 
 /* ---- learn path ---- */
 function libItems(catName) { return LIBRARY.find(c => c.cat === catName).items.map(it => ({ cue: it.name, ans: it.read })); }
-const PRIN = CONFIDENCE_PRINCIPLES.map(p => ({ cue: p.h, ans: p.p }));
-const HOCK = HOCKEY.map(h => ({ cue: h.name, ans: h.read }));
+const PRIN = PRIN_FLAT.map(p => ({ cue: p.h, ans: p.p }));
+const HOCK = HOCKEY_FLAT.map(h => ({ cue: h.name, ans: h.read }));
 const UNITS = [
   { section: 'xray', title: 'Foundations', desc: 'The four truths, clusters, baselines', facts: libItems('Foundations'), scen: null },
   { section: 'xray', title: 'Eyes I', desc: 'Blink rate, sides, eye home', facts: libItems('Eyes').slice(0, 4), scen: 'Eyes' },
@@ -791,6 +805,19 @@ function unitUnlocked(i) {
   const prev = UNITS.map((u, j) => ({ u, j })).filter(x => x.u.section === UNITS[i].section && x.j < i);
   return prev.length === 0 || unitDone(prev[prev.length - 1].j);
 }
+
+/* The daily review only covers material from units you've started (≥1 lesson
+   passed) — Learn teaches it first, review keeps it alive after. */
+const FACT_UNIT = {};
+UNITS.forEach((u, i) => u.facts.forEach(f => { FACT_UNIT[f.cue] = i; }));
+const SCEN_UNITS = {};
+UNITS.forEach((u, i) => { if (u.scen) (SCEN_UNITS[u.scen] = SCEN_UNITS[u.scen] || []).push(i); });
+function unitStarted(i) { return (state.units[i] || 0) > 0; }
+function cardLearned(c) {
+  if (c.id.startsWith('s:')) return (SCEN_UNITS[SCENARIOS[+c.id.slice(2)].cat] || []).some(unitStarted);
+  return unitStarted(FACT_UNIT[c.cue]);
+}
+function reviewPool() { return allCards().filter(cardLearned); }
 function renderLearn() {
   const lvl = Math.floor((state.xp || 0) / XP_PER_LEVEL) + 1;
   document.getElementById('lvlBadge').textContent = 'LVL ' + lvl;
@@ -859,16 +886,16 @@ function allCards() {
   const cards = [];
   LIBRARY.forEach(cat => cat.items.forEach(it =>
     cards.push({ id: 'f:' + it.name, type: 'flash', cat: cat.cat, cue: it.name, ans: it.read })));
-  CONFIDENCE_PRINCIPLES.forEach(p =>
+  PRIN_FLAT.forEach(p =>
     cards.push({ id: 'c:' + p.h, type: 'flash', cat: 'Confidence', cue: p.h, ans: p.p }));
-  HOCKEY.forEach(h =>
+  HOCKEY_FLAT.forEach(h =>
     cards.push({ id: 'h:' + h.name, type: 'flash', cat: 'Hockey', cue: h.name, ans: h.read }));
   SCENARIOS.forEach((s, i) =>
     cards.push({ id: 's:' + i, type: 'mc', cat: s.cat + ' · scenario', q: s.q, opts: s.opts, a: s.a, why: s.why }));
   return cards;
 }
 function dueDay(id) { const e = (state.srs || {})[id]; return e ? e.due : 0; }
-function dueCount() { return allCards().filter(c => dueDay(c.id) <= dayIndex).length; }
+function dueCount() { return reviewPool().filter(c => dueDay(c.id) <= dayIndex).length; }
 function gradeSRS(id, hit) {
   state.srs = state.srs || {};
   const box = hit ? Math.min(((state.srs[id] || {}).box || 0) + 1, 5) : 0;
@@ -885,7 +912,8 @@ function shuffle(a) {
   return a;
 }
 function startQuiz() {
-  const all = allCards();
+  const all = reviewPool();
+  if (!all.length) return;
   deck = shuffle(all.filter(c => dueDay(c.id) <= dayIndex)).slice(0, DECK_SIZE);
   if (deck.length < DECK_SIZE) {
     // Nothing (or not much) due — top up with the cards due soonest.
