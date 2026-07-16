@@ -529,6 +529,16 @@ const SCENARIOS = [
   { cat: 'Hockey', q: 'The goalie just let in a soft one. Now he\'s fidgeting, re-strapping his glove, shoulders up around his ears. What did you just read, and the play?', opts: ['He\'s locked in — pick corners carefully', 'Stress signals — his body isn\'t safe right now; attack early and shoot everything', 'Nothing — goalies always fidget', 'He\'s faking it to bait you'], a: 1, why: 'Fidgeting + raised shoulders = adrenaline and fear. A rattled goalie is beatable NOW, before he resets. Profiling works on the ice too.' },
   { cat: 'Hockey', q: 'Your linemate slams the bench after a brutal change and starts spiraling. Fastest way to get him back?', opts: ['Leave him alone to process', 'Tell him to focus', 'Be the safe one — socialize it ("everyone does it, we\'ve all been there") so his body calms and he resets', 'Point out what he did wrong so he learns'], a: 2, why: 'Face-saving applied to your own room. Make the mistake universal and small; a teammate whose body feels safe returns to flow shifts faster.' },
   { cat: 'Hockey', q: 'Warmups: you notice you\'re white-knuckling the stick. What does it mean and what do you do?', opts: ['Grip harder — channel it', 'Tension in fingers = tension in mind. Open the hands, one belly breath, drop to pool speed', 'Ignore it, it\'ll pass', 'Switch sticks'], a: 1, why: 'Read yourself like you read others — the hands broadcast the mind. Digital extension + belly breathing + slow movement tells your body it\'s safe.' },
+  { cat: 'Foundations', q: 'The new call-up is condescending to everyone in the room on day one. What frame keeps your read of him accurate instead of just annoyed?', opts: ['He\'s naturally a bad person — avoid him', 'He\'s suffering and wearing a mask like everyone else — the arrogance is likely covering something', 'Report him to coach immediately', 'Match his energy to put him in his place'], a: 1, why: 'Everyone is suffering, everyone wears a mask. Arrogance is rarely the whole story — it\'s usually covering something.' },
+  { cat: 'Foundations', q: 'A guy on the team snapped at a rookie over nothing. Before you judge him, what does the lens of reasons ask you to do?', opts: ['Ask what pain or pattern from his past is driving this reaction, not just judge the outburst', 'Assume he\'s simply a bad teammate', 'Tell the rookie to ignore it', 'Nothing — reactions don\'t need explaining'], a: 0, why: 'Actions are products of childhood pain and reward. The lens of reasons kills judgment and sharpens observation — it explains behavior, it doesn\'t excuse it.' },
+  { cat: 'Foundations', q: 'You notice one guy\'s arms are crossed during a team meeting. Should you conclude he disagrees with the plan?', opts: ['Yes — crossed arms always mean disagreement', 'No — one cue alone is nothing; you need a second cue AND the right context before concluding anything', 'Only if he\'s the captain', 'Ignore body language entirely, it\'s all noise'], a: 1, why: 'Context × clusters. A single cue is never proof on its own — hunt for a second cue that fits before you draw any conclusion.' },
+  { cat: 'Foundations', q: 'You just met someone and they seem tense. Should you flag that as meaningful right away?', opts: ['Yes, tension always means something is wrong', 'No — you don\'t know their baseline yet; read their normal first, then watch for changes from it', 'Only if they\'re a public figure', 'Tension is always fake'], a: 1, why: 'You can\'t read a change without first knowing the baseline. Establish normal, then watch for what shifts and why.' },
+  { cat: 'Foundations', q: 'Mid-conversation your friend, who\'s usually loud and animated, suddenly goes quiet and still. What\'s the move?', opts: ['Ignore it, people have off days', 'Note the exact moment the shift happened and what was just said — the change is the message', 'Assume they\'re mad at you', 'Change the subject immediately'], a: 1, why: 'The change is the message; the trigger is the meaning. Find what caused the shift before you interpret it.' },
+  { cat: 'Foundations', q: 'Someone you just met is bragging nonstop about their accomplishments within minutes of meeting you. What\'s the deeper read, per the four truths?', opts: ['They\'re just confident and secure', 'Underneath the mask is likely an insecurity they\'re covering — probably a need for significance', 'They\'re lying about everything', 'This means nothing, ignore it'], a: 1, why: 'Everyone is wearing a mask and pretending not to. Loud confidence is often covering the opposite — read the mask, don\'t just react to it.' },
+  { cat: 'Confidence', q: 'You blew a big opportunity last month and still think about it daily. Per Chase, what should you actually do?', opts: ['Keep replaying it so you don\'t repeat the mistake', 'Forgive yourself completely and delusionally — a body punishing itself can\'t build real confidence', 'Tell everyone what happened to relieve the guilt', 'Avoid similar opportunities from now on'], a: 1, why: 'Real confidence only lives in a body that feels safe in itself. Radical self-forgiveness is the prerequisite for confidence, not letting yourself off easy.' },
+  { cat: 'Confidence', q: 'You\'ve been asked to lead a meeting for the first time and don\'t feel ready. What\'s the Chase approach?', opts: ['Wait until you feel confident enough to lead', 'Step into the role and act from the permission it grants — like a firefighter running into a burning building', 'Ask someone else to lead instead', 'Over-prepare until all doubt disappears'], a: 1, why: 'You give yourself permission by stepping into the role, not by waiting to feel ready. The role grants permission first; the feeling follows.' },
+  { cat: 'Confidence', q: 'You feel great about a decision until a friend raises an eyebrow at it, and suddenly you\'re second-guessing yourself. What\'s happening?', opts: ['Normal — other people\'s opinions should always factor in', 'You\'re outsourcing your confidence — if others can raise it, they can take it away too', 'Your friend is right, always defer to others', 'This means the decision was wrong'], a: 1, why: 'If other people can raise your confidence, other people can take it away. You do not need the world\'s permission to act like you belong.' },
+  { cat: 'Confidence', q: 'You still feel guilty about something you did years ago and think dwelling on it makes you a better person. What\'s really going on, per Chase?', opts: ['Correct — guilt keeps you accountable forever', 'Believing feeling bad now can change the past is its own self-importance — shame is narcissism in disguise', 'You should feel guilty forever as punishment', 'This has nothing to do with confidence'], a: 1, why: 'Feeling bad now cannot change the past. Believing it can means believing you\'re that powerful — that\'s the ego talking, not humility.' },
 ];
 
 /* Each drill's `unit` = the Learn-path unit that teaches it (index into UNITS).
@@ -785,7 +795,7 @@ function libItems(catName) { return LIBRARY.find(c => c.cat === catName).items.m
 const PRIN = PRIN_FLAT.map(p => ({ cue: p.h, ans: p.p }));
 const HOCK = HOCKEY_FLAT.map(h => ({ cue: h.name, ans: h.read }));
 const UNITS = [
-  { section: 'xray', title: 'Foundations', desc: 'The four truths, clusters, baselines', facts: libItems('Foundations'), scen: null },
+  { section: 'xray', title: 'Foundations', desc: 'The four truths, clusters, baselines', facts: libItems('Foundations'), scen: 'Foundations' },
   { section: 'xray', title: 'Eyes I', desc: 'Blink rate, sides, eye home', facts: libItems('Eyes').slice(0, 4), scen: 'Eyes' },
   { section: 'xray', title: 'Eyes II', desc: 'Pupils, glances, the flash', facts: libItems('Eyes').slice(4), scen: 'Eyes' },
   { section: 'xray', title: 'Face', desc: 'Lips, smiles, hushing, flares', facts: libItems('Face'), scen: 'Face' },
@@ -836,30 +846,73 @@ function renderLearn() {
         '<div class="meat"><h4>' + u.title + '</h4><div class="desc">' + u.desc + '</div>' +
         '<div class="pips">' + '●'.repeat(n) + '○'.repeat(LESSONS_PER_UNIT - n) + '</div></div>' +
         (open ? '<button class="go">' + (done ? 'Practice' : 'Lesson ' + (n + 1)) + '</button>' : '');
-      if (open) d.querySelector('.go').onclick = () => startLesson(i);
+      if (open) d.querySelector('.go').onclick = () => startLesson(i, done ? (1 + Math.floor(Math.random() * LESSONS_PER_UNIT)) : n + 1);
       host.appendChild(d);
     });
   });
 }
 
-function makeFactMC(fact, pool) {
+/* Every fact that comes from LIBRARY or HOCKEY carries a real-world "use"
+   line — reused here as an application-style question when a unit's
+   scenario supply runs short. Confidence facts have no separate use line
+   (their application IS their scenario pool). */
+const ITEM_USE = {};
+LIBRARY.forEach(cat => cat.items.forEach(it => { if (it.use) ITEM_USE[it.name] = it.use; }));
+HOCKEY_FLAT.forEach(h => { if (h.use) ITEM_USE[h.name] = h.use; });
+
+function makeFactMC(fact, pool, dir) {
   const wrong = shuffle(pool.filter(f => f.cue !== fact.cue)).slice(0, 3);
-  if (Math.random() < 0.5) {
+  const useDir = dir || (Math.random() < 0.5 ? 'ans' : 'cue');
+  if (useDir === 'ans') {
     const opts = shuffle([fact.ans].concat(wrong.map(w => w.ans)));
     return { type: 'mc', cat: 'What does it mean?', q: fact.cue, opts, a: opts.indexOf(fact.ans), why: 'That\'s the read for "' + fact.cue + '".' };
   }
   const opts = shuffle([fact.cue].concat(wrong.map(w => w.cue)));
   return { type: 'mc', cat: 'Name the cue', q: '"' + fact.ans + '"', opts, a: opts.indexOf(fact.cue), why: 'That\'s "' + fact.cue + '".' };
 }
-function startLesson(uIdx) {
+function makeAppMC(fact, pool) {
+  const use = ITEM_USE[fact.cue];
+  if (!use) return makeFactMC(fact, pool);
+  const wrongPool = pool.filter(f => f.cue !== fact.cue && ITEM_USE[f.cue]);
+  const wrong = shuffle(wrongPool.length >= 3 ? wrongPool : pool.filter(f => f.cue !== fact.cue)).slice(0, 3);
+  const opts = shuffle([use].concat(wrong.map(w => ITEM_USE[w.cue] || w.ans)));
+  return { type: 'mc', cat: 'Apply it', q: 'Given "' + fact.cue + '," what\'s the right move?', opts, a: opts.indexOf(use), why: 'That\'s the play for "' + fact.cue + '".' };
+}
+function scenariosForUnit(u) {
+  if (!u.scen) return [];
+  return SCENARIOS.map((s, i) => ({ ...s, _i: i })).filter(s => s.cat === u.scen);
+}
+function scenarioToQ(s) { return { type: 'mc', cat: s.cat + ' · scenario', q: s.q, opts: s.opts, a: s.a, why: s.why }; }
+
+/* Lesson 1 = pure definitions (both directions, maximally unique combos).
+   Lessons 2 & 3 = real scenario-based application, split by original
+   SCENARIOS index parity so the two lessons never show the same scenario,
+   padded with "use"-based application questions when supply runs short. */
+function buildDefinitionQs(u, pool) {
+  let combos = [];
+  u.facts.forEach(f => { combos.push({ f, dir: 'ans' }); combos.push({ f, dir: 'cue' }); });
+  combos = shuffle(combos);
+  const qs = combos.slice(0, LESSON_LEN).map(c => makeFactMC(c.f, pool, c.dir));
+  while (qs.length < LESSON_LEN) qs.push(makeFactMC(u.facts[Math.floor(Math.random() * u.facts.length)], pool));
+  return qs;
+}
+function buildApplicationQs(u, pool, parity) {
+  const scenPool = shuffle(scenariosForUnit(u).filter(s => s._i % 2 === parity));
+  const qs = scenPool.slice(0, LESSON_LEN).map(scenarioToQ);
+  if (qs.length < LESSON_LEN) {
+    const half = u.facts.filter((f, i) => i % 2 === parity);
+    const factPool = half.length ? half : u.facts;
+    while (qs.length < LESSON_LEN) qs.push(makeAppMC(factPool[Math.floor(Math.random() * factPool.length)], pool));
+  }
+  return qs;
+}
+function startLesson(uIdx, lessonNum) {
   const u = UNITS[uIdx];
   // Distractors come from the whole track so tiny units still get 4 options.
   const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
-  const scen = u.scen ? SCENARIOS.map((s, i) => ({ ...s, _i: i })).filter(s => s.cat === u.scen) : [];
-  const nScen = Math.min(3, scen.length);
-  const qs = shuffle(scen).slice(0, nScen).map(s => ({ type: 'mc', cat: s.cat + ' · scenario', q: s.q, opts: s.opts, a: s.a, why: s.why }));
-  shuffle(u.facts.slice()).slice(0, LESSON_LEN - nScen).forEach(f => qs.push(makeFactMC(f, distractorPool)));
-  while (qs.length < LESSON_LEN) qs.push(makeFactMC(u.facts[Math.floor(Math.random() * u.facts.length)], distractorPool));
+  const qs = lessonNum === 1
+    ? buildDefinitionQs(u, distractorPool)
+    : buildApplicationQs(u, distractorPool, lessonNum === 2 ? 0 : 1);
   deck = shuffle(qs);
   mode = 'lesson'; lessonUnit = uIdx;
   qi = 0; hits = 0;
