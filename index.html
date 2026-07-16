@@ -231,6 +231,12 @@
     font-family: var(--sans); font-size: 12.5px; font-weight: 700; border-radius: 8px; padding: 9px 13px; cursor: pointer;
   }
   .unit.done .go { border-color: var(--line); background: var(--panel-2); color: var(--muted); }
+  .lessonpicker { flex: none; display: flex; gap: 6px; }
+  .lessonpicker button {
+    width: 34px; height: 34px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber);
+    font-family: var(--sans); font-weight: 700; font-size: 13px;
+  }
   .unit.locked { opacity: 0.45; }
   .unit.locked .go { display: none; }
   .lessonxp { color: var(--amber); font-weight: 700; }
@@ -926,8 +932,13 @@ function renderLearn() {
         '<div class="status">' + (done ? '⭐' : open ? '▶' : '🔒') + '</div>' +
         '<div class="meat"><h4>' + u.title + '</h4><div class="desc">' + u.desc + '</div>' +
         '<div class="pips">' + '●'.repeat(n) + '○'.repeat(LESSONS_PER_UNIT - n) + '</div></div>' +
-        (open ? '<button class="go">' + (done ? 'Practice' : 'Lesson ' + (n + 1)) + '</button>' : '');
-      if (open) d.querySelector('.go').onclick = () => startLesson(i, done ? (1 + Math.floor(Math.random() * LESSONS_PER_UNIT)) : n + 1);
+        (!open ? '' : done
+          ? '<div class="lessonpicker">' + [1, 2, 3].map(ln => '<button data-ln="' + ln + '">' + ln + '</button>').join('') + '</div>'
+          : '<button class="go">Lesson ' + (n + 1) + '</button>');
+      if (open) {
+        if (done) d.querySelectorAll('.lessonpicker button').forEach(btn => { btn.onclick = () => startLesson(i, +btn.dataset.ln); });
+        else d.querySelector('.go').onclick = () => startLesson(i, n + 1);
+      }
       host.appendChild(d);
     });
   });
