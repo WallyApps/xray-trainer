@@ -207,6 +207,34 @@
   .mantra .lbl { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amber); margin-bottom: 8px; }
   .mantra p { font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.45; text-wrap: balance; }
 
+  /* ---------- learn path ---------- */
+  .xpwrap { display: flex; align-items: center; gap: 12px; }
+  .lvlbadge {
+    flex: none; background: var(--amber); color: var(--ink); font-weight: 800; font-size: 12px;
+    letter-spacing: 0.08em; border-radius: 8px; padding: 7px 10px; font-variant-numeric: tabular-nums;
+  }
+  .xpbar { flex: 1; height: 10px; border-radius: 5px; background: var(--panel-2); border: 1px solid var(--line); overflow: hidden; }
+  .xpfill { height: 100%; background: var(--amber); border-radius: 5px; width: 0; transition: width 0.4s ease; }
+  .xpnum { flex: none; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: 0.06em; }
+  .xphint { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+  .unit {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 13px;
+  }
+  .unit .status { flex: none; font-size: 20px; width: 28px; text-align: center; }
+  .unit .meat { flex: 1; min-width: 0; }
+  .unit h4 { font-size: 14.5px; font-weight: 600; }
+  .unit .desc { font-size: 12.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+  .unit .pips { font-size: 12px; color: var(--amber); letter-spacing: 3px; margin-top: 5px; }
+  .unit .go {
+    flex: none; border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber);
+    font-family: var(--sans); font-size: 12.5px; font-weight: 700; border-radius: 8px; padding: 9px 13px; cursor: pointer;
+  }
+  .unit.done .go { border-color: var(--line); background: var(--panel-2); color: var(--muted); }
+  .unit.locked { opacity: 0.45; }
+  .unit.locked .go { display: none; }
+  .lessonxp { color: var(--amber); font-weight: 700; }
+
   footer { margin-top: 30px; text-align: center; color: var(--muted); font-size: 11px; letter-spacing: 0.1em; }
 </style>
 
@@ -261,7 +289,7 @@
       <span class="tag">Memory</span>
       <h3>Daily quiz</h3>
       <p id="quizDueLine"></p>
-      <p class="sub">Spaced repetition: nail a card and it returns in 1 → 2 → 4 → 7 → 14 days. Miss it and it resets to daily. This is what burns it in permanently.</p>
+      <p class="sub">Spaced repetition: nail a card and it returns in 1 → 2 → 4 → 7 → 14 days. Miss it and it resets to daily. This is what burns it in permanently. (Passing a lesson in the Learn tab also checks this box.)</p>
       <button class="donebtn" id="quizBtn" onclick="startQuiz()">Start quiz</button>
     </div>
 
@@ -270,6 +298,25 @@
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
     <footer>Two reps + the quiz = day counts toward your streak</footer>
+  </main>
+
+  <!-- ==================== LEARN (Duolingo path) ==================== -->
+  <main id="tab-learn">
+    <div class="eyebrow first">Your level</div>
+    <div class="xpwrap">
+      <div class="lvlbadge" id="lvlBadge">LVL 1</div>
+      <div class="xpbar"><div class="xpfill" id="xpFill"></div></div>
+      <div class="xpnum" id="xpNum">0 XP</div>
+    </div>
+    <p class="xphint">+10 XP per correct lesson answer · +5 in daily review · +20 perfect-lesson bonus</p>
+
+    <div class="eyebrow">The X-Ray path</div>
+    <div id="pathXray"></div>
+
+    <div class="eyebrow">The Mind path</div>
+    <div id="pathMind"></div>
+
+    <footer>Pass a lesson with 6/7 or better. Three lessons beat a unit. Beat a unit to unlock the next.</footer>
   </main>
 
   <!-- ==================== PROFILING ==================== -->
@@ -286,6 +333,29 @@
     <div class="eyebrow first">The operating system</div>
     <div id="principles"></div>
     <footer>Confidence = safety. Composure = authority.</footer>
+  </main>
+
+  <!-- ==================== HOCKEY ==================== -->
+  <main id="tab-hockey">
+    <div class="eyebrow first">The frame</div>
+    <div class="mantra">
+      <div class="lbl">Flow, defined</div>
+      <p>Flow is what happens when your body feels safe and your attention is fully outside your own head. Chase's whole system — self-forgiveness, no hierarchy, observation mode — is a recipe for exactly that. You don't chase flow. You remove what blocks it.</p>
+    </div>
+
+    <div class="eyebrow">Game-day protocol</div>
+    <div class="card">
+      <span class="tag">Pre-game</span>
+      <h3>Before you step on the ice</h3>
+      <p><b style="color:var(--amber)">1.</b> Say your identity line: "I'm the type of player that…" — and finish it the same way every game.<br>
+      <b style="color:var(--amber)">2.</b> Catch every "what if I mess up" loop and cancel it with one rep of the same moment going right. Worry is rehearsal for failure — out-rep it.<br>
+      <b style="color:var(--amber)">3.</b> Step into the role. A firefighter runs into buildings because the role grants permission. Your role: pro. Play with its permission.<br>
+      <b style="color:var(--amber)">4.</b> Pool speed in the room and in warmups. Slow hands, slow head turns. Composure = authority, and your own body is watching you.</p>
+    </div>
+
+    <div class="eyebrow">On-ice mind</div>
+    <div id="hockeyCards"></div>
+    <footer>Be the most comfortable player on the ice. That's the whole scoreboard.</footer>
   </main>
 </div>
 
@@ -310,8 +380,10 @@
 <nav>
   <div class="nav-inner">
     <button class="on" onclick="showTab('today', this)">Today</button>
-    <button onclick="showTab('profiling', this)">Profiling</button>
-    <button onclick="showTab('confidence', this)">Confidence</button>
+    <button onclick="showTab('learn', this)">Learn</button>
+    <button onclick="showTab('profiling', this)">X-Ray</button>
+    <button onclick="showTab('confidence', this)">Mind</button>
+    <button onclick="showTab('hockey', this)">Hockey</button>
   </div>
 </nav>
 
@@ -450,6 +522,13 @@ const SCENARIOS = [
   { cat: 'Confidence', q: 'You walk into a room full of scouts and feel the nerves spike. The fastest move?', opts: ['Rehearse your talking points internally', 'Flip to observation mode — profile THEM; self-focus is the anxious mode, and you can\'t do both at once', 'Find a corner and breathe', 'Leave and reset'], a: 1, why: 'Attention on yourself = anxiety. Attention outward = calm + data. Profiling the room is literally the cure for nerves.' },
   { cat: 'Confidence', q: '"Somebody\'s gonna laugh at you" pops into your head before you speak up. The Chase move?', opts: ['Argue with the thought', 'Obey it and stay quiet', 'Hear it as fiction — a 6-year-old tugging your hand; consider the source and smile', 'Repeat a positive affirmation ten times'], a: 2, why: 'You don\'t fight the thought, you demote the narrator. The moment you hear it as fiction is the moment your mind changes.' },
   { cat: 'Confidence', q: 'In any room, the only two comparisons Chase allows you to make are…', opts: ['Who\'s richest and who\'s fittest', 'Can I be more COMFORTABLE and move SLOWER than the other person?', 'Who\'s smartest and who\'s toughest', 'None — never compare anything'], a: 1, why: 'Hierarchy thinking creates fear of judgment. Comfort and pool-speed are the whole scoreboard — both are competitions with yourself.' },
+  { cat: 'Hockey', q: 'You cough the puck up early in the first. Next shift you\'re gripping the stick, replaying it. What\'s the move?', opts: ['Play safe until the feeling passes', 'Next-shift amnesia — forgive it completely before the faceoff; carrying it is rehearsing the next failure', 'Try to make up for it with a big hit', 'Ask coach for a minute'], a: 1, why: 'Radical self-forgiveness on skates. Feeling bad can\'t change the last shift — believing it helps is the ego talking. A body punishing itself can\'t reach flow.' },
+  { cat: 'Hockey', q: 'Night before your pro debut, your brain keeps looping "what if I get walked in front of everyone?" Per Chase, what IS that loop and the fix?', opts: ['Healthy nerves — let it run', 'A mental rehearsal of failure — cancel every loop with one rep of the same moment going right', 'A sign you\'re not ready', 'Something to fix with more video'], a: 1, why: 'Every worry loop is a failure rep your body will remember. Out-rep it: same moment, going well, on purpose.' },
+  { cat: 'Hockey', q: 'Mid-game you catch yourself monitoring how you look to the coach after every touch. What\'s happening and what\'s the switch?', opts: ['Good awareness — keep it up', 'Self-focus is killing flow — flip all attention outward onto the play; observation mode IS the flow switch', 'You need a better pre-game routine', 'Ask for less ice time'], a: 1, why: 'Flow is 100% external attention. Self-monitoring is the anxious, narcissistic mode — and you can\'t do both at once. The play is the only thing to watch.' },
+  { cat: 'Hockey', q: 'The D-man across from you is chirping you, trying to get in your head. The Chase frame?', opts: ['Chirp back harder', 'He\'s not above or below you — hierarchy is the trap. Win the only contest that matters: be more comfortable and slower than him', 'Avoid him the rest of the game', 'Prove him wrong with a fight'], a: 1, why: 'Ranking yourself against him mid-game creates fear of judgment. Comfort reads as authority — visible composure beats any chirp.' },
+  { cat: 'Hockey', q: 'The goalie just let in a soft one. Now he\'s fidgeting, re-strapping his glove, shoulders up around his ears. What did you just read, and the play?', opts: ['He\'s locked in — pick corners carefully', 'Stress signals — his body isn\'t safe right now; attack early and shoot everything', 'Nothing — goalies always fidget', 'He\'s faking it to bait you'], a: 1, why: 'Fidgeting + raised shoulders = adrenaline and fear. A rattled goalie is beatable NOW, before he resets. Profiling works on the ice too.' },
+  { cat: 'Hockey', q: 'Your linemate slams the bench after a brutal change and starts spiraling. Fastest way to get him back?', opts: ['Leave him alone to process', 'Tell him to focus', 'Be the safe one — socialize it ("everyone does it, we\'ve all been there") so his body calms and he resets', 'Point out what he did wrong so he learns'], a: 2, why: 'Face-saving applied to your own room. Make the mistake universal and small; a teammate whose body feels safe returns to flow shifts faster.' },
+  { cat: 'Hockey', q: 'Warmups: you notice you\'re white-knuckling the stick. What does it mean and what do you do?', opts: ['Grip harder — channel it', 'Tension in fingers = tension in mind. Open the hands, one belly breath, drop to pool speed', 'Ignore it, it\'ll pass', 'Switch sticks'], a: 1, why: 'Read yourself like you read others — the hands broadcast the mind. Digital extension + belly breathing + slow movement tells your body it\'s safe.' },
 ];
 
 const PROFILING_DRILLS = [
@@ -529,6 +608,31 @@ const CONFIDENCE_PRINCIPLES = [
   { h: 'Zoom out', p: 'Zoom out on your problems like Google Maps — street, city, country, planet — and you\'ll realize you don\'t have problems. Do not fear. Find a way to love more.' },
 ];
 
+/* HOCKEY — Chase's system translated to the ice. Shown on the Hockey tab
+   and quizzed in the Learn path's Hockey unit + daily review. */
+const HOCKEY = [
+  { name: 'Flow lives in a safe body', read: 'Your brain only releases flow when it isn\'t bracing for judgment. Confidence = safety applies double on the ice: a body afraid of embarrassment plays stiff, grips the stick, and thinks instead of reads.', use: 'Everything below is about removing threat, not adding hype.' },
+  { name: 'Next-shift amnesia', read: 'Radical self-forgiveness at game speed: the mistake is forgiven — completely, delusionally — before the next faceoff. Feeling bad about the last shift cannot change it; carrying it is shame, and shame is ego.', use: 'One physical reset: exhale, open the hands, eyes back on the play. Done means done.' },
+  { name: 'Observation mode is the flow switch', read: 'Flow is 100% external attention. Self-monitoring — "how did that look, what does coach think" — is the anxious mode, and you cannot read the ice while watching yourself.', use: 'The instant you notice self-focus, flip it: read the D\'s feet, the goalie\'s depth, the soft ice. Profiling the game IS flow.' },
+  { name: 'Worry is rehearsal for failure', read: 'Every pre-game "what if" loop is a failure rep your nervous system records. You don\'t suppress it — you cancel it with a deliberate rep of the same moment going right.', use: 'Night before and morning of: catch the loop, run the positive version once, move on.' },
+  { name: 'Step into the role', read: 'A firefighter runs into buildings because the role grants permission. Decide your player identity — "I\'m the type of player that…" — and play with the role\'s permission instead of waiting to feel ready.', use: 'Same identity line, every game, before you step on.' },
+  { name: 'Pool speed between whistles', read: 'Never move faster than you would in a pool — between whistles, on the bench, in the room. Explode in the play; be glacial everywhere else. Composure = authority, and everyone is reading you: opponents, refs, coaches, scouts.', use: 'Slow head turns, slow water bottle, slow line changes to the bench walk. Panic never shows.' },
+  { name: 'The comfort contest', read: 'The only competition allowed beyond the scoreboard: be the most comfortable player on the ice. Not the biggest or loudest — the one whose body says "I have nothing to prove."', use: 'Ask it every period: am I the most comfortable guy out here right now?' },
+  { name: 'Social injury immunity', read: 'Fear of the turnover makes you play not-to-lose: chip it out, hide from the puck, safe plays only. Being genuinely OK with looking bad is what unlocks playing to win.', use: 'Want the puck after your worst shift. That\'s the rep.' },
+  { name: 'The bench reset', read: 'Apply the breathing-location cue to yourself: one full belly breath on the bench, shoulders pulled down out of your ears, hands open on your knees. You\'re telling your own nervous system "safe."', use: 'Every bench sit, win or lose the shift. It compounds.' },
+  { name: 'No hierarchy on the ice', read: 'Ranking yourself against the guy across from you — "he\'s a better skater, he\'s got a contract" — creates fear of judgment mid-play. He\'s not above or below you. He\'s data: feet, hands, fatigue.', use: 'Turn every intimidating opponent into a profiling subject and the fear converts to curiosity.' },
+  { name: 'Read the ice like a room', read: 'Opponents leak everything: shoulders riding high = tight and afraid. Bent over, mouth open = gassed, beat him wide. Goalie fidgeting and re-strapping after a goal = not safe in his body, shoot now. A frustrated opponent slamming his stick = baitable.', use: 'One profiling read per shift. Fatigue and fear are the two that pay.' },
+  { name: 'Never show your tells', read: 'Everything you read in them, they can read in you. After a mistake or a hit: slow blink, shoulders down, easy pace. The opponent who can\'t rattle you stops trying.', use: 'Your body language is a message you\'re always sending. Author it.' },
+  { name: 'Identity drives behavior', read: 'The Olympic athlete who starts gaining weight does whatever it takes — because "fat" isn\'t their identity. Decide you\'re a pro who thrives under pressure and behavior follows the decision.', use: 'You don\'t rise to the occasion; you sink to your identity. Set it deliberately.' },
+  { name: 'Generalized expectation on skates', read: 'Confidence isn\'t predicting a perfect game — it\'s the settled knowledge that you\'ll be OK either way. That safety is what lets you take the risk the highlight play requires.', use: 'Pre-game sentence: "However this goes, I\'m OK — so I\'m swinging."' },
+];
+
+/* LEARN PATH — Duolingo-style units. Each unit: facts (quizzed as generated
+   MCs) + a scenario category. 3 lessons of 7 questions beat a unit; 6/7 passes
+   a lesson. Units unlock in order within their section. */
+const LESSONS_PER_UNIT = 3, LESSON_LEN = 7, PASS_MARK = 6;
+const XP_LESSON = 10, XP_REVIEW = 5, XP_PERFECT = 20, XP_PER_LEVEL = 150;
+
 /* =====================================================================
    APP LOGIC — nothing below needs touching when adding content.
    ===================================================================== */
@@ -549,6 +653,8 @@ if (state.today !== todayKey) {
   save(state);
 }
 if (!state.checks) state.checks = [false, false, false, false];
+if (!state.units) state.units = [];
+if (!state.xp) state.xp = 0;
 
 /* ---- today tab ---- */
 const pd = PROFILING_DRILLS[dayIndex % PROFILING_DRILLS.length];
@@ -604,6 +710,7 @@ function render() {
   qb.classList.toggle('done', !!state.q);
   document.getElementById('quizLaunch').textContent = 'Start daily quiz — ' + due + ' due';
   document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q));
+  renderLearn();
   let streak = state.streak || 0;
   if (streak > 0 && state.lastComplete !== todayKey) {
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
@@ -635,6 +742,89 @@ CONFIDENCE_PRINCIPLES.forEach(pr => {
   prinEl.appendChild(d);
 });
 
+/* ---- hockey tab ---- */
+const hockeyEl = document.getElementById('hockeyCards');
+HOCKEY.forEach(h => {
+  const d = document.createElement('div');
+  d.className = 'card';
+  d.innerHTML = '<h3>' + h.name + '</h3><p>' + h.read + '</p>' + (h.use ? '<p class="use"><b>Use it:</b> ' + h.use + '</p>' : '');
+  hockeyEl.appendChild(d);
+});
+
+/* ---- learn path ---- */
+function libItems(catName) { return LIBRARY.find(c => c.cat === catName).items.map(it => ({ cue: it.name, ans: it.read })); }
+const PRIN = CONFIDENCE_PRINCIPLES.map(p => ({ cue: p.h, ans: p.p }));
+const HOCK = HOCKEY.map(h => ({ cue: h.name, ans: h.read }));
+const UNITS = [
+  { section: 'xray', title: 'Foundations', desc: 'The four truths, clusters, baselines', facts: libItems('Foundations'), scen: null },
+  { section: 'xray', title: 'Eyes I', desc: 'Blink rate, sides, eye home', facts: libItems('Eyes').slice(0, 4), scen: 'Eyes' },
+  { section: 'xray', title: 'Eyes II', desc: 'Pupils, glances, the flash', facts: libItems('Eyes').slice(4), scen: 'Eyes' },
+  { section: 'xray', title: 'Face', desc: 'Lips, smiles, hushing, flares', facts: libItems('Face'), scen: 'Face' },
+  { section: 'xray', title: 'Body I', desc: 'Arms, hands, feet, barriers', facts: libItems('Body').slice(0, 9), scen: 'Body' },
+  { section: 'xray', title: 'Body II', desc: 'Breathing, shoulders, throat, palms', facts: libItems('Body').slice(9), scen: 'Body' },
+  { section: 'xray', title: 'Deception I', desc: 'Hesitancy, distancing, pronouns', facts: libItems('Deception — verbal').slice(0, 8), scen: 'Deception' },
+  { section: 'xray', title: 'Deception II', desc: 'Politeness, confessions, chronology', facts: libItems('Deception — verbal').slice(8), scen: 'Deception' },
+  { section: 'xray', title: 'Needs & Masks', desc: 'What they want you to think of them', facts: libItems('Needs — the mask they wear'), scen: 'Needs' },
+  { section: 'xray', title: 'Getting Honesty', desc: 'The four face-saving doors', facts: libItems('Face-saving — getting honesty'), scen: 'Face-saving' },
+  { section: 'mind', title: 'Confidence: The OS', desc: 'Safety, fiction, forgiveness, the role', facts: PRIN.slice(0, 6), scen: 'Confidence' },
+  { section: 'mind', title: 'Confidence: The Weapons', desc: 'Observation mode, worry reps, identity', facts: PRIN.slice(6), scen: 'Confidence' },
+  { section: 'mind', title: 'Hockey: The On-Ice Mind', desc: 'Flow, resets, reading the ice', facts: HOCK, scen: 'Hockey' },
+];
+
+function unitDone(i) { return (state.units[i] || 0) >= LESSONS_PER_UNIT; }
+function unitUnlocked(i) {
+  const prev = UNITS.map((u, j) => ({ u, j })).filter(x => x.u.section === UNITS[i].section && x.j < i);
+  return prev.length === 0 || unitDone(prev[prev.length - 1].j);
+}
+function renderLearn() {
+  const lvl = Math.floor((state.xp || 0) / XP_PER_LEVEL) + 1;
+  document.getElementById('lvlBadge').textContent = 'LVL ' + lvl;
+  document.getElementById('xpNum').textContent = (state.xp || 0) + ' XP';
+  document.getElementById('xpFill').style.width = (((state.xp || 0) % XP_PER_LEVEL) / XP_PER_LEVEL * 100) + '%';
+  ['xray', 'mind'].forEach(sec => {
+    const host = document.getElementById(sec === 'xray' ? 'pathXray' : 'pathMind');
+    host.innerHTML = '';
+    UNITS.forEach((u, i) => {
+      if (u.section !== sec) return;
+      const done = unitDone(i), open = unitUnlocked(i), n = state.units[i] || 0;
+      const d = document.createElement('div');
+      d.className = 'unit' + (done ? ' done' : '') + (open ? '' : ' locked');
+      d.innerHTML =
+        '<div class="status">' + (done ? '⭐' : open ? '▶' : '🔒') + '</div>' +
+        '<div class="meat"><h4>' + u.title + '</h4><div class="desc">' + u.desc + '</div>' +
+        '<div class="pips">' + '●'.repeat(n) + '○'.repeat(LESSONS_PER_UNIT - n) + '</div></div>' +
+        (open ? '<button class="go">' + (done ? 'Practice' : 'Lesson ' + (n + 1)) + '</button>' : '');
+      if (open) d.querySelector('.go').onclick = () => startLesson(i);
+      host.appendChild(d);
+    });
+  });
+}
+
+function makeFactMC(fact, pool) {
+  const wrong = shuffle(pool.filter(f => f.cue !== fact.cue)).slice(0, 3);
+  if (Math.random() < 0.5) {
+    const opts = shuffle([fact.ans].concat(wrong.map(w => w.ans)));
+    return { type: 'mc', cat: 'What does it mean?', q: fact.cue, opts, a: opts.indexOf(fact.ans), why: 'That\'s the read for "' + fact.cue + '".' };
+  }
+  const opts = shuffle([fact.cue].concat(wrong.map(w => w.cue)));
+  return { type: 'mc', cat: 'Name the cue', q: '"' + fact.ans + '"', opts, a: opts.indexOf(fact.cue), why: 'That\'s "' + fact.cue + '".' };
+}
+function startLesson(uIdx) {
+  const u = UNITS[uIdx];
+  // Distractors come from the whole track so tiny units still get 4 options.
+  const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
+  const scen = u.scen ? SCENARIOS.map((s, i) => ({ ...s, _i: i })).filter(s => s.cat === u.scen) : [];
+  const nScen = Math.min(3, scen.length);
+  const qs = shuffle(scen).slice(0, nScen).map(s => ({ type: 'mc', cat: s.cat + ' · scenario', q: s.q, opts: s.opts, a: s.a, why: s.why }));
+  shuffle(u.facts.slice()).slice(0, LESSON_LEN - nScen).forEach(f => qs.push(makeFactMC(f, distractorPool)));
+  while (qs.length < LESSON_LEN) qs.push(makeFactMC(u.facts[Math.floor(Math.random() * u.facts.length)], distractorPool));
+  deck = shuffle(qs);
+  mode = 'lesson'; lessonUnit = uIdx;
+  qi = 0; hits = 0;
+  document.getElementById('quiz').classList.add('on');
+  showCard();
+}
+
 /* ---- tabs ---- */
 function showTab(name, btn) {
   document.querySelectorAll('main').forEach(m => m.classList.remove('on'));
@@ -654,6 +844,10 @@ function allCards() {
   const cards = [];
   LIBRARY.forEach(cat => cat.items.forEach(it =>
     cards.push({ id: 'f:' + it.name, type: 'flash', cat: cat.cat, cue: it.name, ans: it.read })));
+  CONFIDENCE_PRINCIPLES.forEach(p =>
+    cards.push({ id: 'c:' + p.h, type: 'flash', cat: 'Confidence', cue: p.h, ans: p.p }));
+  HOCKEY.forEach(h =>
+    cards.push({ id: 'h:' + h.name, type: 'flash', cat: 'Hockey', cue: h.name, ans: h.read }));
   SCENARIOS.forEach((s, i) =>
     cards.push({ id: 's:' + i, type: 'mc', cat: s.cat + ' · scenario', q: s.q, opts: s.opts, a: s.a, why: s.why }));
   return cards;
@@ -667,7 +861,7 @@ function gradeSRS(id, hit) {
   save(state);
 }
 
-let deck = [], qi = 0, hits = 0, answered = false;
+let deck = [], qi = 0, hits = 0, answered = false, mode = 'review', lessonUnit = -1;
 function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -684,6 +878,7 @@ function startQuiz() {
     deck = deck.concat(rest.slice(0, DECK_SIZE - deck.length));
   }
   shuffle(deck);
+  mode = 'review'; lessonUnit = -1;
   qi = 0; hits = 0;
   document.getElementById('quiz').classList.add('on');
   showCard();
@@ -693,11 +888,29 @@ function showCard() {
   document.getElementById('qBtns').classList.remove('show');
   card.classList.remove('flipped');
   if (qi >= deck.length) {
-    if (!state.q) { state.q = true; checkDayComplete(); save(state); }
-    render();
-    document.getElementById('qProg').textContent = 'Done';
     card.classList.remove('mc');
     card.onclick = null;
+    document.getElementById('qProg').textContent = 'Done';
+    if (mode === 'lesson') {
+      const passed = hits >= PASS_MARK;
+      let bonus = 0;
+      if (passed) {
+        if (hits === deck.length) { bonus = XP_PERFECT; state.xp += XP_PERFECT; }
+        state.units[lessonUnit] = Math.min(LESSONS_PER_UNIT, (state.units[lessonUnit] || 0) + 1);
+        if (!state.q) { state.q = true; checkDayComplete(); }
+      }
+      save(state);
+      render();
+      const u = UNITS[lessonUnit];
+      card.innerHTML = '<div class="qdone"><div class="big">' + hits + ' / ' + deck.length + '</div><p>' +
+        (passed
+          ? (unitDone(lessonUnit) ? '<b class="lessonxp">Unit beaten: ' + u.title + ' ⭐</b><br>Next unit unlocked. ' : 'Lesson passed. ') +
+            '<b class="lessonxp">+' + (hits * XP_LESSON + bonus) + ' XP</b>' + (bonus ? ' (perfect bonus!)' : '')
+          : 'You need ' + PASS_MARK + '/' + deck.length + ' to pass. <b class="lessonxp">+' + (hits * XP_LESSON) + ' XP</b> banked — run it back.') + '</p></div>';
+      return;
+    }
+    if (!state.q) { state.q = true; checkDayComplete(); save(state); }
+    render();
     card.innerHTML = '<div class="qdone"><div class="big">' + hits + ' / ' + deck.length + '</div><p>' +
       (hits === deck.length ? 'Perfect read. Now go use it on a real human.' : 'Missed cards come back tomorrow — and keep coming back until you own them.') + '</p></div>';
     return;
@@ -730,8 +943,12 @@ function answerMC(i) {
   });
   document.getElementById('qWhy').classList.add('show');
   document.getElementById('qNext').classList.add('show');
-  gradeSRS(q.id, i === q.a);
-  if (i === q.a) hits++;
+  if (q.id) gradeSRS(q.id, i === q.a);
+  if (i === q.a) {
+    hits++;
+    state.xp += (mode === 'lesson' ? XP_LESSON : XP_REVIEW);
+    save(state);
+  }
 }
 function nextCard() { qi++; showCard(); }
 function flipCard() {
@@ -742,7 +959,7 @@ function flipCard() {
 }
 function gradeCard(hit) {
   gradeSRS(deck[qi].id, hit);
-  if (hit) hits++;
+  if (hit) { hits++; state.xp += XP_REVIEW; save(state); }
   qi++;
   showCard();
 }
