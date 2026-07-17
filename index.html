@@ -368,6 +368,7 @@
 <!-- ==================== QUIZ OVERLAY ==================== -->
 <div id="quiz">
   <div class="qtop">
+    <button class="close" id="qBack" onclick="prevCard()">← Back</button>
     <div class="prog" id="qProg"></div>
     <button class="close" onclick="closeQuiz()">Close</button>
   </div>
@@ -1043,10 +1044,10 @@ function makeFactMC(fact, pool, dir) {
   const useDir = dir || (Math.random() < 0.5 ? 'ans' : 'cue');
   if (useDir === 'ans') {
     const opts = shuffle([fact.ans].concat(wrong.map(w => w.ans)));
-    return { type: 'mc', cat: 'What does it mean?', q: fact.cue, opts, a: opts.indexOf(fact.ans), why: 'That\'s the read for "' + fact.cue + '".' };
+    return { type: 'mc', cat: pickOne(['What does it mean?', 'What\'s the read?', 'Decode the cue', 'What is this telling you?']), q: fact.cue, opts, a: opts.indexOf(fact.ans), why: 'That\'s the read for "' + fact.cue + '".' };
   }
   const opts = shuffle([fact.cue].concat(wrong.map(w => w.cue)));
-  return { type: 'mc', cat: 'Name the cue', q: '"' + fact.ans + '"', opts, a: opts.indexOf(fact.cue), why: 'That\'s "' + fact.cue + '".' };
+  return { type: 'mc', cat: pickOne(['Name the cue', 'Which cue is this?', 'What are you looking at?']), q: '"' + fact.ans + '"', opts, a: opts.indexOf(fact.cue), why: 'That\'s "' + fact.cue + '".' };
 }
 function makeAppMC(fact, pool) {
   const use = ITEM_USE[fact.cue];
@@ -1054,13 +1055,14 @@ function makeAppMC(fact, pool) {
   const wrongPool = pool.filter(f => f.cue !== fact.cue && ITEM_USE[f.cue]);
   const wrong = shuffle(wrongPool.length >= 3 ? wrongPool : pool.filter(f => f.cue !== fact.cue)).slice(0, 3);
   const opts = shuffle([use].concat(wrong.map(w => ITEM_USE[w.cue] || w.ans)));
-  return { type: 'mc', cat: 'Apply it', q: 'Given "' + fact.cue + '," what\'s the right move?', opts, a: opts.indexOf(use), why: 'That\'s the play for "' + fact.cue + '".' };
+  const stem = pickOne(['Given "' + fact.cue + '," what\'s the right move?', 'You spot "' + fact.cue + '" — what\'s the play?', '"' + fact.cue + '" shows up mid-conversation. Your move?']);
+  return { type: 'mc', cat: 'Apply it', q: stem, opts, a: opts.indexOf(use), why: 'That\'s the play for "' + fact.cue + '".' };
 }
 function scenariosForUnit(u) {
   if (!u.scen) return [];
   return SCENARIOS.map((s, i) => ({ ...s, _i: i })).filter(s => s.cat === u.scen);
 }
-function scenarioToQ(s) { return { type: 'mc', cat: s.cat + ' · scenario', q: s.q, opts: s.opts, a: s.a, why: s.why }; }
+function scenarioToQ(s) { return shuffleOpts({ type: 'mc', cat: s.cat + ' · scenario', q: s.q, opts: s.opts, a: s.a, why: s.why }); }
 
 /* Recency tracker (least-recently-used, not a fixed split) — every question
    asked anywhere gets a key pushed onto state.seenQ. Picking from a pool
@@ -1080,11 +1082,22 @@ function pickFresh(items, keyFn, n) {
     if (idx !== -1) hist.splice(idx, 1);
     hist.push(k);
   });
-  while (hist.length > 600) hist.shift();
+  // Cap must exceed the total key space (~500 questions) or history trimming
+  // silently un-remembers old questions and causes early repeats.
+  while (hist.length > 2000) hist.shift();
   state.seenQ = hist;
   save(state);
   return picked;
 }
+
+/* Re-deal an MC question's options in random order every time it's shown —
+   kills the "correct answer is always in the same spot" pattern and makes
+   any eventual repeat encounter feel fresh. */
+function shuffleOpts(q) {
+  const order = shuffle([0, 1, 2, 3].slice(0, q.opts.length));
+  return { ...q, opts: order.map(j => q.opts[j]), a: order.indexOf(q.a) };
+}
+function pickOne(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 /* Lesson 1 = pure definitions (both directions, rotated through via pickFresh).
    Lessons 2 & 3 = real scenario-based application, drawn from the FULL
@@ -1115,7 +1128,7 @@ function buildApplicationQs(u, pool) {
 function buildEverydayQs(u, pool) {
   const evPool = u.scen ? EVERYDAY.map((s, i) => ({ ...s, _i: i })).filter(s => s.cat === u.scen) : [];
   const picked = pickFresh(evPool, s => 'e:' + s._i, LESSON_LEN);
-  const qs = picked.map(s => ({ type: 'mc', cat: s.cat + ' · everyday', q: s.q, opts: s.opts, a: s.a, why: s.why }));
+  const qs = picked.map(s => shuffleOpts({ type: 'mc', cat: s.cat + ' · everyday', q: s.q, opts: s.opts, a: s.a, why: s.why }));
   if (qs.length < LESSON_LEN) {
     const pickedFacts = pickFresh(u.facts, f => 'a:' + f.cue, LESSON_LEN - qs.length);
     pickedFacts.forEach(f => qs.push(makeAppMC(f, pool)));
@@ -1193,6 +1206,7 @@ function startQuiz() {
     deck = deck.concat(rest.slice(0, DECK_SIZE - deck.length));
   }
   shuffle(deck);
+  deck = deck.map(c => c.type === 'mc' ? shuffleOpts(c) : c);
   mode = 'review'; lessonUnit = -1;
   qi = 0; hits = 0;
   document.getElementById('quiz').classList.add('on');
@@ -1205,6 +1219,7 @@ function showCard() {
   if (qi >= deck.length) {
     card.classList.remove('mc');
     card.onclick = null;
+    document.getElementById('qBack').style.display = 'none';
     document.getElementById('qProg').textContent = 'Done';
     if (mode === 'lesson') {
       const passed = hits >= PASS_MARK;
@@ -1231,13 +1246,20 @@ function showCard() {
     return;
   }
   const q = deck[qi];
-  answered = false;
+  document.getElementById('qBack').style.display = qi > 0 ? '' : 'none';
   document.getElementById('qProg').textContent = 'Card ' + (qi + 1) + ' of ' + deck.length;
   if (q.type === 'flash') {
     card.classList.remove('mc');
-    card.onclick = flipCard;
+    card.onclick = q._done ? null : flipCard;
     card.innerHTML = '<div class="qcat">' + q.cat + '</div><div class="qcue">' + q.cue +
-      '</div><div class="qans" id="qAns">' + q.ans + '</div><div class="qhint" id="qHint">Tap to reveal</div>';
+      '</div><div class="qans" id="qAns">' + q.ans + '</div><div class="qhint" id="qHint">Tap to reveal</div>' +
+      '<button class="qnext" id="qNext" onclick="nextCard()">Next</button>';
+    if (q._done) {
+      // Revisited via Back: show the answer read-only, no re-grading.
+      card.classList.add('flipped');
+      document.getElementById('qHint').style.display = 'none';
+      document.getElementById('qNext').classList.add('show');
+    }
   } else {
     card.classList.add('mc');
     card.onclick = null;
@@ -1245,12 +1267,23 @@ function showCard() {
       q.opts.map((o, i) => '<button class="opt" onclick="answerMC(' + i + ')">' + o + '</button>').join('') +
       '<div class="qwhy" id="qWhy">' + q.why + '</div>' +
       '<button class="qnext" id="qNext" onclick="nextCard()">Next</button>';
+    if (q._done) {
+      // Revisited via Back: restore what was picked vs right, read-only.
+      document.querySelectorAll('#qCard .opt').forEach((el, j) => {
+        el.disabled = true;
+        if (j === q.a) el.classList.add('right');
+        else if (j === q._picked) el.classList.add('wrong');
+      });
+      document.getElementById('qWhy').classList.add('show');
+      document.getElementById('qNext').classList.add('show');
+    }
   }
 }
 function answerMC(i) {
-  if (answered) return;
-  answered = true;
   const q = deck[qi];
+  if (q._done) return;
+  q._done = true;
+  q._picked = i;
   document.querySelectorAll('#qCard .opt').forEach((el, j) => {
     el.disabled = true;
     if (j === q.a) el.classList.add('right');
@@ -1266,6 +1299,7 @@ function answerMC(i) {
   }
 }
 function nextCard() { qi++; showCard(); }
+function prevCard() { if (qi > 0) { qi--; showCard(); } }
 function flipCard() {
   document.getElementById('qCard').classList.add('flipped');
   const hint = document.getElementById('qHint');
@@ -1273,7 +1307,10 @@ function flipCard() {
   document.getElementById('qBtns').classList.add('show');
 }
 function gradeCard(hit) {
-  gradeSRS(deck[qi].id, hit);
+  const q = deck[qi];
+  if (q._done) { qi++; showCard(); return; }
+  q._done = true;
+  gradeSRS(q.id, hit);
   if (hit) { hits++; state.xp += XP_REVIEW; save(state); }
   qi++;
   showCard();
