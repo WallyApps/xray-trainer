@@ -17,22 +17,27 @@
     --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--ink); }
+  html { background: var(--ink); }
   body {
     font-family: var(--sans);
     color: var(--bone);
     -webkit-font-smoothing: antialiased;
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    padding-bottom: calc(150px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(ellipse 100% 42% at 50% -6%, rgba(224, 164, 88, 0.10), transparent 62%),
+      radial-gradient(ellipse 80% 34% at 90% 104%, rgba(224, 164, 88, 0.05), transparent 60%),
+      var(--ink);
+    background-attachment: fixed;
   }
   .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
 
   /* ---------- header ---------- */
   header {
-    padding: 20px 0 14px;
+    padding: 22px 0 15px;
     border-bottom: 1px solid var(--line);
     display: flex; align-items: baseline; justify-content: space-between;
   }
-  header h1 { font-family: var(--serif); font-size: 22px; font-weight: 400; font-style: italic; letter-spacing: 0.01em; }
+  header h1 { font-family: var(--serif); font-size: 25px; font-weight: 400; font-style: italic; letter-spacing: 0.01em; text-shadow: 0 0 30px rgba(224, 164, 88, 0.25); }
   header h1 span { color: var(--amber); }
   .streak {
     font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
@@ -242,6 +247,89 @@
   .lessonxp { color: var(--amber); font-weight: 700; }
 
   footer { margin-top: 30px; text-align: center; color: var(--muted); font-size: 11px; letter-spacing: 0.1em; }
+
+  /* ---------- premium: layered surfaces, motion, reward ---------- */
+  .card, .cat, .check, .unit, .principle, .mantra {
+    background: linear-gradient(180deg, #19222f 0%, #151d29 100%);
+    border: 1px solid var(--line);
+    border-top-color: #2e3a4c;
+    box-shadow: 0 12px 26px -20px rgba(0, 0, 0, 0.9);
+    border-radius: 13px;
+  }
+  .mantra { border-color: rgba(224, 164, 88, 0.55); border-top-color: rgba(224, 164, 88, 0.75); box-shadow: 0 14px 34px -18px rgba(224, 164, 88, 0.28); background: linear-gradient(180deg, rgba(224, 164, 88, 0.16), rgba(224, 164, 88, 0.07)); }
+  .donebtn, .opt, .quizlaunch, .unit .go, .lessonpicker button, .qnext, .qtop .close, nav button, .qbtns button {
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .donebtn:active, .opt:not(:disabled):active, .quizlaunch:active, .unit .go:active,
+  .lessonpicker button:active, .qnext:active, .qbtns button:active { transform: scale(0.97); }
+  .quizlaunch { background: linear-gradient(180deg, #eebd72, #d99a48); box-shadow: 0 10px 26px -12px rgba(224, 164, 88, 0.6); }
+  .qnext { background: linear-gradient(180deg, #eebd72, #d99a48); }
+  .lvlbadge { background: linear-gradient(180deg, #eebd72, #d99a48); box-shadow: 0 6px 18px -8px rgba(224, 164, 88, 0.7); }
+  main.on { display: block; animation: tabIn 0.28s ease; }
+  @keyframes tabIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .xpfill { position: relative; overflow: hidden; background: linear-gradient(90deg, #c68f45, var(--amber)); }
+  .xpfill::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+    animation: shimmer 2.4s infinite;
+  }
+  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+  .unit .ring {
+    flex: none; width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .unit .ring span {
+    width: 33px; height: 33px; border-radius: 50%; background: #151d29;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10.5px; font-weight: 700; color: var(--amber); font-variant-numeric: tabular-nums;
+  }
+  .qdone { animation: popIn 0.45s cubic-bezier(0.2, 1.4, 0.4, 1); }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+  .qdone.win .big { color: var(--amber); text-shadow: 0 0 26px rgba(224, 164, 88, 0.55); }
+  @media (prefers-reduced-motion: reduce) {
+    main.on, .qdone { animation: none; }
+    .xpfill::after { animation: none; }
+  }
+
+  /* ---------- evening debrief ---------- */
+  .spotrow { display: flex; gap: 8px; }
+  .spotrow .donebtn { margin-top: 10px; }
+
+  /* ---------- coach ---------- */
+  #coachBtn {
+    position: fixed; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 60;
+    width: 54px; height: 54px; border-radius: 50%; border: 1px solid #f2c67f; cursor: pointer;
+    background: linear-gradient(180deg, #eebd72, #d99a48); color: var(--ink); font-size: 23px;
+    box-shadow: 0 10px 28px -8px rgba(224, 164, 88, 0.6);
+    transition: transform 0.12s ease;
+  }
+  #coachBtn:active { transform: scale(0.9); }
+  #coach { position: fixed; inset: 0; z-index: 90; background: rgba(8, 11, 16, 0.6); display: none; }
+  #coach.on { display: block; }
+  .coach-panel {
+    position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 560px; height: 80%;
+    background: linear-gradient(180deg, #19222f, #111823);
+    border: 1px solid var(--line); border-bottom: none; border-radius: 18px 18px 0 0;
+    display: flex; flex-direction: column; animation: sheetUp 0.28s ease;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  @keyframes sheetUp { from { transform: translateY(46px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .coach-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .coach-head h3 { font-family: var(--serif); font-style: italic; font-size: 18px; font-weight: 400; }
+  .coach-head h3 b { color: var(--amber); font-weight: 600; }
+  .coach-head button { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 6px 13px; font-size: 13px; cursor: pointer; }
+  .coach-msgs { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .cmsg { max-width: 90%; padding: 11px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.6; }
+  .cmsg.user { align-self: flex-end; background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.4); border-bottom-right-radius: 4px; }
+  .cmsg.bot { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .cmsg.bot b { color: var(--amber); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 16px 10px; }
+  .chips button { background: var(--panel-2); border: 1px solid var(--line); color: var(--bone); font-size: 12px; border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+  .chips button:active { transform: scale(0.95); }
+  .coach-input { display: flex; gap: 8px; padding: 10px 16px 14px; border-top: 1px solid var(--line); }
+  .coach-input input { flex: 1; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; color: var(--bone); font-size: 16px; padding: 11px 12px; outline: none; }
+  .coach-input input:focus { border-color: var(--amber); }
+  .coach-input button { background: var(--amber); border: none; color: var(--ink); font-weight: 700; font-size: 14px; border-radius: 10px; padding: 0 16px; cursor: pointer; }
 </style>
 
 <div class="wrap">
@@ -257,6 +345,15 @@
     <div class="mantra">
       <div class="lbl">Today's frame</div>
       <p id="mantraText"></p>
+    </div>
+
+    <div class="eyebrow">Cue of the day</div>
+    <div class="card">
+      <span class="tag" id="cueTag"></span>
+      <h3 id="cueName"></h3>
+      <p id="cueRead"></p>
+      <p class="use" id="cueUse"></p>
+      <p class="sub">Learn it this morning. Your profiling rep hunts it today. Tonight you log whether you saw it.</p>
     </div>
 
     <div class="eyebrow">Always-on anchor</div>
@@ -301,6 +398,19 @@
 
     <div class="eyebrow">The daily check — ask yourself</div>
     <div id="dailyChecks"></div>
+
+    <div class="eyebrow">Tonight — the debrief</div>
+    <div class="card">
+      <span class="tag">Evening</span>
+      <h3>Did you spot today's cue?</h3>
+      <p id="cueSpotLine"></p>
+      <div class="spotrow">
+        <button class="donebtn" id="spotYes">Spotted it (+10 XP)</button>
+        <button class="donebtn" id="spotNo">Didn't see it</button>
+      </div>
+      <button class="donebtn" id="nightBtn">3-card night review</button>
+      <p class="sub">Your last retrieval before sleep is the one your brain consolidates overnight. Two minutes, then lights out.</p>
+    </div>
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
     <footer>Two reps + the quiz = day counts toward your streak</footer>
@@ -381,6 +491,23 @@
   <div class="qbtns" id="qBtns">
     <button class="miss" onclick="gradeCard(false)">Missed it</button>
     <button class="hit" onclick="gradeCard(true)">Got it</button>
+  </div>
+</div>
+
+<!-- ==================== COACH (zero-API, session-only) ==================== -->
+<button id="coachBtn" onclick="openCoach()" aria-label="Open coach">💬</button>
+<div id="coach">
+  <div class="coach-panel">
+    <div class="coach-head">
+      <h3>X-Ray <b>Coach</b></h3>
+      <button onclick="closeCoach()">Close</button>
+    </div>
+    <div class="coach-msgs" id="coachMsgs"></div>
+    <div class="chips" id="coachChips"></div>
+    <div class="coach-input">
+      <input id="coachIn" type="text" placeholder="What's the situation?" onkeydown="if(event.key==='Enter')coachSend()">
+      <button onclick="coachSend()">Send</button>
+    </div>
   </div>
 </div>
 
@@ -849,6 +976,7 @@ if (state.today !== todayKey) {
   state.p = false; state.c = false; state.q = false; state.checks = [false, false, false, false];
   state.counted = false;
   state.pdrill = null;
+  state.cue = null; state.debrief = null; state.debriefXP = false;
   save(state);
 }
 if (!state.checks) state.checks = [false, false, false, false];
@@ -860,10 +988,33 @@ if (!state.xp) state.xp = 0;
    pinned for the day so it doesn't swap mid-day when you beat a unit. Runs as
    a function (called at the bottom) because it needs UNITS. */
 function initToday() {
+  // Cue of the day — one technique from unlocked units, pinned for the day.
+  // Prefer units that have field drills so the daily rep can hunt the cue.
+  const drillUnits = new Set(PROFILING_DRILLS.map(d => d.unit));
+  let openFacts = [];
+  const collect = pred => UNITS.forEach((u, i) => { if (pred(u, i)) u.facts.forEach(f => openFacts.push({ cue: f.cue, ans: f.ans, unit: i })); });
+  collect((u, i) => unitUnlocked(i) && drillUnits.has(i));
+  if (!openFacts.length) collect((u, i) => unitUnlocked(i) && u.section === 'xray');
+  if (!openFacts.length) collect((u, i) => unitUnlocked(i));
+  let cue = openFacts.find(f => f.cue === state.cue);
+  if (!cue) {
+    cue = openFacts[dayIndex % openFacts.length];
+    state.cue = cue.cue;
+    save(state);
+  }
+  document.getElementById('cueTag').textContent = UNITS[cue.unit].title;
+  document.getElementById('cueName').textContent = cue.cue;
+  document.getElementById('cueRead').textContent = cue.ans;
+  document.getElementById('cueUse').innerHTML = ITEM_USE[cue.cue] ? '<b>Use it:</b> ' + ITEM_USE[cue.cue] : '';
+  document.getElementById('cueSpotLine').textContent = 'Today\'s cue: "' + cue.cue + '." One tap before bed keeps the loop honest.';
+
+  // Profiling rep: prefer a drill that trains today's cue (same unit), pinned per day.
   const eligible = PROFILING_DRILLS.filter(d => unitUnlocked(d.unit));
-  const pool = eligible.length ? eligible : PROFILING_DRILLS.filter(d => d.unit === 1);
-  let pd = pool.find(d => d.name === state.pdrill);
+  const fullPool = eligible.length ? eligible : PROFILING_DRILLS.filter(d => d.unit === 1);
+  let pd = fullPool.find(d => d.name === state.pdrill);
   if (!pd) {
+    const matched = fullPool.filter(d => d.unit === cue.unit);
+    const pool = matched.length ? matched : fullPool;
     pd = pool[dayIndex % pool.length];
     state.pdrill = pd.name;
     save(state);
@@ -879,6 +1030,14 @@ function initToday() {
   document.getElementById('cdrillName').textContent = cd.name;
   document.getElementById('cdrillDo').textContent = cd.do;
   document.getElementById('cdrillWhy').textContent = cd.why;
+
+  // Evening debrief handlers (XP once per day, choice can be changed).
+  document.getElementById('spotYes').onclick = () => {
+    if (!state.debriefXP) { state.xp += 10; state.debriefXP = true; }
+    state.debrief = 'hit'; save(state); render();
+  };
+  document.getElementById('spotNo').onclick = () => { state.debrief = 'miss'; save(state); render(); };
+  document.getElementById('nightBtn').onclick = () => startQuiz(3);
 }
 
 const checksEl = document.getElementById('dailyChecks');
@@ -933,13 +1092,18 @@ function render() {
     launch.onclick = startQuiz;
   }
   document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q));
+  const sy = document.getElementById('spotYes'), sn = document.getElementById('spotNo');
+  sy.classList.toggle('done', state.debrief === 'hit');
+  sy.textContent = state.debrief === 'hit' ? '✓ Spotted it' : 'Spotted it (+10 XP)';
+  sn.classList.toggle('done', state.debrief === 'miss');
+  sn.textContent = state.debrief === 'miss' ? '✓ Logged — hunt it again tomorrow' : 'Didn\'t see it';
   renderLearn();
   let streak = state.streak || 0;
   if (streak > 0 && state.lastComplete !== todayKey) {
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     if (state.lastComplete !== yesterday) { streak = 0; state.streak = 0; save(state); }
   }
-  document.getElementById('streakN').textContent = streak;
+  document.getElementById('streakN').textContent = (streak >= 3 ? '🔥' : '') + streak;
 }
 
 /* ---- grouped fold-out sections (X-Ray, Mind, Hockey all share this) ---- */
@@ -1015,10 +1179,12 @@ function renderLearn() {
       const done = unitDone(i), open = unitUnlocked(i), n = state.units[i] || 0;
       const d = document.createElement('div');
       d.className = 'unit' + (done ? ' done' : '') + (open ? '' : ' locked');
+      const status = done ? '<div class="status">⭐</div>'
+        : !open ? '<div class="status">🔒</div>'
+        : '<div class="ring" style="background: conic-gradient(var(--amber) ' + Math.round(n / LESSONS_PER_UNIT * 360) + 'deg, var(--panel-2) 0)"><span>' + n + '/' + LESSONS_PER_UNIT + '</span></div>';
       d.innerHTML =
-        '<div class="status">' + (done ? '⭐' : open ? '▶' : '🔒') + '</div>' +
-        '<div class="meat"><h4>' + u.title + '</h4><div class="desc">' + u.desc + '</div>' +
-        '<div class="pips">' + '●'.repeat(n) + '○'.repeat(LESSONS_PER_UNIT - n) + '</div></div>' +
+        status +
+        '<div class="meat"><h4>' + u.title + '</h4><div class="desc">' + u.desc + '</div></div>' +
         (!open ? '' : done
           ? '<div class="lessonpicker">' + [1, 2, 3].map(ln => '<button data-ln="' + ln + '">' + ln + '</button>').join('') + '</div>'
           : '<button class="go">Lesson ' + (n + 1) + '</button>');
@@ -1146,6 +1312,7 @@ function startLesson(uIdx, lessonNum) {
   deck = shuffle(qs);
   mode = 'lesson'; lessonUnit = uIdx;
   qi = 0; hits = 0;
+  document.getElementById('coachBtn').style.display = 'none';
   document.getElementById('quiz').classList.add('on');
   showCard();
 }
@@ -1196,19 +1363,21 @@ function shuffle(a) {
   }
   return a;
 }
-function startQuiz() {
+function startQuiz(size) {
+  const n = (typeof size === 'number') ? size : DECK_SIZE; // guard: onclick passes an event object
   const all = reviewPool();
   if (!all.length) return;
-  deck = shuffle(all.filter(c => dueDay(c.id) <= dayIndex)).slice(0, DECK_SIZE);
-  if (deck.length < DECK_SIZE) {
+  deck = shuffle(all.filter(c => dueDay(c.id) <= dayIndex)).slice(0, n);
+  if (deck.length < n) {
     // Nothing (or not much) due — top up with the cards due soonest.
     const rest = shuffle(all.filter(c => dueDay(c.id) > dayIndex)).sort((a, b) => dueDay(a.id) - dueDay(b.id));
-    deck = deck.concat(rest.slice(0, DECK_SIZE - deck.length));
+    deck = deck.concat(rest.slice(0, n - deck.length));
   }
   shuffle(deck);
   deck = deck.map(c => c.type === 'mc' ? shuffleOpts(c) : c);
   mode = 'review'; lessonUnit = -1;
   qi = 0; hits = 0;
+  document.getElementById('coachBtn').style.display = 'none';
   document.getElementById('quiz').classList.add('on');
   showCard();
 }
@@ -1232,11 +1401,12 @@ function showCard() {
       save(state);
       render();
       const u = UNITS[lessonUnit];
-      card.innerHTML = '<div class="qdone"><div class="big">' + hits + ' / ' + deck.length + '</div><p>' +
+      card.innerHTML = '<div class="qdone' + (passed ? ' win' : '') + '"><div class="big">' + hits + ' / ' + deck.length + '</div><p>' +
         (passed
           ? (unitDone(lessonUnit) ? '<b class="lessonxp">Unit beaten: ' + u.title + ' ⭐</b><br>Next unit unlocked. ' : 'Lesson passed. ') +
-            '<b class="lessonxp">+' + (hits * XP_LESSON + bonus) + ' XP</b>' + (bonus ? ' (perfect bonus!)' : '')
+            '<b class="lessonxp">+<span id="xpGain">0</span> XP</b>' + (bonus ? ' (perfect bonus!)' : '')
           : 'You need ' + PASS_MARK + '/' + deck.length + ' to pass. <b class="lessonxp">+' + (hits * XP_LESSON) + ' XP</b> banked — run it back.') + '</p></div>';
+      if (passed) countUp(hits * XP_LESSON + bonus);
       return;
     }
     if (!state.q) { state.q = true; checkDayComplete(); save(state); }
@@ -1317,8 +1487,112 @@ function gradeCard(hit) {
 }
 function closeQuiz() {
   document.getElementById('quiz').classList.remove('on');
+  document.getElementById('coachBtn').style.display = '';
   render();
 }
+function countUp(n) {
+  const el = document.getElementById('xpGain');
+  if (!el) return;
+  let v = 0;
+  const step = Math.max(1, Math.round(n / 18));
+  const t = setInterval(() => { v += step; if (v >= n) { v = n; clearInterval(t); } el.textContent = v; }, 32);
+}
+
+/* =====================================================================
+   COACH — zero-API chat. Keyword-matches your situation to playbooks
+   built from Chase's material; falls back to searching the library.
+   Session-only: closing the panel wipes the conversation completely.
+   ===================================================================== */
+const PLAYBOOKS = [
+  { label: 'Negotiation / deal', keys: ['negotiat', 'deal', 'brand', 'rate', 'price', 'contract', 'pitch', 'close', 'sell', 'money', 'offer', 'client', 'budget', 'sponsor'], reply:
+    `<b>Before</b> — Decide your walk-away number and say your identity line. One belly breath. Pool speed from the second you walk in: slow = authority.<br><br><b>First 2 minutes</b> — Small talk is baseline collection: their normal blink, posture, speech pace. If a need shows (talking achievements = significance), feed it before business.<br><br><b>Watch for</b> — Blink spike, lip compression, or a barrier sliding between you when a number lands = the real objection. Dominant shoulder easing back = a hard no they won't voice. Breathing dropping to the belly = you just hit what they actually care about — stay there.<br><br><b>Your moves</b> — Bury the most sensitive question mid-conversation (hourglass). Bracket the budget ("is this more of a 5K thing or 10K?"). Mild disbelief pulls proof. Surface the hidden objection: "before we lock it — anything about the number that doesn't sit right?"<br><br><b>The frame</b> — You're finding fit, not asking permission. However it goes, you're OK — which is exactly what lets you walk.` },
+  { label: 'Date tonight', keys: ['date', 'girl', 'tinder', 'hinge', 'attract', 'crush', 'her ', 'dating', 'first date'], reply:
+    `<b>Before</b> — It's a comfort contest, not an audition. Your role: the safest, most comfortable person she's talked to all week.<br><br><b>Walking in</b> — Eyebrow flash on approach; if it comes back, the door's already open. Watch for preening (hair, posture fix) = the approach is welcome.<br><br><b>Watch for</b> — Blink slowing = locked in on the topic, stay there. Eyes crinkling on her laugh = genuine, mine that vein. Feet pointed at you = engaged; barriers appearing = slow down and warm up. Pupils only count in steady light.<br><br><b>Your moves</b> — Statements over interview questions ("you seem like the friend group's planner" beats "what do you do?"). Share something real first — she'll match your depth. Echo her last few words when she trails off.<br><br><b>The frame</b> — Outcome-free. You're reading, not chasing. Being fine with it going nowhere is the most attractive thing in the room.` },
+  { label: 'Coach / GM / interview', keys: ['coach', 'gm', 'boss', 'interview', 'scout', 'meeting', 'manager', 'tryout', 'camp', 'agent', 'authority'], reply:
+    `<b>Before</b> — Step into the role: you belong in that room. Every "what if" loop gets one positive rep to cancel it.<br><br><b>First 2 minutes</b> — Read their need fast: short absolute statements = power (respect the frame, don't fight it). Correcting details = intelligence (defer, ask their opinion). Talking achievements = significance (acknowledge first).<br><br><b>Watch for</b> — Feet rotating to the door = wrap it, land your one key point now. Fingers curling as you talk = disagreement building, change approach live. A shift to belly breathing = that topic matters to them — expand it.<br><br><b>Your moves</b> — One clear ask, made from comfort, not apology. If there's pushback, don't fill the silence — slow down instead. Silence pressures them, not you.<br><br><b>The frame</b> — They're data, not judges. Observation mode: the more you read them, the less you monitor yourself.` },
+  { label: 'Think someone\'s lying', keys: ['lying', 'lie', 'lied', 'truth', 'hiding', 'cheat', 'sus', 'honest', 'deceiv', 'bs'], reply:
+    `<b>Rules first</b> — Baseline before anything. One flag = nothing. Two flags on the same subject = a lead. And if you LIKE them, distrust your own read — liking filters everything toward truth.<br><br><b>Listen for</b> — Missing "I" in their story. "Did not" from someone who always says "didn't." Your question repeated back or reversed. A character résumé instead of a denial. "To the best of my knowledge" on things they'd obviously know. A story told in perfect timeline order with no emotional lead. One sentence faster and higher-pitched than the rest.<br><br><b>Watch for</b> — Eyes skipping their usual recall spot. Hand drifting over the mouth. Throat touch or visible swallow on the key question.<br><br><b>Your moves</b> — Never accuse. Note the stress sentence and re-ask it later, casually. If they offer a small confession, wave it off — "that's nothing" — and the bigger one gets closer.<br><br><b>The frame</b> — You're collecting, not convicting.` },
+  { label: 'Get info smoothly', keys: ['info', 'find out', 'secret', 'extract', 'get them to', 'know if', 'curious', 'elicit', 'without asking'], reply:
+    `<b>Pick the tool for the target:</b><br>— A number (price, salary, date)? <b>Bracket</b>: guess a wrong range out loud and get corrected.<br>— A big claim? <b>Disbelief</b>: "no way, seriously?" — the need to be believed delivers proof.<br>— Their pride topic? <b>Naivety</b>: play unsure and let them educate you.<br>— Something sensitive? <b>Hourglass</b>: bury the question mid-conversation, close on something forgettable.<br>— Something personal? <b>Hand-off</b>: share yours first; depth gets matched.<br>— They went quiet? <b>Echo</b>: repeat their last three words, tone up.<br>— Rumor or complaint? <b>Citation</b>: "I heard from a friend that…" and let the correction flow.<br><br><b>The setup</b> — General topic → your story → their story → redirect to what you want.<br><br><b>The frame</b> — Their need to be heard, believed, and to correct the record does all the work. You just open doors.` },
+  { label: 'Party / new people', keys: ['party', 'network', 'event', 'room full', 'strangers', 'social', 'crowd', 'barbecue', 'wedding', 'meet people'], reply:
+    `<b>Walking in</b> — Comfort contest starts at the door: slowest, easiest mover in the room wins. Feeling watched? Flip to observation mode and profile three people — you can't be self-conscious and curious at the same time.<br><br><b>Find the hub</b> — In any group, watch who collects the confirmation glances after people speak. That's the real center of the room.<br><br><b>Your moves</b> — Eyebrow flash + operate like they already like you. Open with provocative statements, not interviews. First need you spot, feed it: significance → acknowledge, acceptance → include, approval → grant it.<br><br><b>Watch for</b> — Feet tell you who's actually engaged and who's already left. Preening when you approach = welcome mat is out.<br><br><b>The frame</b> — You're the scientist in the room, not a contestant. Nobody outranks you; they're all just data.` },
+  { label: 'Big game', keys: ['game', 'pregame', 'pre-game', 'puck', 'warmup', 'faceoff', 'playoff', 'debut', 'showcase', 'game day', 'gameday'], reply:
+    `<b>Protocol</b> — Identity line, same words every game: "I'm the type of player that…" Every worry loop tonight gets one positive rep to cancel it. Role: pro. Pool speed in the room.<br><br><b>Warmups</b> — Check your own hands: white knuckles = open them. Belly breaths. Slow head turns. Your body is watching how you move.<br><br><b>First shifts</b> — Attention 100% outward: D's feet, goalie's depth, soft ice. One profiling read per shift — fatigue and fear are the two that pay. Gassed defender staying out = attack wide, now.<br><br><b>Between whistles</b> — Glacial. Slow blink, shoulders down. Refs, coaches, and opponents all read you: composure buys calls and kills chirps.<br><br><b>The frame</b> — However this goes, I'm OK — so I'm swinging.` },
+  { label: 'Bad shift reset', keys: ['mistake', 'turnover', 'benched', 'bad shift', 'reset', 'tilt', 'screwed up', 'messed up', 'slump', 'giveaway'], reply:
+    `<b>Right now, physically</b> — Exhale. Open the hands. One belly breath, shoulders pulled down out of your ears. Next-shift amnesia is a body action, not a thought.<br><br><b>On the bench</b> — Eyes back on the game: what's their D doing on breakouts? Where's the soft ice? Observation mode IS the reset — you can't replay a mistake and read the ice at the same time.<br><br><b>Never</b> — Show the tell. Slam nothing. Slow blink, easy pace. The opponent who sees you rattled keeps coming; the one who can't rattle you stops trying.<br><br><b>The frame</b> — Feeling bad can't change the last shift — believing it helps is the ego talking. Done means done. A body that feels safe returns to flow; a body punishing itself never does.` },
+  { label: 'Feeling nervous', keys: ['nervous', 'anxious', 'anxiety', 'scared', 'confidence', 'doubt', 'worry', 'overthink', 'panic', 'insecure', 'intimidat'], reply:
+    `<b>Right now</b> — Attention outward. Profile three people near you: feet, hands, blink. Self-focus is the anxious mode and you cannot do both at once — this is the off-switch, not a distraction.<br><br><b>Body first</b> — Pool speed everything: your walk, your reach, your reply speed. Open the hands. One belly breath. Safety is physical before it's mental.<br><br><b>The voice</b> — "They'll judge you" is the 6-year-old tugging your sleeve. Consider the source. Smile at it. Every worry loop gets exactly one positive rep, then you move.<br><br><b>The frame</b> — You don't need this room's permission to belong in it. The only contest is comfort — and you can win that one on purpose, right now.` },
+  { label: 'Read someone new', keys: ['read', 'profile', 'baseline', 'first meeting', 'new person', 'size up', 'figure out', 'first impression'], reply:
+    `<b>Order of operations:</b><br><b>1. Baseline</b> (first 2 minutes) — easy small talk while you log their normal: blink pace, posture, speech speed. No conclusions yet.<br><b>2. Master question</b> — "What do they want me to THINK about them?" The mask points straight at the need: achievements = significance, "we" = acceptance, fishing = approval, struggles = pity, correcting = intelligence, control = power. Feed what you find.<br><b>3. The 3-second scan</b> — Feet (intent), hands (tension), blink (stress) — every few minutes, quietly.<br><b>4. Changes, not states</b> — crossed arms means nothing; arms crossing right after your question means everything. The trigger is the message.<br><b>5. Cluster rule</b> — one cue is noise, two on the same topic is a lead.<br><br><b>The frame</b> — Lens of reasons: curiosity, never judgment. Judged people close; understood people open.` },
+  { label: 'Help a teammate', keys: ['teammate', 'friend', 'conflict', 'apolog', 'upset', 'argument', 'help him', 'help her', 'spiral', 'rookie', 'linemate', 'roommate'], reply:
+    `<b>Read first</b> — What need is loudest right now? Wounded significance (embarrassed), lost acceptance (feels outside the group), missing approval? That's what actually needs treating — the incident is just the surface.<br><br><b>Open a face-saving door</b> — sized to the thing:<br>— Small stuff: minimize. "That's nothing, seriously."<br>— Medium: socialize. "Every single one of us has done that."<br>— Big: rationalize or project. "Anyone in that spot does the same — that's not on you."<br><br><b>Your face</b> — Flat and warm. A visible reaction mid-confession slams the door on the rest of it.<br><br><b>Your moves</b> — Go first with your own confession (hand-off). Echo when they trail off. Reassure on the exact topic that triggered their cues, not generally.<br><br><b>The frame</b> — Be the safe one in the room. That's who people tell the truth to, and that's who they reset next to.` },
+];
+
+let coachSeeded = false;
+function coachMsg(html, who) {
+  const box = document.getElementById('coachMsgs');
+  const d = document.createElement('div');
+  d.className = 'cmsg ' + who;
+  d.innerHTML = html;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+function coachReply(text) {
+  const t = ' ' + text.toLowerCase() + ' ';
+  let best = null, bestScore = 0;
+  PLAYBOOKS.forEach(p => {
+    const score = p.keys.reduce((s, k) => s + (t.includes(k) ? 1 : 0), 0);
+    if (score > bestScore) { bestScore = score; best = p; }
+  });
+  if (best) return best.reply;
+  // Library fallback: match meaningful words against cue names + reads.
+  // Skip filler words and weight matches by word length so "blink" outranks "what".
+  const STOP = new Set(['what', 'does', 'mean', 'means', 'again', 'that', 'this', 'with', 'have', 'they', 'them', 'when', 'your', 'like', 'about', 'someone', 'something', 'their', 'from', 'just', 'really', 'know', 'tell', 'should', 'would', 'could', 'going', 'gonna', 'stuff', 'thing']);
+  const words = text.toLowerCase().split(/[^a-z]+/).filter(w => w.length > 3 && !STOP.has(w));
+  const scored = [];
+  const scoreItem = it => {
+    const hay = (it.name + ' ' + it.read).toLowerCase();
+    const s = words.reduce((acc, w) => acc + (hay.includes(w) ? w.length : 0), 0);
+    if (s > 0) scored.push({ s, it });
+  };
+  LIBRARY.forEach(cat => cat.items.forEach(scoreItem));
+  HOCKEY_FLAT.forEach(scoreItem);
+  scored.sort((a, b) => b.s - a.s);
+  if (scored.length) {
+    return 'Closest reads I\'ve got on that:<br><br>' + scored.slice(0, 2).map(x =>
+      '<b>' + x.it.name + '</b><br>' + x.it.read + (x.it.use ? '<br><i>Use it: ' + x.it.use + '</i>' : '')
+    ).join('<br><br>');
+  }
+  return 'Give me the situation and I\'ll give you the game plan — try one of the buttons below, or something like "negotiation call in an hour" or "think my buddy\'s lying."';
+}
+function coachSend(preset) {
+  const input = document.getElementById('coachIn');
+  const text = (typeof preset === 'string') ? preset : input.value.trim();
+  if (!text) return;
+  if (typeof preset !== 'string') input.value = '';
+  coachMsg(text, 'user');
+  setTimeout(() => coachMsg(coachReply(text), 'bot'), 350);
+}
+function openCoach() {
+  const box = document.getElementById('coachMsgs');
+  box.innerHTML = '';
+  coachMsg('What are you walking into? Tap a situation or type it — I\'ll give you the game plan. <i>(Fresh start every time — nothing is saved.)</i>', 'bot');
+  const chips = document.getElementById('coachChips');
+  chips.innerHTML = '';
+  PLAYBOOKS.forEach(p => {
+    const b = document.createElement('button');
+    b.textContent = p.label;
+    b.onclick = () => coachSend(p.label);
+    chips.appendChild(b);
+  });
+  document.getElementById('coach').classList.add('on');
+}
+function closeCoach() {
+  document.getElementById('coach').classList.remove('on');
+  document.getElementById('coachMsgs').innerHTML = '';
+  document.getElementById('coachIn').value = '';
+}
+document.getElementById('coach').addEventListener('click', e => { if (e.target === document.getElementById('coach')) closeCoach(); });
 
 initToday();
 render();
