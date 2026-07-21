@@ -1524,7 +1524,7 @@ const PLAYBOOKS = [
     `<b>Right now, physically</b> — Exhale. Open the hands. One belly breath, shoulders pulled down out of your ears. Next-shift amnesia is a body action, not a thought.<br><br><b>On the bench</b> — Eyes back on the game: what's their D doing on breakouts? Where's the soft ice? Observation mode IS the reset — you can't replay a mistake and read the ice at the same time.<br><br><b>Never</b> — Show the tell. Slam nothing. Slow blink, easy pace. The opponent who sees you rattled keeps coming; the one who can't rattle you stops trying.<br><br><b>The frame</b> — Feeling bad can't change the last shift — believing it helps is the ego talking. Done means done. A body that feels safe returns to flow; a body punishing itself never does.` },
   { label: 'Feeling nervous', k2: ['nervous', 'anxious', 'anxiety', 'overthink', 'panic', 'insecure', 'intimidat', 'self conscious', 'scared', 'confiden'], k1: ['worry', 'doubt', 'awkward', 'shy', 'stress'], reply:
     `<b>Right now</b> — Attention outward. Profile three people near you: feet, hands, blink. Self-focus is the anxious mode and you cannot do both at once — this is the off-switch, not a distraction.<br><br><b>Body first</b> — Pool speed everything: your walk, your reach, your reply speed. Open the hands. One belly breath. Safety is physical before it's mental.<br><br><b>The voice</b> — "They'll judge you" is the 6-year-old tugging your sleeve. Consider the source. Smile at it. Every worry loop gets exactly one positive rep, then you move.<br><br><b>The frame</b> — You don't need this room's permission to belong in it. The only contest is comfort — and you can win that one on purpose, right now.` },
-  { label: 'Read someone new', k2: ['read someone', 'read him', 'read her', 'read them', 'read people', 'profile', 'baseline', 'size up', 'body language', 'first impression', 'look for', 'signs of', 'figure out', 'acting weird', 'acting off', 'seems off'], k1: ['read ', 'new person', 'watch for', 'tell if', 'cues', 'cue '], reply:
+  { label: 'Read someone new', k2: ['read someone', 'read him', 'read her', 'read them', 'read people', 'profile', 'baseline', 'size up', 'body language', 'first impression', 'look for', 'signs of', 'figure out', 'acting weird', 'acting off', 'seems off', 'analyze', 'what should i watch'], k1: ['read ', 'new person', 'watch for', 'tell if', 'cues', 'cue ', 'look at'], reply:
     `<b>Order of operations:</b><br><b>1. Baseline</b> (first 2 minutes) — easy small talk while you log their normal: blink pace, posture, speech speed. No conclusions yet.<br><b>2. Master question</b> — "What do they want me to THINK about them?" The mask points straight at the need: achievements = significance, "we" = acceptance, fishing = approval, struggles = pity, correcting = intelligence, control = power. Feed what you find.<br><b>3. The 3-second scan</b> — Feet (intent), hands (tension), blink (stress) — every few minutes, quietly.<br><b>4. Changes, not states</b> — crossed arms means nothing; arms crossing right after your question means everything. The trigger is the message.<br><b>5. Cluster rule</b> — one cue is noise, two on the same topic is a lead.<br><br><b>The frame</b> — Lens of reasons: curiosity, never judgment. Judged people close; understood people open.` },
   { label: 'Help a teammate', k2: ['teammate', 'linemate', 'roommate', 'apolog', 'argument', 'conflict', 'spiral', 'help him', 'help her', 'rookie', 'my friend is', 'fight with'], k1: ['upset', 'mad at', 'friend', 'brother', 'sister'], reply:
     `<b>Read first</b> — What need is loudest right now? Wounded significance (embarrassed), lost acceptance (feels outside the group), missing approval? That's what actually needs treating — the incident is just the surface.<br><br><b>Open a face-saving door</b> — sized to the thing:<br>— Small stuff: minimize. "That's nothing, seriously."<br>— Medium: socialize. "Every single one of us has done that."<br>— Big: rationalize or project. "Anyone in that spot does the same — that's not on you."<br><br><b>Your face</b> — Flat and warm. A visible reaction mid-confession slams the door on the rest of it.<br><br><b>Your moves</b> — Go first with your own confession (hand-off). Echo when they trail off. Reassure on the exact topic that triggered their cues, not generally.<br><br><b>The frame</b> — Be the safe one in the room. That's who people tell the truth to, and that's who they reset next to.` },
@@ -1563,7 +1563,7 @@ const MODIFIERS = [
   { skip: null, test: /\bref\b|referee|officials/, add: '<b>With refs:</b> never show the tell. Slow blink, shoulders down, skate away — the player who can\'t be rattled gets the calls all night.' },
   { skip: 'Negotiation / deal', test: /how much|salary|bonus|price|what they pay|number/, add: '<b>For the number:</b> bracket it — guess a wrong range out loud ("like 5, 10K?") and let the correction hand you the real figure.' },
   { skip: 'Party / new people', test: /group|room full|table of|bunch of people/, add: '<b>In the group:</b> watch who collects the confirmation glances after people speak — that\'s the decision-maker, and your real audience.' },
-  { skip: 'Date tonight', test: /hottie|cute|pretty girl|hot girl|attract|shoot my shot|make a move/, add: '<b>Reading her once you\'re in:</b> preening (hair smooth, posture fix) as you approach = the welcome mat. Eyes crinkling on her laughs = genuine, stay on that topic. Feet toward you = keep going; a barrier sliding between you = slow down and warm up first.' },
+  { skip: 'NONE', test: /(hot|cute|pretty|fine|gorgeous|beautiful) (girl|guy|chick|woman|man|barista|server|waitress|bartender|blonde|brunette)|hottie|baddie|smokeshow|shorty|attract|shoot my shot|make a move/, add: '<b>Reading her once you\'re in:</b> preening (hair smooth, posture fix) as you approach = the welcome mat. Eyes crinkling on her laughs = genuine, stay on that topic. Feet toward you = keep going; a barrier sliding between you = slow down and warm up first. Pupils only count in steady light.' },
 ];
 
 /* Specific cue mentioned? Append its exact library read. */
@@ -1607,6 +1607,15 @@ function coachReply(text) {
     if (aboutOthers && (p.label === 'Read someone new' || p.label === 'Think someone\'s lying') && score > 0) score += 1;
     if (score > bestScore) { bestScore = score; best = p; }
   });
+  // Attraction net: any "hot/cute + person" pattern or slang routes to the
+  // approach/date plans even when no keyword landed — slang is endless,
+  // the pattern isn't.
+  const attraction = /(hot|cute|pretty|fine|gorgeous|beautiful|attractive) (girl|guy|chick|woman|man|barista|server|waitress|bartender|blonde|brunette)|hottie|baddie|smokeshow|shorty/.test(t);
+  if (attraction && bestScore < 4) {
+    const wantsTalk = /(talk|say|approach|go up|opener|start)/.test(t);
+    best = PLAYBOOKS.find(p => p.label === (wantsTalk ? 'What do I say?' : 'Date tonight'));
+    bestScore = 4;
+  }
   // Compose: echo their scenario, lead with the 3 focus points, then the full
   // plan, then stack modules for anything specific they mentioned.
   const composeReply = base => {
@@ -1632,18 +1641,22 @@ function coachReply(text) {
   if (best && bestScore >= 2) return composeReply(best);
   // Library fallback: match meaningful words against cue names + reads.
   // Skip filler words and weight matches by word length so "blink" outranks "what".
-  const STOP = new Set(['what', 'does', 'mean', 'means', 'again', 'that', 'this', 'with', 'have', 'they', 'them', 'when', 'your', 'like', 'about', 'someone', 'something', 'their', 'from', 'just', 'really', 'know', 'tell', 'should', 'would', 'could', 'going', 'gonna', 'stuff', 'thing']);
+  const STOP = new Set(['what', 'does', 'mean', 'means', 'again', 'that', 'this', 'with', 'have', 'they', 'them', 'when', 'your', 'like', 'about', 'someone', 'something', 'their', 'from', 'just', 'really', 'know', 'tell', 'should', 'would', 'could', 'going', 'gonna', 'stuff', 'thing', 'working', 'there', 'here', 'right', 'want', 'wanna', 'person', 'people', 'today', 'tonight', 'tomorrow']);
   const words = text.toLowerCase().split(/[^a-z]+/).filter(w => w.length > 3 && !STOP.has(w));
   const scored = [];
   const scoreItem = it => {
+    const hayName = it.name.toLowerCase();
     const hay = (it.name + ' ' + it.read).toLowerCase();
-    const s = words.reduce((acc, w) => acc + (hay.includes(w) ? w.length : 0), 0);
-    if (s > 0) scored.push({ s, it });
+    let s = 0, nameHit = false;
+    words.forEach(w => { if (hay.includes(w)) { s += w.length; if (w.length >= 4 && hayName.includes(w)) nameHit = true; } });
+    if (s > 0) scored.push({ s, nameHit, it });
   };
   LIBRARY.forEach(cat => cat.items.forEach(scoreItem));
   HOCKEY_FLAT.forEach(scoreItem);
-  scored.sort((a, b) => b.s - a.s);
-  if (scored.length) {
+  scored.sort((a, b) => ((b.nameHit ? 100 : 0) + b.s) - ((a.nameHit ? 100 : 0) + a.s));
+  // Quality bar: serve the library only on a cue-name hit or a strong
+  // multi-word match — one stray generic word must never serve a random card.
+  if (scored.length && (scored[0].nameHit || scored[0].s >= 8)) {
     return 'Closest reads I\'ve got on that:<br><br>' + scored.slice(0, 2).map(x =>
       '<b>' + x.it.name + '</b><br>' + x.it.read + (x.it.use ? '<br><i>Use it: ' + x.it.use + '</i>' : '')
     ).join('<br><br>');
