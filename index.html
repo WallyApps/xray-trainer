@@ -1534,6 +1534,50 @@ const PLAYBOOKS = [
     `<b>The secret</b> — You don't need a line; you need a statement. Questions interview people; statements invite them. "You look like the one who planned this whole thing" beats "so what do you do?" every time.<br><br><b>Walking up</b> — Eyebrow flash on approach. Slow pace, open hands, and operate like they already like you — that assumption leaks into your body and people mirror it back.<br><br><b>The loop</b> — Provocative statement → listen → echo their last few words → share something small of your own (hand-off). That loop can run a whole conversation without a single interview question.<br><br><b>Then read</b> — Feed the first need they broadcast: bragging = acknowledge it, "we" language = include them, fishing = approve them. The 3-second scan (feet, hands, blink) tells you if it's landing.<br><br><b>The frame</b> — Comfort contest, not audition. You're not performing for the room; you're hosting it.` },
 ];
 
+/* Per-playbook "focus on these 3 things" leads — the direct answer, always first. */
+const FOCUS = {
+  'Negotiation / deal': ['Baseline them for two minutes before any business — you need their normal to read the money moments.', 'Watch the number moments: blink spike, lip press, or shoulder retreat = the real objection, handle it before pushing.', 'Pool speed + a walk-away number you\'ve already decided. Comfort closes; needing it doesn\'t.'],
+  'Date tonight': ['Win the comfort contest — be the easiest, slowest, safest person she\'s talked to all week.', 'Watch her signals per topic: eye-crinkle laughs, blink slowing, feet toward you = mine that vein.', 'Statements and echoes, never interview mode. Share first and she\'ll match your depth.'],
+  'Coach / GM / interview': ['Read their need in the first minute — power, intelligence, or significance — and feed it before your ask.', 'Watch feet and fingers for live disagreement and adjust mid-conversation, not after the no.', 'One clear ask, made from comfort. Then hold the silence — it pressures them, not you.'],
+  'You\'re the coach': ['Be the calmest person in the rink — pool speed, open hands; kids read bodies, not words.', 'Scan the bench: feed the approval-fishers instantly, check what triggers any high shoulders.', 'On mistakes: socialize it, then teach the reset — exhale, open hands, next rep.'],
+  'Think someone\'s lying': ['Baseline first, then hunt clusters — two flags on the same subject is a lead, one is nothing.', 'Ears open for: missing "I", dropped contractions, one fast high-pitched sentence, timeline-style stories.', 'Never accuse. Re-ask the stress sentence later, casually, with a flat face.'],
+  'Get info smoothly': ['Pick the one tool that fits: number → bracket, claim → disbelief, pride topic → naivety, sensitive → hourglass.', 'Go first — share something of yours at the depth you want back.', 'Bury the real question mid-conversation and close on something forgettable.'],
+  'Party / new people': ['Comfort contest from the door — slowest, easiest presence in the room.', 'Find who collects the confirmation glances — that\'s the real center of any group.', 'Eyebrow flash, statements over questions, feed the first need you spot.'],
+  'Big game': ['Identity line + cancel every worry loop with one rep of it going right.', 'Attention 100% outward: one read per shift — fatigue and fear are the two that pay.', 'Between whistles: glacial. Nobody sees anything from you, ever.'],
+  'Bad shift reset': ['Physical first: exhale, open the hands, one belly breath, shoulders down.', 'Eyes back on the ice — read their breakouts instead of replaying yours.', 'Show no tell: slow blink, easy pace. Done means done.'],
+  'Feeling nervous': ['Flip attention outward right now — profile three people; you can\'t be curious and self-conscious at once.', 'Slow the body: pool speed, open hands, one belly breath. Safety is physical first.', 'Hear the doubt as the 6-year-old tugging your sleeve — one positive rep per loop, then move.'],
+  'Read someone new': ['Baseline for two minutes before a single conclusion.', 'Master question: what do they want me to THINK about them? The mask points at the need.', 'Watch changes and clusters — a cue only matters when it shifts, and one alone is nothing.'],
+  'Help a teammate': ['Read which need got wounded — that\'s what needs treating, not the incident.', 'Open the right-sized face-saving door: minimize small, socialize medium, rationalize/project big.', 'Keep your face flat and warm — your reaction sets the price of their honesty.'],
+  'Texting reads': ['Read the change from THEIR baseline — never a single text in isolation.', 'Statements over interrogation; the echo works in writing too.', 'Match their pace. Instant replies all day reads as chasing.'],
+  'What do I say?': ['Open with a statement, not a question — statements invite, questions interview.', 'Eyebrow flash and walk up like they already like you.', 'Run the loop: statement → listen → echo → share something small of yours.'],
+};
+
+/* Add-on modules — stacked onto any base plan when the scenario mentions them. */
+const MODIFIERS = [
+  { skip: 'You\'re the coach', test: /kids|youth|parents in the stands|young guys/, add: '<b>With kids in the mix:</b> composure = authority doubles — they read your body, not your words. Feed approval instantly (never make a kid fish twice) and socialize every mistake before correcting it.' },
+  { skip: 'Feeling nervous', test: /nervous|anxious|anxiety|scared|worried|overthink/, add: '<b>Your head:</b> attention outward kills the nerves — profile the room instead of monitoring yourself. Pool speed, open hands, one belly breath before you walk in.' },
+  { skip: 'Think someone\'s lying', test: /lying|honest|truth|hiding|trust them|believe/, add: '<b>If honesty\'s in question:</b> one flag is nothing, two on the same subject is a lead. Don\'t accuse — note the stress sentence and re-ask it later, casually.' },
+  { skip: null, test: /girlfriend|boyfriend|my girl|love her|love him/, add: '<b>Careful:</b> you like this person, and liking someone wrecks your lie detection — you\'ll only see truth. Trust clusters, not vibes.' },
+  { skip: 'Big game', test: /in an hour|tonight|right now|about to|in 20|in 30|later today/, add: '<b>Short runway:</b> identity line, one belly breath, slow walk in. Spend the first two minutes on baseline before you steer anything.' },
+  { skip: null, test: /goalie|goaltender|tendy/, add: '<b>The goalie read:</b> fidgeting, glove re-strapping, shoulders up after a goal = not safe in his body. Shoot early and often before he resets.' },
+  { skip: null, test: /\bref\b|referee|officials/, add: '<b>With refs:</b> never show the tell. Slow blink, shoulders down, skate away — the player who can\'t be rattled gets the calls all night.' },
+  { skip: 'Negotiation / deal', test: /how much|salary|bonus|price|what they pay|number/, add: '<b>For the number:</b> bracket it — guess a wrong range out loud ("like 5, 10K?") and let the correction hand you the real figure.' },
+  { skip: 'Party / new people', test: /group|room full|table of|bunch of people/, add: '<b>In the group:</b> watch who collects the confirmation glances after people speak — that\'s the decision-maker, and your real audience.' },
+];
+
+/* Specific cue mentioned? Append its exact library read. */
+const CUE_MAP = [
+  [/blink/, 'Blink rate'], [/cross.{0,12}arm|arms? cross/, 'Crossed arms — the exceptions'], [/feet|foot point/, 'Feet honesty'],
+  [/shrug|shoulder/, 'Shoulder shrugs'], [/\blips?\b/, 'Lip compression'], [/pupil/, 'Pupil dilation'],
+  [/smile/, 'Artificial smile'], [/breath/, 'Breathing location'], [/neck|throat/, 'Throat & neck'],
+  [/barrier|bottle between/, 'Barrier behavior'], [/fidget/, 'Fidgeting'], [/palm/, 'Palms down'],
+  [/eyebrow/, 'Eyebrow flash'], [/eye home|eyes went|eyes go/, 'Eye home'],
+];
+function libItem(name) {
+  for (const c of LIBRARY) { const it = c.items.find(x => x.name === name); if (it) return it; }
+  return null;
+}
+
 let coachSeeded = false;
 function coachMsg(html, who) {
   const box = document.getElementById('coachMsgs');
@@ -1558,7 +1602,29 @@ function coachReply(text) {
     if (aboutOthers && (p.label === 'Read someone new' || p.label === 'Think someone\'s lying') && score > 0) score += 1;
     if (score > bestScore) { bestScore = score; best = p; }
   });
-  if (best && bestScore >= 2) return best.reply;
+  // Compose: echo their scenario, lead with the 3 focus points, then the full
+  // plan, then stack modules for anything specific they mentioned.
+  const composeReply = base => {
+    const isChip = text === base.label;
+    const echo = text.length > 90 ? text.slice(0, 90) + '…' : text;
+    let out = isChip ? '' : '<b>Scenario:</b> "' + echo + '"<br><br>';
+    const foc = FOCUS[base.label];
+    if (foc) out += '<b>Focus on:</b><br>' + foc.map((f, i) => (i + 1) + '. ' + f).join('<br>') + '<br><br>';
+    out += base.reply;
+    for (const [re, name] of CUE_MAP) {
+      if (re.test(t)) {
+        const it = libItem(name);
+        if (it) out += '<br><br><b>On "' + it.name + '" specifically:</b> ' + it.read + (it.use ? ' <i>' + it.use + '</i>' : '');
+        break;
+      }
+    }
+    let modCount = 0;
+    MODIFIERS.forEach(m => {
+      if (modCount < 2 && m.skip !== base.label && m.test.test(t)) { out += '<br><br>' + m.add; modCount++; }
+    });
+    return out;
+  };
+  if (best && bestScore >= 2) return composeReply(best);
   // Library fallback: match meaningful words against cue names + reads.
   // Skip filler words and weight matches by word length so "blink" outranks "what".
   const STOP = new Set(['what', 'does', 'mean', 'means', 'again', 'that', 'this', 'with', 'have', 'they', 'them', 'when', 'your', 'like', 'about', 'someone', 'something', 'their', 'from', 'just', 'really', 'know', 'tell', 'should', 'would', 'could', 'going', 'gonna', 'stuff', 'thing']);
@@ -1577,7 +1643,7 @@ function coachReply(text) {
       '<b>' + x.it.name + '</b><br>' + x.it.read + (x.it.use ? '<br><i>Use it: ' + x.it.use + '</i>' : '')
     ).join('<br><br>');
   }
-  if (best) return best.reply; // weak single-keyword match beats nothing
+  if (best) return composeReply(best); // weak single-keyword match beats nothing
   return 'Give me the situation and I\'ll give you the game plan — try one of the buttons below, or something like "negotiation call in an hour" or "think my buddy\'s lying."';
 }
 function coachSend(preset) {
