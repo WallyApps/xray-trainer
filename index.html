@@ -1504,28 +1504,32 @@ function countUp(n) {
    Session-only: closing the panel wipes the conversation completely.
    ===================================================================== */
 const PLAYBOOKS = [
-  { label: 'Negotiation / deal', keys: ['negotiat', 'deal', 'brand', 'rate', 'price', 'contract', 'pitch', 'close', 'sell', 'money', 'offer', 'client', 'budget', 'sponsor'], reply:
+  { label: 'Negotiation / deal', k2: ['negotiat', 'deal', 'brand', 'contract', 'pitch', 'sponsor', 'budget', 'invoice', 'sell', 'quote', 'get paid', 'charge'], k1: ['price', 'money', 'offer', 'client', 'close', 'rate', 'business', 'terms'], reply:
     `<b>Before</b> — Decide your walk-away number and say your identity line. One belly breath. Pool speed from the second you walk in: slow = authority.<br><br><b>First 2 minutes</b> — Small talk is baseline collection: their normal blink, posture, speech pace. If a need shows (talking achievements = significance), feed it before business.<br><br><b>Watch for</b> — Blink spike, lip compression, or a barrier sliding between you when a number lands = the real objection. Dominant shoulder easing back = a hard no they won't voice. Breathing dropping to the belly = you just hit what they actually care about — stay there.<br><br><b>Your moves</b> — Bury the most sensitive question mid-conversation (hourglass). Bracket the budget ("is this more of a 5K thing or 10K?"). Mild disbelief pulls proof. Surface the hidden objection: "before we lock it — anything about the number that doesn't sit right?"<br><br><b>The frame</b> — You're finding fit, not asking permission. However it goes, you're OK — which is exactly what lets you walk.` },
-  { label: 'Date tonight', keys: ['date', 'girl', 'tinder', 'hinge', 'attract', 'crush', 'her ', 'dating', 'first date'], reply:
+  { label: 'Date tonight', k2: ['date', 'tinder', 'hinge', 'bumble', 'attract', 'crush', 'flirt', 'likes me', 'into me', 'girlfriend', 'dating', 'pick up', 'rizz'], k1: ['girl', 'her ', 'bar ', 'match', 'romantic'], reply:
     `<b>Before</b> — It's a comfort contest, not an audition. Your role: the safest, most comfortable person she's talked to all week.<br><br><b>Walking in</b> — Eyebrow flash on approach; if it comes back, the door's already open. Watch for preening (hair, posture fix) = the approach is welcome.<br><br><b>Watch for</b> — Blink slowing = locked in on the topic, stay there. Eyes crinkling on her laugh = genuine, mine that vein. Feet pointed at you = engaged; barriers appearing = slow down and warm up. Pupils only count in steady light.<br><br><b>Your moves</b> — Statements over interview questions ("you seem like the friend group's planner" beats "what do you do?"). Share something real first — she'll match your depth. Echo her last few words when she trails off.<br><br><b>The frame</b> — Outcome-free. You're reading, not chasing. Being fine with it going nowhere is the most attractive thing in the room.` },
-  { label: 'Coach / GM / interview', keys: ['coach', 'gm', 'boss', 'interview', 'scout', 'meeting', 'manager', 'tryout', 'camp', 'agent', 'authority'], reply:
+  { label: 'Coach / GM / interview', k2: ['coach', 'boss', 'interview', 'scout', 'tryout', 'camp', 'agent', ' gm ', 'meeting with', 'front office'], k1: ['manager', 'authority', 'meeting', 'teacher', 'office'], reply:
     `<b>Before</b> — Step into the role: you belong in that room. Every "what if" loop gets one positive rep to cancel it.<br><br><b>First 2 minutes</b> — Read their need fast: short absolute statements = power (respect the frame, don't fight it). Correcting details = intelligence (defer, ask their opinion). Talking achievements = significance (acknowledge first).<br><br><b>Watch for</b> — Feet rotating to the door = wrap it, land your one key point now. Fingers curling as you talk = disagreement building, change approach live. A shift to belly breathing = that topic matters to them — expand it.<br><br><b>Your moves</b> — One clear ask, made from comfort, not apology. If there's pushback, don't fill the silence — slow down instead. Silence pressures them, not you.<br><br><b>The frame</b> — They're data, not judges. Observation mode: the more you read them, the less you monitor yourself.` },
-  { label: 'Think someone\'s lying', keys: ['lying', 'lie', 'lied', 'truth', 'hiding', 'cheat', 'sus', 'honest', 'deceiv', 'bs'], reply:
+  { label: 'Think someone\'s lying', k2: ['lying', 'lie ', 'lied', 'lies', 'deceiv', 'cheat', 'bullshit', ' bs ', 'sketchy', ' sus', 'fishy', 'hiding something', 'not telling', 'believe him', 'believe her', 'alibi'], k1: ['truth', 'honest', 'hiding', 'story', 'excuse'], reply:
     `<b>Rules first</b> — Baseline before anything. One flag = nothing. Two flags on the same subject = a lead. And if you LIKE them, distrust your own read — liking filters everything toward truth.<br><br><b>Listen for</b> — Missing "I" in their story. "Did not" from someone who always says "didn't." Your question repeated back or reversed. A character résumé instead of a denial. "To the best of my knowledge" on things they'd obviously know. A story told in perfect timeline order with no emotional lead. One sentence faster and higher-pitched than the rest.<br><br><b>Watch for</b> — Eyes skipping their usual recall spot. Hand drifting over the mouth. Throat touch or visible swallow on the key question.<br><br><b>Your moves</b> — Never accuse. Note the stress sentence and re-ask it later, casually. If they offer a small confession, wave it off — "that's nothing" — and the bigger one gets closer.<br><br><b>The frame</b> — You're collecting, not convicting.` },
-  { label: 'Get info smoothly', keys: ['info', 'find out', 'secret', 'extract', 'get them to', 'know if', 'curious', 'elicit', 'without asking'], reply:
+  { label: 'Get info smoothly', k2: ['get info', 'find out', 'without asking', 'get them to', 'extract', 'what they pay', 'how much they', 'secret', 'get the truth', 'make them tell', 'open up'], k1: ['curious', 'wondering', 'know if', 'info', 'elicit'], reply:
     `<b>Pick the tool for the target:</b><br>— A number (price, salary, date)? <b>Bracket</b>: guess a wrong range out loud and get corrected.<br>— A big claim? <b>Disbelief</b>: "no way, seriously?" — the need to be believed delivers proof.<br>— Their pride topic? <b>Naivety</b>: play unsure and let them educate you.<br>— Something sensitive? <b>Hourglass</b>: bury the question mid-conversation, close on something forgettable.<br>— Something personal? <b>Hand-off</b>: share yours first; depth gets matched.<br>— They went quiet? <b>Echo</b>: repeat their last three words, tone up.<br>— Rumor or complaint? <b>Citation</b>: "I heard from a friend that…" and let the correction flow.<br><br><b>The setup</b> — General topic → your story → their story → redirect to what you want.<br><br><b>The frame</b> — Their need to be heard, believed, and to correct the record does all the work. You just open doors.` },
-  { label: 'Party / new people', keys: ['party', 'network', 'event', 'room full', 'strangers', 'social', 'crowd', 'barbecue', 'wedding', 'meet people'], reply:
+  { label: 'Party / new people', k2: ['party', 'network', 'wedding', 'room full', 'new people', 'meet people', 'barbecue', 'banquet', 'mixer', 'golf tournament'], k1: ['strangers', 'social', 'crowd', 'event'], reply:
     `<b>Walking in</b> — Comfort contest starts at the door: slowest, easiest mover in the room wins. Feeling watched? Flip to observation mode and profile three people — you can't be self-conscious and curious at the same time.<br><br><b>Find the hub</b> — In any group, watch who collects the confirmation glances after people speak. That's the real center of the room.<br><br><b>Your moves</b> — Eyebrow flash + operate like they already like you. Open with provocative statements, not interviews. First need you spot, feed it: significance → acknowledge, acceptance → include, approval → grant it.<br><br><b>Watch for</b> — Feet tell you who's actually engaged and who's already left. Preening when you approach = welcome mat is out.<br><br><b>The frame</b> — You're the scientist in the room, not a contestant. Nobody outranks you; they're all just data.` },
-  { label: 'Big game', keys: ['game', 'pregame', 'pre-game', 'puck', 'warmup', 'faceoff', 'playoff', 'debut', 'showcase', 'game day', 'gameday'], reply:
+  { label: 'Big game', k2: ['pregame', 'pre-game', 'game day', 'gameday', 'playoff', 'debut', 'showcase', 'faceoff', 'warmup', 'big game', 'game tonight', 'game tomorrow'], k1: ['game', 'puck', 'rink', 'ice '], reply:
     `<b>Protocol</b> — Identity line, same words every game: "I'm the type of player that…" Every worry loop tonight gets one positive rep to cancel it. Role: pro. Pool speed in the room.<br><br><b>Warmups</b> — Check your own hands: white knuckles = open them. Belly breaths. Slow head turns. Your body is watching how you move.<br><br><b>First shifts</b> — Attention 100% outward: D's feet, goalie's depth, soft ice. One profiling read per shift — fatigue and fear are the two that pay. Gassed defender staying out = attack wide, now.<br><br><b>Between whistles</b> — Glacial. Slow blink, shoulders down. Refs, coaches, and opponents all read you: composure buys calls and kills chirps.<br><br><b>The frame</b> — However this goes, I'm OK — so I'm swinging.` },
-  { label: 'Bad shift reset', keys: ['mistake', 'turnover', 'benched', 'bad shift', 'reset', 'tilt', 'screwed up', 'messed up', 'slump', 'giveaway'], reply:
+  { label: 'Bad shift reset', k2: ['mistake', 'turnover', 'benched', 'bad shift', 'tilt', 'screwed up', 'messed up', 'slump', 'giveaway', 'bad game', 'playing bad', 'played bad'], k1: ['reset', 'bounce back', 'frustrat'], reply:
     `<b>Right now, physically</b> — Exhale. Open the hands. One belly breath, shoulders pulled down out of your ears. Next-shift amnesia is a body action, not a thought.<br><br><b>On the bench</b> — Eyes back on the game: what's their D doing on breakouts? Where's the soft ice? Observation mode IS the reset — you can't replay a mistake and read the ice at the same time.<br><br><b>Never</b> — Show the tell. Slam nothing. Slow blink, easy pace. The opponent who sees you rattled keeps coming; the one who can't rattle you stops trying.<br><br><b>The frame</b> — Feeling bad can't change the last shift — believing it helps is the ego talking. Done means done. A body that feels safe returns to flow; a body punishing itself never does.` },
-  { label: 'Feeling nervous', keys: ['nervous', 'anxious', 'anxiety', 'scared', 'confidence', 'doubt', 'worry', 'overthink', 'panic', 'insecure', 'intimidat'], reply:
+  { label: 'Feeling nervous', k2: ['nervous', 'anxious', 'anxiety', 'overthink', 'panic', 'insecure', 'intimidat', 'self conscious', 'scared', 'confiden'], k1: ['worry', 'doubt', 'awkward', 'shy', 'stress'], reply:
     `<b>Right now</b> — Attention outward. Profile three people near you: feet, hands, blink. Self-focus is the anxious mode and you cannot do both at once — this is the off-switch, not a distraction.<br><br><b>Body first</b> — Pool speed everything: your walk, your reach, your reply speed. Open the hands. One belly breath. Safety is physical before it's mental.<br><br><b>The voice</b> — "They'll judge you" is the 6-year-old tugging your sleeve. Consider the source. Smile at it. Every worry loop gets exactly one positive rep, then you move.<br><br><b>The frame</b> — You don't need this room's permission to belong in it. The only contest is comfort — and you can win that one on purpose, right now.` },
-  { label: 'Read someone new', keys: ['read', 'profile', 'baseline', 'first meeting', 'new person', 'size up', 'figure out', 'first impression'], reply:
+  { label: 'Read someone new', k2: ['read someone', 'read him', 'read her', 'read them', 'read people', 'profile', 'baseline', 'size up', 'body language', 'first impression', 'look for', 'signs of', 'figure out', 'acting weird', 'acting off', 'seems off'], k1: ['read ', 'new person', 'watch for', 'tell if', 'cues', 'cue '], reply:
     `<b>Order of operations:</b><br><b>1. Baseline</b> (first 2 minutes) — easy small talk while you log their normal: blink pace, posture, speech speed. No conclusions yet.<br><b>2. Master question</b> — "What do they want me to THINK about them?" The mask points straight at the need: achievements = significance, "we" = acceptance, fishing = approval, struggles = pity, correcting = intelligence, control = power. Feed what you find.<br><b>3. The 3-second scan</b> — Feet (intent), hands (tension), blink (stress) — every few minutes, quietly.<br><b>4. Changes, not states</b> — crossed arms means nothing; arms crossing right after your question means everything. The trigger is the message.<br><b>5. Cluster rule</b> — one cue is noise, two on the same topic is a lead.<br><br><b>The frame</b> — Lens of reasons: curiosity, never judgment. Judged people close; understood people open.` },
-  { label: 'Help a teammate', keys: ['teammate', 'friend', 'conflict', 'apolog', 'upset', 'argument', 'help him', 'help her', 'spiral', 'rookie', 'linemate', 'roommate'], reply:
+  { label: 'Help a teammate', k2: ['teammate', 'linemate', 'roommate', 'apolog', 'argument', 'conflict', 'spiral', 'help him', 'help her', 'rookie', 'my friend is', 'fight with'], k1: ['upset', 'mad at', 'friend', 'brother', 'sister'], reply:
     `<b>Read first</b> — What need is loudest right now? Wounded significance (embarrassed), lost acceptance (feels outside the group), missing approval? That's what actually needs treating — the incident is just the surface.<br><br><b>Open a face-saving door</b> — sized to the thing:<br>— Small stuff: minimize. "That's nothing, seriously."<br>— Medium: socialize. "Every single one of us has done that."<br>— Big: rationalize or project. "Anyone in that spot does the same — that's not on you."<br><br><b>Your face</b> — Flat and warm. A visible reaction mid-confession slams the door on the rest of it.<br><br><b>Your moves</b> — Go first with your own confession (hand-off). Echo when they trail off. Reassure on the exact topic that triggered their cues, not generally.<br><br><b>The frame</b> — Be the safe one in the room. That's who people tell the truth to, and that's who they reset next to.` },
+  { label: 'Texting reads', k2: ['text', 'texting', 'texted', 'message', 'dms', ' dm ', 'snap', 'on read', 'replied', 'reply', 'ghost', 'emoji'], k1: ['phone', 'sent', 'respond'], reply:
+    `<b>Baseline first</b> — Everyone has a text baseline: emoji density, punctuation, reply speed, message length. You never read one text; you read the CHANGE. The exclamation-point guy sending "k." is a real shift — but it's information about his day, not automatically about you.<br><br><b>Watch for</b> — Sudden shortness, dropped emojis, slower replies = something shifted; note WHEN it started and what happened right before. Missing "I" in an excuse text = distance from the story. Weirdly formal wording from a casual texter = a performed message.<br><br><b>Your moves</b> — Don't interrogate by text; there's no baseline to read against in an interrogation. Echo works in writing: quote their last few words with a "?". A statement beats twenty questions: "you seem swamped this week" pulls more than "why are you being dry?"<br><br><b>The frame</b> — Pool speed applies to texting. Instant replies all day reads as chasing; matched pace reads as comfort. And the cluster rule lives here too — never conclude off a single message.` },
+  { label: 'What do I say?', k2: ['what do i say', 'opener', 'start a conversation', 'break the ice', 'talk to', 'approach', 'small talk', 'conversation', 'introduce'], k1: ['say to', 'lines', 'icebreak'], reply:
+    `<b>The secret</b> — You don't need a line; you need a statement. Questions interview people; statements invite them. "You look like the one who planned this whole thing" beats "so what do you do?" every time.<br><br><b>Walking up</b> — Eyebrow flash on approach. Slow pace, open hands, and operate like they already like you — that assumption leaks into your body and people mirror it back.<br><br><b>The loop</b> — Provocative statement → listen → echo their last few words → share something small of your own (hand-off). That loop can run a whole conversation without a single interview question.<br><br><b>Then read</b> — Feed the first need they broadcast: bragging = acknowledge it, "we" language = include them, fishing = approve them. The 3-second scan (feet, hands, blink) tells you if it's landing.<br><br><b>The frame</b> — Comfort contest, not audition. You're not performing for the room; you're hosting it.` },
 ];
 
 let coachSeeded = false;
@@ -1535,16 +1539,24 @@ function coachMsg(html, who) {
   d.className = 'cmsg ' + who;
   d.innerHTML = html;
   box.appendChild(d);
-  box.scrollTop = box.scrollHeight;
+  // Long replies: land at the TOP of the new message so it reads from the start.
+  if (who === 'bot') box.scrollTop = Math.max(0, d.offsetTop - 10);
+  else box.scrollTop = box.scrollHeight;
 }
 function coachReply(text) {
   const t = ' ' + text.toLowerCase() + ' ';
+  // Strong keys (k2) score 2, weak keys (k1) score 1. Mentions of another
+  // person nudge toward the reading/lying playbooks (vs. self-state ones).
+  const aboutOthers = /(\bhe\b|\bshe\b|\bthey\b|\bhim\b|\bher\b|someone|buddy|roommate|teammate|guy|girl |dude|friend)/.test(t);
   let best = null, bestScore = 0;
   PLAYBOOKS.forEach(p => {
-    const score = p.keys.reduce((s, k) => s + (t.includes(k) ? 1 : 0), 0);
+    // Multi-word phrases are far more specific than single words — weight them higher.
+    let score = (p.k2 || []).reduce((s, k) => s + (t.includes(k) ? (k.trim().includes(' ') ? 3 : 2) : 0), 0) +
+                (p.k1 || []).reduce((s, k) => s + (t.includes(k) ? 1 : 0), 0);
+    if (aboutOthers && (p.label === 'Read someone new' || p.label === 'Think someone\'s lying') && score > 0) score += 1;
     if (score > bestScore) { bestScore = score; best = p; }
   });
-  if (best) return best.reply;
+  if (best && bestScore >= 2) return best.reply;
   // Library fallback: match meaningful words against cue names + reads.
   // Skip filler words and weight matches by word length so "blink" outranks "what".
   const STOP = new Set(['what', 'does', 'mean', 'means', 'again', 'that', 'this', 'with', 'have', 'they', 'them', 'when', 'your', 'like', 'about', 'someone', 'something', 'their', 'from', 'just', 'really', 'know', 'tell', 'should', 'would', 'could', 'going', 'gonna', 'stuff', 'thing']);
@@ -1563,6 +1575,7 @@ function coachReply(text) {
       '<b>' + x.it.name + '</b><br>' + x.it.read + (x.it.use ? '<br><i>Use it: ' + x.it.use + '</i>' : '')
     ).join('<br><br>');
   }
+  if (best) return best.reply; // weak single-keyword match beats nothing
   return 'Give me the situation and I\'ll give you the game plan — try one of the buttons below, or something like "negotiation call in an hour" or "think my buddy\'s lying."';
 }
 function coachSend(preset) {
@@ -1570,6 +1583,7 @@ function coachSend(preset) {
   const text = (typeof preset === 'string') ? preset : input.value.trim();
   if (!text) return;
   if (typeof preset !== 'string') input.value = '';
+  document.getElementById('coachChips').style.display = 'none'; // reclaim space once talking
   coachMsg(text, 'user');
   setTimeout(() => coachMsg(coachReply(text), 'bot'), 350);
 }
@@ -1579,6 +1593,7 @@ function openCoach() {
   coachMsg('What are you walking into? Tap a situation or type it — I\'ll give you the game plan. <i>(Fresh start every time — nothing is saved.)</i>', 'bot');
   const chips = document.getElementById('coachChips');
   chips.innerHTML = '';
+  chips.style.display = '';
   PLAYBOOKS.forEach(p => {
     const b = document.createElement('button');
     b.textContent = p.label;
@@ -1591,8 +1606,23 @@ function closeCoach() {
   document.getElementById('coach').classList.remove('on');
   document.getElementById('coachMsgs').innerHTML = '';
   document.getElementById('coachIn').value = '';
+  const p = document.querySelector('.coach-panel');
+  p.style.transform = ''; p.style.height = '';
 }
 document.getElementById('coach').addEventListener('click', e => { if (e.target === document.getElementById('coach')) closeCoach(); });
+
+/* iPhone keyboard: keep the panel (and its input) above the keyboard. */
+function coachKb() {
+  const p = document.querySelector('.coach-panel');
+  if (!window.visualViewport || !p || !document.getElementById('coach').classList.contains('on')) return;
+  const off = Math.max(0, window.innerHeight - (window.visualViewport.height + window.visualViewport.offsetTop));
+  p.style.transform = off ? 'translateY(-' + off + 'px)' : '';
+  p.style.height = off ? Math.round(window.visualViewport.height * 0.92) + 'px' : '';
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', coachKb);
+  window.visualViewport.addEventListener('scroll', coachKb);
+}
 
 initToday();
 render();
