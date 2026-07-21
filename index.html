@@ -318,6 +318,15 @@
   .coach-head h3 { font-family: var(--serif); font-style: italic; font-size: 18px; font-weight: 400; }
   .coach-head h3 b { color: var(--amber); font-weight: 600; }
   .coach-head button { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 6px 13px; font-size: 13px; cursor: pointer; }
+  .coach-head .hbtns { display: flex; gap: 8px; }
+  #aiBadge { font-family: var(--sans); font-style: normal; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-left: 7px; }
+  #aiBadge.on { color: var(--green); }
+  .airow { display: none; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .airow.on { display: flex; }
+  .airow input { flex: 1; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; color: var(--bone); font-size: 13px; padding: 10px 12px; outline: none; }
+  .airow input:focus { border-color: var(--amber); }
+  .airow button { background: var(--amber); border: none; color: var(--ink); font-weight: 700; font-size: 13px; border-radius: 10px; padding: 0 14px; cursor: pointer; }
+  .cmsg.typing i { letter-spacing: 3px; }
   .coach-msgs { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
   .cmsg { max-width: 90%; padding: 11px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.6; }
   .cmsg.user { align-self: flex-end; background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.4); border-bottom-right-radius: 4px; }
@@ -499,8 +508,15 @@
 <div id="coach">
   <div class="coach-panel">
     <div class="coach-head">
-      <h3>X-Ray <b>Coach</b></h3>
-      <button onclick="closeCoach()">Close</button>
+      <h3>X-Ray <b>Coach</b><span id="aiBadge"></span></h3>
+      <div class="hbtns">
+        <button onclick="toggleAiRow()" aria-label="AI settings">⚙︎</button>
+        <button onclick="closeCoach()">Close</button>
+      </div>
+    </div>
+    <div class="airow" id="aiRow">
+      <input id="aiKeyIn" type="password" placeholder="OpenAI API key (sk-…) — stored only on this device" onkeydown="if(event.key==='Enter')saveAiKey()">
+      <button onclick="saveAiKey()">Save</button>
     </div>
     <div class="coach-msgs" id="coachMsgs"></div>
     <div class="chips" id="coachChips"></div>
@@ -1579,6 +1595,56 @@ function libItem(name) {
   return null;
 }
 
+/* ---- AI mode (optional): user pastes their own OpenAI key, stored ONLY in
+   this device's localStorage — never in the code, never on the server. With a
+   key, answers come from gpt-4o-mini grounded in Chase's system (~$0.001 per
+   question); without one (or on any error) the offline engine answers. ---- */
+const AI_MODEL = 'gpt-4o-mini';
+const AI_SYS = 'You are X-Ray Coach, a pocket coach inside a training app built on Chase Hughes\' "6 Minute X-Ray" behavior-profiling system and his confidence teachings. The user is Riley: a pro hockey player who also coaches kids and negotiates brand deals, training these skills daily.\n\nFORMAT (strict): Start with "**Focus on:**" then 2-3 numbered, concrete priorities for HIS exact scenario. Then 2-4 short sections with **bold** labels (like **Watch for**, **Your moves**, **The frame**). Plain text with **bold** only, no headers or bullet symbols. Under 180 words. Direct, personal, coach-voice. Never invent techniques outside the system below.\n\nTHE SYSTEM:\nFoundations: everyone suffers and wears a mask; baseline first, then read CHANGES; context x clusters (one cue is nothing, two on the same subject is a lead); lens of reasons kills judgment.\nEyes: blink ~9/min normal, ~70 stressed, ~3 locked-in; a blink-rate change marks the trigger topic; eye-home deviation on recall = possible fabrication; emotional memories pull eyes down; pupil dilation = liking (steady light only); confirmation glances point at the real decision-maker; returned eyebrow flash = open door.\nFace: lip compression = withheld objection; object-to-mouth or neck touch = needs reassurance; real expressions fade and engage the eyes, fake ones drop off and sit asymmetric (contempt is naturally half-faced); nostril flare = adrenaline (context decides anger/excitement/attraction); hushing = wants to stay quiet.\nBody: crossed arms with palms flat = self-soothing, with fists = anger; fingers opening = comfort, curling = disagreement; feet point at intent/leader/exit; dominant-shoulder retreat = unvoiced disagreement; shift to belly breathing = the topic matters; single-sided shrug = doesn\'t believe own words; barriers between you = needs protection; preening = cares what you think; throat touch = doubt.\nVerbal deception: pronoun absence, dropped contractions, question reversal, resume statements, exclusion qualifiers ("to the best of my knowledge"), strict chronology with no emotional lead, one fast/high-pitched sentence; never accuse — re-ask the stress line later; liking someone biases you toward belief.\nNeeds (the mask points at the need): significance -> acknowledge, acceptance -> include, approval -> grant fast, pity -> sympathize first, intelligence -> defer and ask, power -> respect the frame. Master question: what do they want me to THINK about them?\nFace-saving doors for honesty: socialize / minimize / rationalize / project, sized to the confession; keep your own face flat and warm.\nElicitation: hourglass (bury the real question mid-conversation), bracketing numbers, disbelief ("no way, seriously?"), naivety on their pride topic, informational hand-off (share yours first), echoing their last words, citations ("I heard..."), provocative statements instead of questions.\nConfidence OS: confidence = safety, composure = authority; pool speed (never move faster than you would in a pool); hear self-doubt as fiction (a 6-year-old tugging your sleeve); radical self-forgiveness; stop outsourcing approval; no hierarchy — the only contest is comfort; observation mode kills anxiety (you can\'t be curious and self-conscious at once); worry = rehearsing failure, cancel each loop with one positive rep; identity drives behavior.\nHockey: next-shift amnesia (exhale, open hands, next rep); observation mode is the flow switch; read opponents for fatigue and fear — those pay; goalie fidgeting with shoulders up after a goal = attack now; never show your own tells; bench reset = belly breath, shoulders down.\n\nIf a scenario falls outside social reading or mental performance, relate it back to these tools briefly or say it\'s outside your lane.';
+
+let chatLog = []; // session-only; wiped with the panel
+function aiKey() { return localStorage.getItem('xray_ai_key') || ''; }
+function updateAiBadge() {
+  const b = document.getElementById('aiBadge');
+  b.textContent = aiKey() ? 'AI' : 'offline';
+  b.className = aiKey() ? 'on' : '';
+}
+function toggleAiRow() {
+  const r = document.getElementById('aiRow');
+  r.classList.toggle('on');
+  document.getElementById('aiKeyIn').value = aiKey();
+}
+function saveAiKey() {
+  const v = document.getElementById('aiKeyIn').value.trim();
+  if (v) localStorage.setItem('xray_ai_key', v); else localStorage.removeItem('xray_ai_key');
+  document.getElementById('aiRow').classList.remove('on');
+  updateAiBadge();
+  coachMsg(v ? '<b>AI mode on.</b> Live answers grounded in Chase\'s system, with the offline engine as backup. Your key stays on this device only.' : 'Key removed — back to offline mode.', 'bot');
+}
+function mdLite(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+}
+async function aiReply(text) {
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), 15000);
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + aiKey() },
+      body: JSON.stringify({
+        model: AI_MODEL, max_tokens: 400, temperature: 0.6,
+        messages: [{ role: 'system', content: AI_SYS }].concat(chatLog.slice(-8)).concat([{ role: 'user', content: text }])
+      }),
+      signal: ctrl.signal
+    });
+    clearTimeout(to);
+    if (!res.ok) throw new Error('http ' + res.status);
+    const j = await res.json();
+    return (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || null;
+  } catch (e) { clearTimeout(to); return null; }
+}
+
 let coachSeeded = false;
 function coachMsg(html, who) {
   const box = document.getElementById('coachMsgs');
@@ -1589,6 +1655,7 @@ function coachMsg(html, who) {
   // Long replies: land at the TOP of the new message so it reads from the start.
   if (who === 'bot') box.scrollTop = Math.max(0, d.offsetTop - 10);
   else box.scrollTop = box.scrollHeight;
+  return d;
 }
 function coachReply(text) {
   // Strip greeting addressers ("whats up boss", "yo bro", "hey coach") so slang
@@ -1664,13 +1731,26 @@ function coachReply(text) {
   if (best) return composeReply(best); // weak single-keyword match beats nothing
   return 'Give me the situation and I\'ll give you the game plan — try one of the buttons below, or something like "negotiation call in an hour" or "think my buddy\'s lying."';
 }
-function coachSend(preset) {
+async function coachSend(preset) {
   const input = document.getElementById('coachIn');
   const text = (typeof preset === 'string') ? preset : input.value.trim();
   if (!text) return;
   if (typeof preset !== 'string') input.value = '';
   document.getElementById('coachChips').style.display = 'none'; // reclaim space once talking
   coachMsg(text, 'user');
+  chatLog.push({ role: 'user', content: text });
+  if (aiKey()) {
+    const typing = coachMsg('<i>· · ·</i>', 'bot typing');
+    const out = await aiReply(text);
+    typing.remove();
+    if (out) {
+      coachMsg(mdLite(out), 'bot');
+      chatLog.push({ role: 'assistant', content: out });
+      return;
+    }
+    coachMsg('<i>AI unreachable — offline answer:</i><br><br>' + coachReply(text), 'bot');
+    return;
+  }
   setTimeout(() => coachMsg(coachReply(text), 'bot'), 350);
 }
 function openCoach() {
@@ -1686,12 +1766,15 @@ function openCoach() {
     b.onclick = () => coachSend(p.label);
     chips.appendChild(b);
   });
+  updateAiBadge();
   document.getElementById('coach').classList.add('on');
 }
 function closeCoach() {
   document.getElementById('coach').classList.remove('on');
   document.getElementById('coachMsgs').innerHTML = '';
   document.getElementById('coachIn').value = '';
+  document.getElementById('aiRow').classList.remove('on');
+  chatLog = []; // fresh start every open — nothing kept
   const p = document.querySelector('.coach-panel');
   p.style.transform = ''; p.style.height = '';
 }
