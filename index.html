@@ -236,12 +236,13 @@
     font-family: var(--sans); font-size: 12.5px; font-weight: 700; border-radius: 8px; padding: 9px 13px; cursor: pointer;
   }
   .unit.done .go { border-color: var(--line); background: var(--panel-2); color: var(--muted); }
-  .lessonpicker { flex: none; display: flex; gap: 8px; }
+  .lessonpicker { flex: none; display: flex; gap: 6px; }
   .lessonpicker button {
-    width: 44px; height: 44px; border-radius: 10px; cursor: pointer; touch-action: manipulation;
+    width: 40px; height: 44px; border-radius: 10px; cursor: pointer; touch-action: manipulation;
     border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber);
     font-family: var(--sans); font-weight: 700; font-size: 15px;
   }
+  .lessonpicker button.drill { background: linear-gradient(180deg, #eebd72, #d99a48); color: var(--ink); font-size: 17px; }
   .unit.locked { opacity: 0.45; }
   .unit.locked .go { display: none; }
   .lessonxp { color: var(--amber); font-weight: 700; }
@@ -1210,10 +1211,10 @@ function renderLearn() {
         status +
         '<div class="meat"><h4>' + u.title + '</h4><div class="desc">' + u.desc + '</div></div>' +
         (!open ? '' : done
-          ? '<div class="lessonpicker">' + [1, 2, 3].map(ln => '<button data-ln="' + ln + '">' + ln + '</button>').join('') + '</div>'
+          ? '<div class="lessonpicker">' + [1, 2, 3].map(ln => '<button data-ln="' + ln + '">' + ln + '</button>').join('') + '<button data-ln="0" class="drill" aria-label="Endless drill">∞</button></div>'
           : '<button class="go">Lesson ' + (n + 1) + '</button>');
       if (open) {
-        if (done) d.querySelectorAll('.lessonpicker button').forEach(btn => { btn.onclick = () => startLesson(i, +btn.dataset.ln); });
+        if (done) d.querySelectorAll('.lessonpicker button').forEach(btn => { btn.onclick = () => { const ln = +btn.dataset.ln; ln ? startLesson(i, ln) : startDrill(i); }; });
         else d.querySelector('.go').onclick = () => startLesson(i, n + 1);
       }
       host.appendChild(d);
@@ -1341,6 +1342,38 @@ function startLesson(uIdx, lessonNum) {
   showCard();
 }
 
+/* DRILL MODE (∞ on beaten units): endless rip-through of a unit's full
+   authored pool — scenarios + everyday examples with their SRS ids kept (so
+   drilling feeds the review schedule), plus a sprinkle of generated
+   questions. Batches refill automatically; rotation via pickFresh means the
+   whole bank cycles before anything repeats. Close whenever — no pass/fail. */
+function buildDrillQs(u, pool, n) {
+  const scen = scenariosForUnit(u).map(s => ({ s, key: 's:' + s._i, kind: 'scen' }));
+  const ev = u.scen ? EVERYDAY.map((x, i) => ({ ...x, _i: i })).filter(x => x.cat === u.scen).map(x => ({ s: x, key: 'e:' + x._i, kind: 'ev' })) : [];
+  const authored = scen.concat(ev);
+  const picked = pickFresh(authored, a => a.key, Math.min(n, Math.max(1, authored.length)));
+  const qs = picked.map(a => Object.assign(
+    a.kind === 'scen' ? scenarioToQ(a.s)
+      : shuffleOpts({ type: 'mc', cat: a.s.cat + ' · everyday', q: a.s.q, opts: a.s.opts, a: a.s.a, why: a.s.why }),
+    { id: a.key }
+  ));
+  for (let i = 0; i < 2; i++) {
+    const f = u.facts[Math.floor(Math.random() * u.facts.length)];
+    qs.push(Math.random() < 0.5 ? makeFactMC(f, pool) : makeAppMC(f, pool));
+  }
+  return shuffle(qs);
+}
+function startDrill(uIdx) {
+  const u = UNITS[uIdx];
+  const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
+  deck = buildDrillQs(u, distractorPool, 8);
+  mode = 'drill'; lessonUnit = uIdx;
+  qi = 0; hits = 0;
+  document.getElementById('coachBtn').style.display = 'none';
+  document.getElementById('quiz').classList.add('on');
+  showCard();
+}
+
 /* ---- tabs ---- */
 function showTab(name, btn) {
   document.querySelectorAll('main').forEach(m => m.classList.remove('on'));
@@ -1409,6 +1442,12 @@ function showCard() {
   const card = document.getElementById('qCard');
   document.getElementById('qBtns').classList.remove('show');
   card.classList.remove('flipped');
+  if (qi >= deck.length && mode === 'drill') {
+    // Endless: refill with the next rotation batch and keep going.
+    const u = UNITS[lessonUnit];
+    const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
+    deck = deck.concat(buildDrillQs(u, distractorPool, 8));
+  }
   if (qi >= deck.length) {
     card.classList.remove('mc');
     card.onclick = null;
@@ -1441,7 +1480,9 @@ function showCard() {
   }
   const q = deck[qi];
   document.getElementById('qBack').style.display = qi > 0 ? '' : 'none';
-  document.getElementById('qProg').textContent = 'Card ' + (qi + 1) + ' of ' + deck.length;
+  document.getElementById('qProg').textContent = mode === 'drill'
+    ? 'Drill · ' + hits + ' right of ' + qi
+    : 'Card ' + (qi + 1) + ' of ' + deck.length;
   if (q.type === 'flash') {
     card.classList.remove('mc');
     card.onclick = q._done ? null : flipCard;
