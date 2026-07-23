@@ -397,6 +397,15 @@
       <button class="donebtn" id="cdrillBtn" onclick="toggleDrill('c')">Mark done</button>
     </div>
 
+    <div class="eyebrow">The evidence stack</div>
+    <div class="card">
+      <span class="tag">Automatic</span>
+      <h3 id="evCount">0 reps collected</h3>
+      <p>Every time today you act WITH the fear still on — the ask, the walk-up, the hand raised — tap it. Your brain logs the proof unconsciously; this is the visible scoreboard of the voice getting quieter.</p>
+      <button class="donebtn" id="evBtn">+1 — did it with the feeling on</button>
+      <p class="sub" id="evSub"></p>
+    </div>
+
     <div class="eyebrow">Today's review</div>
     <div class="card">
       <span class="tag">Memory</span>
@@ -1159,8 +1168,11 @@ if (state.today !== todayKey) {
   state.counted = false;
   state.pdrill = null;
   state.cue = null; state.debrief = null; state.debriefXP = false;
+  state.evToday = 0;
   save(state);
 }
+if (!state.evTotal) state.evTotal = 0;
+if (state.evToday == null) state.evToday = 0;
 if (!state.checks) state.checks = [false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
@@ -1220,6 +1232,11 @@ function initToday() {
   };
   document.getElementById('spotNo').onclick = () => { state.debrief = 'miss'; save(state); render(); };
   document.getElementById('nightBtn').onclick = () => startQuiz(3);
+  document.getElementById('evBtn').onclick = () => {
+    state.evTotal++; state.evToday++;
+    if (state.evToday <= 3) state.xp += 5;
+    save(state); render();
+  };
 }
 
 const checksEl = document.getElementById('dailyChecks');
@@ -1274,6 +1291,10 @@ function render() {
     launch.onclick = startQuiz;
   }
   document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q));
+  document.getElementById('evCount').textContent = state.evTotal + ' rep' + (state.evTotal === 1 ? '' : 's') + ' collected';
+  document.getElementById('evSub').textContent = state.evToday > 0
+    ? 'Today: ' + state.evToday + ' — the voice gets quieter with every single one.'
+    : 'First 3 each day earn +5 XP. The rep counts even when it goes badly — acting was the win.';
   const sy = document.getElementById('spotYes'), sn = document.getElementById('spotNo');
   sy.classList.toggle('done', state.debrief === 'hit');
   sy.textContent = state.debrief === 'hit' ? '✓ Spotted it' : 'Spotted it (+10 XP)';
