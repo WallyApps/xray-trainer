@@ -450,6 +450,10 @@
     </div>
     <p class="xphint">+10 XP per correct lesson answer · +5 in daily review · +20 perfect-lesson bonus</p>
 
+    <div class="eyebrow" id="powerEyebrow">Power drills</div>
+    <button class="quizlaunch" id="weakBtn" style="margin-bottom: 8px;">Weak spots ∞</button>
+    <button class="quizlaunch" id="mixBtn">Everything mixed ∞</button>
+
     <div class="eyebrow">The X-Ray path</div>
     <div id="pathXray"></div>
 
@@ -1473,6 +1477,15 @@ function renderLearn() {
       host.appendChild(d);
     });
   });
+  const weak = weakCards().length, learned = reviewPool().length;
+  const wb = document.getElementById('weakBtn'), mb = document.getElementById('mixBtn');
+  document.getElementById('powerEyebrow').style.display = learned ? '' : 'none';
+  wb.style.display = weak ? '' : 'none';
+  wb.textContent = 'Weak spots ∞ — ' + weak + ' card' + (weak === 1 ? '' : 's') + ' to fix';
+  wb.onclick = startWeakDrill;
+  mb.style.display = learned ? '' : 'none';
+  mb.textContent = 'Everything mixed ∞ — all ' + learned + ' learned cards';
+  mb.onclick = startMixDrill;
 }
 
 /* Every fact that comes from LIBRARY or HOCKEY carries a real-world "use"
@@ -1619,12 +1632,35 @@ function buildDrillQs(u, pool, n) {
 function startDrill(uIdx) {
   const u = UNITS[uIdx];
   const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
-  deck = buildDrillQs(u, distractorPool, 8);
-  mode = 'drill'; lessonUnit = uIdx;
+  startCustomDrill(() => buildDrillQs(u, distractorPool, 8), uIdx);
+}
+function startCustomDrill(feed, uIdx) {
+  drillFeed = feed;
+  deck = feed();
+  if (!deck.length) return;
+  mode = 'drill'; lessonUnit = (uIdx == null ? -1 : uIdx);
   qi = 0; hits = 0;
   document.getElementById('coachBtn').style.display = 'none';
   document.getElementById('quiz').classList.add('on');
   showCard();
+}
+/* Weak spots = learned cards sitting in the lowest SRS boxes (missed or
+   barely-known). Mixed = everything learned, interleaved — forces the brain
+   to discriminate between similar cues instead of pattern-matching a topic. */
+function weakCards() {
+  return reviewPool().filter(c => { const e = (state.srs || {})[c.id]; return e && e.box <= 1; });
+}
+function startWeakDrill() {
+  if (!weakCards().length) return;
+  startCustomDrill(() => {
+    const pool = weakCards();
+    if (!pool.length) return [];
+    return pickFresh(pool, c => c.id, Math.min(8, pool.length)).map(c => c.type === 'mc' ? shuffleOpts(c) : c);
+  });
+}
+function startMixDrill() {
+  if (!reviewPool().length) return;
+  startCustomDrill(() => pickFresh(reviewPool(), c => c.id, 8).map(c => c.type === 'mc' ? shuffleOpts(c) : c));
 }
 
 /* ---- tabs ---- */
@@ -1665,7 +1701,7 @@ function gradeSRS(id, hit) {
   save(state);
 }
 
-let deck = [], qi = 0, hits = 0, answered = false, mode = 'review', lessonUnit = -1;
+let deck = [], qi = 0, hits = 0, answered = false, mode = 'review', lessonUnit = -1, drillFeed = null;
 function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -1695,17 +1731,19 @@ function showCard() {
   const card = document.getElementById('qCard');
   document.getElementById('qBtns').classList.remove('show');
   card.classList.remove('flipped');
-  if (qi >= deck.length && mode === 'drill') {
+  if (qi >= deck.length && mode === 'drill' && drillFeed) {
     // Endless: refill with the next rotation batch and keep going.
-    const u = UNITS[lessonUnit];
-    const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
-    deck = deck.concat(buildDrillQs(u, distractorPool, 8));
+    deck = deck.concat(drillFeed());
   }
   if (qi >= deck.length) {
     card.classList.remove('mc');
     card.onclick = null;
     document.getElementById('qBack').style.display = 'none';
     document.getElementById('qProg').textContent = 'Done';
+    if (mode === 'drill') {
+      card.innerHTML = '<div class="qdone win"><div class="big">' + hits + ' right of ' + qi + '</div><p>Pool cleared — nothing left in this rotation. That\'s mastery doing its job.</p></div>';
+      return;
+    }
     if (mode === 'lesson') {
       const passed = hits >= PASS_MARK;
       let bonus = 0;
