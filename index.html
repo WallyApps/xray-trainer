@@ -275,6 +275,15 @@
   .qd-saved .dt { font-size: 11px; color: var(--muted); }
   .qd-saved button { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 6px 11px; font-size: 12px; cursor: pointer; }
 
+  /* ---------- 25-week plan ---------- */
+  .plan-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .plan-pill { flex: 0 0 calc(20% - 5px); padding: 10px 0; text-align: center; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; transition: transform 0.1s ease, border-color 0.15s ease; }
+  .plan-pill:active { transform: scale(0.94); }
+  .plan-pill.on { border-color: var(--amber); color: var(--amber); }
+  .plan-pill.done { background: var(--amber-dim); border-color: rgba(224, 164, 88, 0.55); color: var(--amber); }
+  .plan-detail .fld { margin-top: 9px; font-size: 13.5px; line-height: 1.55; color: var(--bone); }
+  .plan-detail .fld b { color: var(--amber); }
+
   /* ---------- premium: layered surfaces, motion, reward ---------- */
   .card, .cat, .check, .unit, .principle, .mantra {
     background: linear-gradient(180deg, #19222f 0%, #151d29 100%);
@@ -485,6 +494,14 @@
 
     <div class="eyebrow">The Mind path</div>
     <div id="pathMind"></div>
+
+    <div class="eyebrow">The 25-week plan</div>
+    <div class="card">
+      <h3>Skill, not knowledge</h3>
+      <p>Knowing this stuff does nothing — the skill does everything. Four phases: <b style="color:var(--amber)">Visual</b> (see behavior live) → <b style="color:var(--amber)">Audio</b> (hear between the lines) → <b style="color:var(--amber)">Response</b> (alter your language to what you read) → <b style="color:var(--amber)">Mental</b> (the whole compass, no notes). One brick at a time: a skill moves to the next only once the last one runs without you.</p>
+    </div>
+    <div class="plan-pills" id="planPills"></div>
+    <div class="card plan-detail" id="planDetail"></div>
 
     <footer>Pass a lesson with 6/7 or better. Three lessons beat a unit. Beat a unit to unlock the next.</footer>
   </main>
@@ -1318,6 +1335,7 @@ if (state.evToday == null) state.evToday = 0;
 if (!state.checks) state.checks = [false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
+if (!state.weeks) state.weeks = [];
 
 /* ---- today tab ----
    The profiling rep is drawn only from Learn-path units you've unlocked, and
@@ -2282,7 +2300,69 @@ function renderQuad() {
   });
 }
 
+/* =====================================================================
+   THE 25-WEEK PLAN — one skill per week, expanded with how/why/use.
+   ===================================================================== */
+const PLAN = [
+  { t: 'See through the mask', focus: 'Run the four truths and the lens of reasons on every single person you meet this week.', how: 'In each interaction, silently answer: what\'s this person\'s suffering, and what mask covers it? The loud guy at the gym, the cold barista — name the protection, not the behavior. Masks form in childhood; shame decides their shape.', why: 'Once you see people as suffering + reward + shame wearing a mask, judgment dies and observation sharpens. Everything else in this system is built on this lens.', use: 'The mask points straight at the insecurity. Feed the need it protects and you become the safest person they know — which is who people open up to and say yes to.' },
+  { t: 'Map the sides', focus: 'Profile the gestural hemisphere — the positive/negative side — of everyone you meet.', how: 'Catch which side their eyes and hands drift to for good memories versus bad ones. Then test it: gesture to each side yourself and watch their face react. Log it from YOUR view (my right = R) so you never mentally flip it.', why: 'Emotional memory is lateralized and the body leaks the filing system. It\'s one of the few reads you can actively test in seconds.', use: 'Pitch ideas while gesturing to their positive side and the idea inherits the good feeling; park anything you want them to reject on the negative side.' },
+  { t: 'Blink week', focus: 'Blink rate and shutter speed in every conversation.', how: 'The movie-night drill: watch reality TV (real people, not actors) with the volume OFF and compete to spot blink-rate shifts; then rewatch WITH sound to find what caused each one. In conversations, just log fast/normal/slow and when it changes.', why: 'Training with the sound off forces the eye to learn the pattern without distraction. Blink tracks stress and fascination in real time — it\'s the closest thing to a live gauge on a face.', use: 'A spike marks the loaded topic — dig there gently. A slowdown marks fascination — stay right there. In a pitch, watch your number land on their eyelids.' },
+  { t: 'Glances & the flash', focus: 'Confirmation glances in every group, plus the eyebrow flash everywhere.', how: 'Whenever someone finishes speaking in a group, watch where their eyes flick. Flash the cashier, the barista, the stranger — count how many return it.', why: 'Glances expose whose approval the room actually runs on. The returned flash is pre-verbal acceptance — a door opening before a word is spoken.', use: 'Pitch the glance-target, not the loudest talker. A returned flash = approach now, they\'ve already accepted you.' },
+  { t: 'The mouth leaks first', focus: 'Lip compression and object insertion — always with the topic attached.', how: 'Every compression or pen-to-mouth this week gets a mental note of the EXACT topic on the table when it happened. The behavior without the topic is worthless; together they\'re gold.', why: 'The mouth clamps shut on withheld words and takes objects in when reassurance is needed — both fire before the person knows it.', use: 'Compression = surface the hidden objection: "before we move on — anything about X feel off?" Insertion = reassure on that exact topic before advancing anything.' },
+  { t: 'Real vs performed', focus: 'False facial expressions: asymmetry and sudden stops.', how: 'Watch every big expression this week for the two tells: stronger on one side, or snapping off instead of fading. Group photos and forced laughs are your practice lab.', why: 'Real emotion is symmetric and dissolves slowly; performed emotion is managed and drops when the audience looks away.', use: 'Performed agreement is not agreement — keep working the real objection. Performed delight at your offer means the real number is different; renegotiate.' },
+  { t: 'Nose & hush', focus: 'Nostril flaring and mouth-covering, with context.', how: 'Log each flare and each hush with what was being said: disagreement brewing, or excitement about your idea? Context decides everything with these two.', why: 'Flaring is raw adrenaline — the topic tells you which flavor. Hushing is self-silencing: the hand physically holds words in.', use: 'Flare + lean-in on your idea = push now while the adrenaline\'s on your side. A hush after your question = they know something — circle back privately, never in front of the group.' },
+  { t: 'Limb geography', focus: 'Arm crosses, fig leaf, single-arm wraps — and the hands inside them.', how: 'Every time arms cross this week, immediately check the fingers: fists or relaxed? Note the sentence that triggered the movement into the position.', why: 'The cross itself is weather; the hands inside it are the forecast. Fists and relaxed palms mean opposite things under the same crossed arms.', use: 'Fists = drop the pressure and rebuild safety before continuing. Palms flat on the body = they need comforting, not convincing.' },
+  { t: 'The hand dial', focus: 'Digital flexion and extension through whole conversations.', how: 'In every seated conversation, park part of your attention on their fingers the entire time. Note the topic for every opening and every curl.', why: 'Hands are a live agree/disagree meter that nobody thinks to manage — the most honest dial on the body.', use: 'The extension topic is your closer — replay it right before the ask. Flexion tells you exactly which point still needs work.' },
+  { t: 'Feet week', focus: 'Where feet point, everywhere you go.', how: 'Coffee lines: whose feet point at the cashier, whose at the exit? Groups: find the person collecting the most feet — that\'s the real leader. Meetings: watch feet rotate as interest changes.', why: 'Feet are the least-managed part of the body — faces are trained, feet aren\'t. They broadcast intent with no filter.', use: 'Feet at you = extend the conversation and the ask. Feet at the door = land your one key point and release them. The group\'s foot-target = your real audience.' },
+  { t: 'Torso trio', focus: 'Belly exposure, dominant hand, and breathing location.', how: 'Count exposed-torso postures (comfort). Speed-spot dominant hands — watch side, phone hand, wallet pocket. Log chest-vs-belly breathing at the START of each conversation, then hunt for the shift and its trigger.', why: 'An exposed torso means no threat is felt. The breathing SHIFT — not the state — marks the moment a topic actually lands.', use: 'A shift to belly breathing during a topic = that\'s what they truly care about. Build your offer on that topic, not the one they said mattered.' },
+  { t: 'Shoulder week', focus: 'Shrugs, single-sided shrugs, dominant-shoulder retreat, and the compliance wedge.', how: 'Shoulders only, all week. Catch single-sided shrugs on confident statements. Find the writing hand, then watch that shoulder for retreat on hard topics. Try one small stance shift and see if their shoulders follow you.', why: 'Shoulders guard the neck — ancient threat wiring — and they vote before words do.', use: 'A one-sided shrug on "I\'m sure" means they\'re not — press gently. Dominant retreat at your number = the unvoiced no; address it now. Shoulders following your wedge = leadership established.' },
+  { t: 'Barrier week', focus: 'Every barrier placement and removal, with its trigger.', how: 'Note each object placed between you — phone, cup, buttoned jacket (when it\'s not cold) — AND each removal, with the exact sentence that caused it.', why: 'Barriers are a live threat-meter: placement = protection needed, removal = safety restored.', use: 'Placement = slow down and warm the topic before advancing. Removal = doors open, move the ask forward. Or force the removal — hand them something.' },
+  { t: 'Preening week', focus: 'Hygienic gestures and what triggers them.', how: 'Log every posture-straighten, lip lick, and hair fix — plus the detail being discussed or the person who just arrived when it happened.', why: 'Grooming is the body preparing to matter to someone present. It fires on pride, attraction, and wanting to impress.', use: 'Preening at your arrival = you have influence here. Preening when a topic lands = they want to shine on that topic — hand them the spotlight and they\'ll love you for it.' },
+  { t: 'Stress detector', focus: 'Deception as stress clusters — review and drill.', how: 'Reread every Deception card, run Weak Spots on that unit, then watch interview and interrogation clips on YouTube tallying stress cues per question-answer window.', why: 'Deception is read through stress clusters scored inside windows — never single cues, never vibes. The 11-point discipline kills both paranoia and gullibility.', use: 'A heavy window = dig, never accuse — re-ask the stress sentence later, casually. Clean windows = believe them and relax the frame; trust given accurately is rapport.' },
+  { t: 'Statements, not questions', focus: 'Live elicitation with as few questions as possible.', how: 'Write 3-5 provocative statements for YOUR life ("bet the gym\'s dead at 6am," "I heard this league\'s a grind") and deploy them all week. Review nightly: did people open up? Did you slide back into questions? Tweak the statements.', why: 'Statements trigger the correction and expansion reflexes; questions trigger guardedness. People open to statements and clam to interrogation.', use: 'Information flows without pressure — and they remember the conversation as warm, not probed. That memory is the relationship.' },
+  { t: 'One secret per person', focus: 'A daily elicitation target using every technique.', how: 'Set a goal: one piece of information per person you talk to — a hobby, a budget, a timeline — rotating through the tools (bracket, disbelief, naivety, hourglass, hand-off, echo, citation). Keep a sample line for each technique on your phone.', why: 'Reps across all the tools build range, and the more they talk, the more profile data every OTHER technique gets to work with.', use: 'Elicitation is the data pump for the whole system: everything they volunteer feeds your needs, pillar, and locus reads for free.' },
+  { t: 'Needs in the wild', focus: 'Needs + fears mapping, live and online.', how: 'Write the need AND its fears for 9 real people into your phone contacts\' notes. Profile 13 friends from their socials — read what they say about OTHERS: the compliments people give are the compliments they crave. On LinkedIn, read their comments on other people\'s posts, not their own bio.', why: 'Praise offered mirrors praise desired — it\'s the cleanest window into the need. And the fears explain every past blowup they\'ve ever had.', use: 'Feed the need, never touch the fear. Old conflicts with these people suddenly make sense — and future ones become avoidable on purpose.' },
+  { t: 'Pillar spotting', focus: 'Place 12 people on the decision map.', how: 'Map 12 people this week, starting with close friends (they\'re probably on YOUR pillar — birds of a pillar flock together). For each, recall their last big decision and watch the pattern they can\'t see. Watch interviews and practice: how would you sell each person a restaurant? Argue a case to them on a jury?', why: 'Pillar patterns repeat in every decision a person has ever made. Spot it once and you can predict the next hundred choices.', use: 'Learn to describe the SAME thing six ways: unique / first / reaction-getting / peer-approved / high-return / purely necessary. That\'s one product, six pitches.' },
+  { t: 'Needs + pillars live', focus: 'Both reads, within minutes, on everyone.', how: 'All week: prove to yourself you can name the need AND the pillar of anyone within the first few minutes of conversation. No notes, no hesitation.', why: 'The need is the drug; the pillar is the buying logic. Together they\'re most of persuasion in two data points.', use: 'The full pitch skeleton: feed the need first (that\'s rapport), then frame the ask to the pillar (that\'s the decision). Everything else is decoration.' },
+  { t: 'Sensory week', focus: 'V/A/K detection everywhere.', how: 'Listen to a podcast purely to guess the host\'s sensory preference. Read a celebrity interview transcript and highlight every sense word. Classify your friends by their verbs: see/look, hear/sound, feel/grasp.', why: 'The channel is how a person encodes AND retrieves their life. Words in their channel feel ten times truer to them — they literally resonate.', use: 'Uncover: their channel words show you how they relive memories. Persuade: "picture this" / "sounds like" / "feels solid" — delivered in THEIR channel, not yours.' },
+  { t: 'Pronoun week', focus: 'Self / team / others — 15 identifications minimum.', how: 'Identify pronoun style 15 times this week, live or online. Scan a friend\'s posts and comments: is it I, we, or "those people"?', why: 'Pronouns reveal where identity lives — in the self, the tribe, or the outside world. It\'s a personality X-ray hiding in grammar.', use: 'Pitch the self-person their personal gain, the team-person the group\'s gain, the others-person the wider effect. Speaking to a crowd? Hit all three in one pitch.' },
+  { t: 'Adjective week', focus: 'Harvest positive and negative adjectives from everyone.', how: 'Ask about a vacation, then steer to traffic jams or a bad boss. Collect both lists — the words they use for joy and the words they use for misery. Keep them.', why: 'Those exact words are pre-wired emotional triggers: "amazing" already means good to them; their negative words already carry sting.', use: 'Describe your offer with THEIR positive adjectives and what to avoid with their negative ones. You\'re not persuading anymore — their own vocabulary is.' },
+  { t: 'Quadrant reps', focus: 'The Quad tab, daily, loaded with your weakest skills.', how: 'Run a quadrant on every meaningful interaction this week. Load it with the elements you struggle with most — not your favorites — and swap out anything you\'ve mastered.', why: 'Writing forces observation, and rotating elements forces breadth. Comfort picks train nothing.', use: 'Every circled entry is a found cause — a trigger you can deliberately use or avoid next time you talk to that person. Saved reads become playbooks.' },
+  { t: 'The full compass', focus: 'Everything at once — the complete profile, unassisted.', how: 'The challenge: watch a show with real people alongside someone and compete for who catches more compass items. Then run it for real: before your next important conversation, answer the compass questions — how does this person view the world? What are they afraid of in THIS decision? How do their need and pillar shape it? Which sensory words, pronouns, and adjectives fit them? Which way do I lean for the ask? What did their body say when the key topic came up?', why: 'The compass is the graduation exercise: every technique in the system converging on one page about one person.', use: 'The final question is the whole game: what does this person need in order to feel like the HERO of their own story? Give them that, and persuasion stops being something you do to them.' },
+];
+let planSel = null;
+function renderPlan() {
+  const doneW = state.weeks || [];
+  if (planSel == null) {
+    const firstOpen = PLAN.findIndex((_, i) => !doneW.includes(i + 1));
+    planSel = firstOpen === -1 ? 25 : firstOpen + 1;
+  }
+  const pills = document.getElementById('planPills');
+  pills.innerHTML = PLAN.map((_, i) => {
+    const w = i + 1;
+    return '<button class="plan-pill' + (doneW.includes(w) ? ' done' : '') + (planSel === w ? ' on' : '') + '" data-w="' + w + '">W' + w + '</button>';
+  }).join('');
+  pills.querySelectorAll('.plan-pill').forEach(b => b.onclick = () => { planSel = +b.dataset.w; renderPlan(); });
+  const p = PLAN[planSel - 1];
+  const isDone = doneW.includes(planSel);
+  document.getElementById('planDetail').innerHTML =
+    '<span class="tag">Week ' + planSel + (isDone ? ' · complete' : '') + '</span>' +
+    '<h3>' + p.t + '</h3>' +
+    '<div class="fld"><b>Focus —</b> ' + p.focus + '</div>' +
+    '<div class="fld"><b>How to train it —</b> ' + p.how + '</div>' +
+    '<div class="fld"><b>Why it works —</b> ' + p.why + '</div>' +
+    '<div class="fld"><b>Using it —</b> ' + p.use + '</div>' +
+    '<button class="donebtn' + (isDone ? ' done' : '') + '" id="planDoneBtn">' + (isDone ? '✓ Week complete' : 'Mark week complete') + '</button>';
+  document.getElementById('planDoneBtn').onclick = () => {
+    const w = planSel;
+    if (state.weeks.includes(w)) state.weeks = state.weeks.filter(x => x !== w);
+    else { state.weeks.push(w); state.xp += 25; }
+    save(state); renderPlan(); render();
+  };
+}
+
 initToday();
 render();
 renderQuad();
+renderPlan();
 </script>
