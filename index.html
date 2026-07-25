@@ -264,9 +264,11 @@
   .qd-pal button { font-size: 11px; font-weight: 700; padding: 5px 8px; border-radius: 6px; background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.4); color: var(--amber); cursor: pointer; }
   .qd-note { width: 100%; margin-top: 7px; background: none; border: none; border-bottom: 1px dashed var(--line); color: var(--bone); font-size: 12px; padding: 3px 0; outline: none; }
   .qd-hint { font-size: 9.5px; line-height: 1.4; color: var(--muted); margin-top: 6px; }
-  #qdConfig { display: none; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  #qdConfig { display: none; flex-direction: column; gap: 6px; margin-top: 10px; }
   #qdConfig.on { display: flex; }
-  .qd-cfg { padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+  .qd-cfg { display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 8px; cursor: pointer; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+  .qd-cfg .ab { font-size: 11px; font-weight: 800; letter-spacing: 0.03em; flex: none; width: 34px; }
+  .qd-cfg .lb { font-size: 13px; font-weight: 600; }
   .qd-cfg.on { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
   .qd-saved { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; }
   .qd-saved .nm { flex: 1; font-size: 14px; font-weight: 600; }
@@ -2263,7 +2265,9 @@ function renderQuad() {
   });
   document.getElementById('qdSavedEyebrow').style.display = quad.saved.length ? '' : 'none';
   const cfg = document.getElementById('qdConfig');
-  cfg.innerHTML = Object.keys(QUAD_ELEMENTS).map(k => '<button class="qd-cfg' + (quad.config.includes(k) ? ' on' : '') + '" data-k="' + k + '">' + k + '</button>').join('');
+  cfg.innerHTML = Object.keys(QUAD_ELEMENTS).map(k =>
+    '<button class="qd-cfg' + (quad.config.includes(k) ? ' on' : '') + '" data-k="' + k + '"><span class="ab">' + k + '</span><span class="lb">' + QUAD_ELEMENTS[k].label + '</span></button>'
+  ).join('');
   cfg.querySelectorAll('.qd-cfg').forEach(b => b.onclick = () => {
     const k = b.dataset.k;
     if (quad.config.includes(k)) { if (quad.config.length > 1) quad.config = quad.config.filter(x => x !== k); }
