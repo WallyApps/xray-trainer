@@ -56,7 +56,7 @@
   .nav-inner { max-width: 560px; margin: 0 auto; display: flex; }
   nav button {
     flex: 1; background: none; border: none; color: var(--muted);
-    font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    font-family: var(--sans); font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase;
     padding: 14px 0 12px; cursor: pointer; border-top: 2px solid transparent;
   }
   nav button.on { color: var(--amber); border-top-color: var(--amber); }
@@ -248,6 +248,30 @@
   .lessonxp { color: var(--amber); font-weight: 700; }
 
   footer { margin-top: 30px; text-align: center; color: var(--muted); font-size: 11px; letter-spacing: 0.1em; }
+
+  /* ---------- quad: live profiling sticky note ---------- */
+  .qd-top { display: flex; gap: 8px; }
+  .qd-top input { flex: 1; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; color: var(--bone); font-size: 15px; padding: 10px 12px; outline: none; }
+  .qd-top input:focus { border-color: var(--amber); }
+  .qd-top button { background: var(--amber-dim); border: 1px solid var(--amber); color: var(--amber); font-weight: 700; font-size: 13px; border-radius: 10px; padding: 0 14px; cursor: pointer; }
+  .qd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .qd-cell { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-height: 128px; display: flex; flex-direction: column; }
+  .qd-cell h5 { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); }
+  .qd-chips { display: flex; flex-wrap: wrap; gap: 5px; min-height: 28px; margin: 7px 0 5px; }
+  .qd-chip { padding: 3px 9px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); font-size: 12.5px; font-weight: 700; cursor: pointer; }
+  .qd-chip.circled { border-color: var(--amber); color: var(--amber); box-shadow: 0 0 0 1.5px var(--amber); }
+  .qd-pal { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+  .qd-pal button { font-size: 11px; font-weight: 700; padding: 5px 8px; border-radius: 6px; background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.4); color: var(--amber); cursor: pointer; }
+  .qd-note { width: 100%; margin-top: 7px; background: none; border: none; border-bottom: 1px dashed var(--line); color: var(--bone); font-size: 12px; padding: 3px 0; outline: none; }
+  .qd-hint { font-size: 9.5px; line-height: 1.4; color: var(--muted); margin-top: 6px; }
+  #qdConfig { display: none; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  #qdConfig.on { display: flex; }
+  .qd-cfg { padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+  .qd-cfg.on { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+  .qd-saved { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; }
+  .qd-saved .nm { flex: 1; font-size: 14px; font-weight: 600; }
+  .qd-saved .dt { font-size: 11px; color: var(--muted); }
+  .qd-saved button { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 6px 11px; font-size: 12px; cursor: pointer; }
 
   /* ---------- premium: layered surfaces, motion, reward ---------- */
   .card, .cat, .check, .unit, .principle, .mantra {
@@ -479,6 +503,25 @@
     <footer>Confidence = safety. Composure = authority.</footer>
   </main>
 
+  <!-- ==================== QUAD (live profiling) ==================== -->
+  <main id="tab-quad">
+    <div class="eyebrow first">The quadrant — live profile</div>
+    <div class="card">
+      <div class="qd-top">
+        <input id="qdName" placeholder="Who are you reading?" oninput="quad.name = this.value; qsave();">
+        <button onclick="qdSaveRead(this)">Save</button>
+        <button onclick="qdNewRead()">New</button>
+      </div>
+      <div class="qd-grid" id="qdGrid"></div>
+      <p class="sub">IO first — log what's true the moment it starts. Then hunt changes. Tap a token to log it · tap a logged chip to circle it (cause found) · tap a circled chip to remove it.</p>
+      <button class="donebtn" id="qdEdit" onclick="document.getElementById('qdConfig').classList.toggle('on')">Choose your 4 elements</button>
+      <div id="qdConfig"></div>
+    </div>
+    <div class="eyebrow" id="qdSavedEyebrow">Saved reads</div>
+    <div id="qdSavedList"></div>
+    <footer>Four elements max — master one, swap it out.</footer>
+  </main>
+
   <!-- ==================== HOCKEY ==================== -->
   <main id="tab-hockey">
     <div class="eyebrow first">The frame</div>
@@ -553,6 +596,7 @@
     <button onclick="showTab('profiling', this)">X-Ray</button>
     <button onclick="showTab('confidence', this)">Mind</button>
     <button onclick="showTab('hockey', this)">Hockey</button>
+    <button onclick="showTab('quad', this)">Quad</button>
   </div>
 </nav>
 
@@ -661,6 +705,11 @@ const LIBRARY = [
     { name: 'Excitement comes late', read: 'The excitement lever only works after the 50% mark of a conversation — in a one-minute exchange, that\'s around second 30. Dropped early, it just evaporates.', use: 'Build the quiet levers first; bring the energy only once you\'re past halfway.' },
     { name: 'Locus of control — the read', read: 'Internal locus: "I earned it, I blew it" — they own their outcomes; harder workers who enjoy success more, but more prone to stress. External locus: "the refs, the system, my luck" — outside forces run their life; they gamble more, and surprisingly struggle less with depression.', use: 'The blame-vs-ownership pattern in their language is the read. One conversation usually tells you.' },
     { name: 'Locus of control — the use', read: 'Match your frame to their wiring or lose social capital. Trial lawyers pick juries by locus: want a verdict against the guy suing over spilled hot coffee? Seat internals — people who think a "caution: hot" label is for fools.', use: 'Internal: "you\'d earn this, you control this." External: "this is landing in your lap — right place, right time."' },
+    { name: 'Sensory preference', read: 'People encode the world through one of three channels, and it leaks in their verbs. Visual: "doesn\'t LOOK right to me" — see, view, watch, witness. Auditory: "doesn\'t SOUND right" — hear, listen, mention, rings a bell. Kinesthetic: "doesn\'t FEEL right" — grasp, pressure, concrete, firm, intuition.', use: 'Match the channel: sell a visual person the picture, an auditory person the story, a kinesthetic person the feel. An all-auditory pitch to a visual buyer loses without knowing why. Harvestable from social media captions too.' },
+    { name: 'Pronoun identification', read: 'Three pronoun styles. SELF: I, me, my — speaks mostly about themselves. TEAM: we, ours — their community carries their identity. OTHERS (~20% of people): "those people, that place, the company" — focus lives outside their group.', use: 'Speak their pronoun style back to them: self → make it about them, team → about the group, others → about the outside world. To a big room, hit all three.' },
+    { name: 'Adjective harvesting', read: 'Adjectives are how people paint their world — the "amazing" trip, the "incredible" party. Two steps: (1) sort each one into a positive or negative column by context, (2) keep their exact words in a running list while they talk.', use: 'Their adjectives are their value-words. Feed them back later — "sounds like an amazing setup" — and your language becomes THEIR language without them knowing why it lands.' },
+    { name: 'Bodies lead minds', read: 'Compliance runs on repetition, reward, and pain — and people who follow you PHYSICALLY follow you mentally. Take a tiny side-step before a handshake or mid-conversation; when they mirror it, unconscious leadership is established for the whole exchange. They follow easiest while talking about something they\'re passionate about. Your own body obeys the same law: sitting up straight makes confidence physically easier.', use: 'One small step early, watch them follow, lead from there — it stays unconscious the entire conversation.' },
+    { name: 'Agreement prep', read: 'If the body isn\'t showing agreement or excitement, it is NOT time to close — leaned-back, closed-off people don\'t say yes. Leaning-in people do.', use: 'Manufacture the lean: hand them a pen, a water, your phone with a photo. Once the body comes forward, close with everything else you\'ve got. Body first, ask second.' },
   ]},
   { cat: 'Decision Map — how people choose', items: [
     { name: 'The decision map', read: 'Six pillars drive every decision: deviance, novelty, social, conformity, investment, necessity. They sit like a wheel where each pillar bleeds into its neighbors — someone rooted in novelty leans social on one side and deviance on the other.', use: 'Find the pillar from one or two of their choices, then pitch to the pillar — never to your own. Bonus read: people ASSOCIATE by pillar, so their close friends usually share or neighbor it.' },
@@ -679,6 +728,7 @@ const LIBRARY = [
     { name: 'The C5 framework', read: 'Five steps, run in order, that turn observation into analysis: CHANGE (deviation from their baseline), CONTEXT (what the situation explains), CLUSTERS (groups of cues, never singles), CULTURE (conditioning changes behavior meaning), CHECKLIST (score against the standard list — not your gut).', use: 'When a read matters, walk C5 sequentially. The checklist step is what keeps confirmation bias out of your conclusions.' },
     { name: 'SLATE — reading statements', read: 'Language analysis for anything they say or write. Ask: what is this statement ENGINEERED to produce — sympathy, innocence, rapport, fear, vindication? What archetype are they casting themselves as — hero, victim, caretaker, mentor? Active or passive voice? Then watch for shifts: speed, vocabulary, complexity, point of view, chronology — shifts mark the hot spots.', use: 'Run it on long texts and excuses: the desired emotional result of a message tells you what the sender needs you to feel — and why.' },
     { name: 'The full profile', read: 'A complete NCI-style read fits on one page: their need (primary + secondary), decision pillar, locus of control, handedness, eye home, sensory preference (do they say "I see," "I hear," or "I feel"?), pronoun style (I / we / they), the adjectives they repeat, and their top stress tells — upper body and lower body.', use: 'Six minutes of conversation can fill most of the page. Once it\'s filled, you can predict them — that\'s the whole system in one artifact.' },
+    { name: 'The quadrant method', read: 'Chase\'s post-it system for live profiling: pick FOUR elements maximum (say lips, shoulders, blink, needs). The formula: (1) initial observation the moment the conversation starts, (2) watch for CHANGES from that baseline, (3) log them with abbreviations and arrows, (4) circle anything whose contextual cause you\'ve identified. Rotate elements out as you master them.', use: 'The Quad tab runs this exact system on your phone. Changes from the initial observation are the data; a circled entry is intel you can act on.' },
   ]},
 ];
 
@@ -897,6 +947,10 @@ const SCENARIOS = [
   { cat: 'BTE', q: 'A mild cue — a lip purse — fires in the same window as a heavy 4.0 stress behavior. Per the table\'s modifiers, how do you score the mild one?', opts: ['Keep its original low value; rules are rules', 'Throw both out as contaminated data', 'It escalates — treat it as a 4.0 in that window', 'Average the two scores together'], a: 2, why: 'Red-circle logic: mild behaviors seen in the same period as a 4.0 automatically escalate. Heavy stress changes what the small cues mean.' },
   { cat: 'BTE', q: 'He shows a stress spike WHILE you\'re still asking the question — before any answer exists. What\'s the read?', opts: ['Same as any stress cue; timing is noise', 'The topic itself is hot before he\'s committed to a word — note the timeframe', 'He\'s lying about what he hasn\'t said yet', 'Pre-answer cues always mean confusion'], a: 1, why: 'The BTE tracks Before/During/After. A cue firing on the question itself marks the TOPIC as loaded — different data than stress after committing to an answer.' },
   { cat: 'BTE', q: 'Your read matters — a contract call tomorrow. What\'s the C5 sequence you run?', opts: ['Clusters, then gut-check, then decide', 'Change → context → clusters → culture → checklist, in order', 'Checklist first, then find cues to match it', 'Context and culture only; the rest is noise'], a: 1, why: 'C5 runs sequentially: deviation from baseline, what the situation explains, grouped cues, cultural conditioning, then score against the standard list — not your gut.' },
+  { cat: 'Advanced', q: 'Your junior rep\'s pitch is all "listen to this, sounds great, I hear you" — and the buyer keeps saying "show me what that looks like." What\'s wrong?', opts: ['Nothing — the deal just needs more time', 'Channel mismatch: auditory pitch to a visual buyer; switch to picture language', 'The buyer is signaling deception cues', 'The rep needs to slow his speaking pace'], a: 1, why: 'Sensory mismatch loses sales invisibly. The buyer\'s verbs told you his channel — sell him what it LOOKS like.' },
+  { cat: 'Advanced', q: 'A donor you\'re courting keeps saying "those people downtown" and "that organization." Which pronoun style, and what matches it?', opts: ['Team — leans on we-language to bond', 'Self — reflect everything back onto him', 'Others — his focus lives outside his group; frame things about the external world', 'Mixed — mirror whatever he last used'], a: 2, why: 'The ~20% others-style speaker orients outward. Frame your language around the outside people and places he already tracks.' },
+  { cat: 'Advanced', q: 'Right before shaking hands, you take a small step to the side — he mirrors it. What just happened?', opts: ['He\'s crowding you — hold your ground', 'Unconscious leadership established; physical followers follow mentally', 'A coincidence with no useful meaning', 'He established the frame by moving first'], a: 1, why: 'Bodies lead minds. The mirror on your side-step sets a follow pattern that stays unconscious the whole conversation.' },
+  { cat: 'Advanced', q: 'It\'s close time, but the buyer is leaned back with crossed arms. The move?', opts: ['Close now — hesitation kills momentum', 'Manufacture a lean first — hand him something — then close', 'Discount the price to break resistance', 'Reschedule; today is unwinnable'], a: 1, why: 'Agreement prep: closed bodies don\'t say yes. Hand him a pen or a sample, get the body forward, THEN close.' },
 ];
 
 /* EVERYDAY — lesson 3's dedicated bank: hyper-specific day-to-day moments
@@ -1068,6 +1122,10 @@ const EVERYDAY = [
   { cat: 'BTE', q: 'Buddy sends a three-paragraph excuse text. SLATE question one: what do you ask of the MESSAGE itself?', opts: ['Whether every fact in it checks out', 'What it\'s engineered to make you FEEL — sympathy, innocence, agreement', 'Whether he typed it fast or slow', 'How many emojis he used and where'], a: 1, why: 'SLATE starts with the desired result of language: what the statement is built to produce in you. Engineering-for-sympathy is itself the read.' },
   { cat: 'BTE', q: 'One odd cue in an otherwise normal chat — a single throat touch, nothing else. The tally says?', opts: ['Confront gently while it\'s fresh', 'A couple points at most — nowhere near the line; keep collecting', 'Restart the conversation to re-test', 'Log him as deceptive but unproven'], a: 1, why: 'Single cues score low and the threshold is 11 within a window. The scale exists precisely so one weird moment can\'t convict anybody.' },
   { cat: 'BTE', q: 'Six minutes with a new agent and you can name his need, pillar, locus, eye home, and top two stress tells. What do you have?', opts: ['A decent start — the real profile takes weeks', 'The full profile — one page that predicts him going forward', 'Confirmation bias dressed up as analysis', 'Enough to confront him about his patterns'], a: 1, why: 'That IS the complete NCI-style profile — the whole six-minute promise. Filled once, it predicts behavior across every future interaction.' },
+  { cat: 'Advanced', q: 'Buddy on a new guy: "I don\'t know man, something just doesn\'t feel right about him." Which channel is your buddy running?', opts: ['Kinesthetic — he processes through feel', 'Visual — he\'s picturing the problem', 'Auditory — something he heard is off', 'It\'s a deception flag, not a channel'], a: 0, why: '"Doesn\'t FEEL right" is kinesthetic encoding. Talk to him in feel-words and your points land twice as hard.' },
+  { cat: 'Advanced', q: 'Teammate\'s stories are all "we grinded, our room, us boys." When you pitch him on summer training, which frame?', opts: ['"You\'d be the fittest guy in camp"', '"A bunch of us are building a group for it"', '"Those other teams train harder than yours"', '"It\'s the smartest investment you\'ll make"'], a: 1, why: 'Team-pronoun speakers move for the group. "Us" frames land; "you alone" frames stall.' },
+  { cat: 'Advanced', q: 'Date describes everything she loves as "unreal" and "insane." Weeks later you pitch a trip as "honestly an unreal spot." What are you doing?', opts: ['Copying her a little too obviously', 'Feeding harvested adjectives back — her value-words in your mouth', 'Using excitement before the halfway mark', 'Testing her sensory channel for visual'], a: 1, why: 'Adjective harvesting: people\'s own descriptors bypass resistance because the language already means "good" to them.' },
+  { cat: 'Advanced', q: 'Two minutes before a hard phone call, you notice you\'re slouched over the counter. Worth fixing?', opts: ['No — posture is about how others see you, and they can\'t', 'Yes — sitting up straight makes confidence physically easier; bodies lead minds inward too', 'Only if the call is on video', 'No — comfort matters more than posture'], a: 1, why: 'The body-leads-mind law runs inward: an upright body makes the confident state easier to reach before anyone sees you at all.' },
 ];
 
 /* Each drill's `unit` = the Learn-path unit that teaches it (index into UNITS).
@@ -1104,6 +1162,8 @@ const PROFILING_DRILLS = [
   { unit: 17, tag: 'Decisions', name: 'Pitch the pillar', do: 'Take one suggestion you\'d make today — a restaurant, a workout, a plan — and reframe it in the listener\'s pillar language instead of yours.', look: 'Right pillar = instant traction, no resistance. Wrong pillar = polite nodding and no action. The difference is unmistakable.', why: 'People don\'t resist ideas; they resist frames that don\'t match how they decide.' },
   { unit: 18, tag: 'BTE', name: 'Score one window', do: 'Pick ONE question-and-answer exchange today and tally the stress cues inside just that window — rough points, 1 for mild through 4 for heavy.', look: 'Most honest answers barely score. You\'re building the habit of counting inside windows instead of vibing whole conversations.', why: 'The DRS discipline: 11+ in one window = highly likely. Scoring kills both paranoia and gullibility.' },
   { unit: 18, tag: 'BTE', name: 'SLATE one message', do: 'Take one longer text or DM you receive today and run SLATE: what\'s it engineered to make you feel? Active or passive voice? Any absolutes ("always," "never")? Any shift mid-message?', look: 'The desired emotional result tells you what the sender needs from you. Shifts in speed, vocabulary, or POV mark exactly where the message gets hot.', why: 'Statements are built things. SLATE reads the blueprint instead of the paint.' },
+  { unit: 16, tag: 'Advanced', name: 'Channel catch', do: 'Catch three sensory verbs today — see/look, hear/sound, feel/grasp — classify the speaker V, A, or K, and answer ONE of them in their own channel.', look: 'Matched channel = they light up and elaborate. Mismatched = polite nod. The difference teaches you faster than any card.', why: 'Sensory preference is the fastest linguistic read there is, and matching it is free rapport.' },
+  { unit: 16, tag: 'Advanced', name: 'The side-step', do: 'Before one handshake or mid-conversation today, take a tiny step to the side and watch whether they mirror it.', look: 'A mirror = unconscious leadership established; lead from there. No mirror = they\'re not following yet — build comfort first.', why: 'People who follow physically follow mentally, and it stays unconscious for the whole exchange.' },
 ];
 
 const CONFIDENCE_DRILLS = [
@@ -1944,7 +2004,7 @@ function libItem(name) {
    key, answers come from gpt-4o-mini grounded in Chase's system (~$0.001 per
    question); without one (or on any error) the offline engine answers. ---- */
 const AI_MODEL = 'gpt-4o-mini';
-const AI_SYS = 'You are X-Ray Coach, a pocket coach inside a training app built on Chase Hughes\' "6 Minute X-Ray" behavior-profiling system and his confidence teachings. The user is Riley: a pro hockey player who also coaches kids and negotiates brand deals, training these skills daily.\n\nFORMAT (strict): Start with "**Focus on:**" then 2-3 numbered, concrete priorities for HIS exact scenario. Then 2-4 short sections with **bold** labels (like **Watch for**, **Your moves**, **The frame**). Plain text with **bold** only, no headers or bullet symbols. Under 180 words. Direct, personal, coach-voice. Never invent techniques outside the system below.\n\nTHE SYSTEM:\nFoundations: everyone suffers and wears a mask; baseline first, then read CHANGES; context x clusters (one cue is nothing, two on the same subject is a lead); lens of reasons kills judgment.\nEyes: blink ~9/min normal, ~70 stressed, ~3 locked-in; a blink-rate change marks the trigger topic; eye-home deviation on recall = possible fabrication; emotional memories pull eyes down; pupil dilation = liking (steady light only); confirmation glances point at the real decision-maker; returned eyebrow flash = open door.\nFace: lip compression = withheld objection; object-to-mouth or neck touch = needs reassurance; real expressions fade and engage the eyes, fake ones drop off and sit asymmetric (contempt is naturally half-faced); nostril flare = adrenaline (context decides anger/excitement/attraction); hushing = wants to stay quiet.\nBody: crossed arms with palms flat = self-soothing, with fists = anger; fingers opening = comfort, curling = disagreement; feet point at intent/leader/exit; dominant-shoulder retreat = unvoiced disagreement; shift to belly breathing = the topic matters; single-sided shrug = doesn\'t believe own words; barriers between you = needs protection; preening = cares what you think; throat touch = doubt.\nVerbal deception: pronoun absence, dropped contractions, question reversal, resume statements, exclusion qualifiers ("to the best of my knowledge"), strict chronology with no emotional lead, one fast/high-pitched sentence; never accuse — re-ask the stress line later; liking someone biases you toward belief.\nNeeds (the mask points at the need): significance -> acknowledge, acceptance -> include, approval -> grant fast, pity -> sympathize first, intelligence -> defer and ask, power -> respect the frame. Master question: what do they want me to THINK about them?\nFace-saving doors for honesty: socialize / minimize / rationalize / project, sized to the confession; keep your own face flat and warm.\nElicitation: hourglass (bury the real question mid-conversation), bracketing numbers, disbelief ("no way, seriously?"), naivety on their pride topic, informational hand-off (share yours first), echoing their last words, citations ("I heard..."), provocative statements instead of questions.\nConfidence OS: confidence = safety, composure = authority; pool speed (never move faster than you would in a pool); hear self-doubt as fiction (a 6-year-old tugging your sleeve); radical self-forgiveness; stop outsourcing approval; no hierarchy — the only contest is comfort; observation mode kills anxiety (you can\'t be curious and self-conscious at once); worry = rehearsing failure, cancel each loop with one positive rep; identity drives behavior; social anxiety is leftover tribal wiring — the same circuit that feared tigers fires at asking for a number (there are no tigers); nobody is coming with permission — author the moment (author-ity) and people assume you already have the proof; confidence transfers, and the true test is how confident you make others; every rep logs unconscious evidence and quiets the voice; "faking it" doesn\'t exist — acting confident reads as confident, and faking just means acting without self-permission; judging by others\' reactions keeps it feeling fake forever, and no graduation ceremony ever comes; unfamiliar is not unqualified — even experts feel imposter syndrome; confidence only turns toxic when welded to status-scanning; when the body revolts, answer it like a 9-year-old: I appreciate it, but I\'m deciding as a human, not an animal.\nAdvanced: compliance ladder — raise any three of vulnerability/openness/connection/suggestibility/focus/excitement and you get compliance; excitement only lands after the 50% mark of a conversation; needs are neuropeptide addictions — never block someone\'s feed (putting them in their place closes them forever), feed first; each need\'s driving fear: significance→dismissed/mocked, approval→rejected, acceptance→criticized/alienated, intelligence→seen as dumb, pity→ignored/disbelieved, power→disrespected/challenged — feed the need AND guard the fear; primary needs = significance(impact)/approval(reassurance)/acceptance(belonging), secondary = intelligence/pity/power; visual tells: significance = status symbols + leading decisions, approval = notch-above dress + never complains/sends food back + overt compliments, acceptance = memberships/tribe shirts + returns every eyebrow flash; pity play = confirm severity then pause so they feel heard; power subjects need to FEEL powerful (fear-based) — see their strength, never challenge it; intelligence play = tie their intellect to your goal; locus of control: internal (ownership language — use earn/control frames) vs external (blame language — use right-place-right-time frames), match the frame or lose social capital; decision map — six pillars drive choices (deviance: stand out/break norms; novelty: noticeably new/first; social: will others connect with me; conformity: is my peer group doing it; investment: what\'s my return; necessity: what makes this necessary), pillars bleed into neighbors, always pitch to THEIR pillar: uniqueness / first-ness / the reaction it creates / peer-proof / ROI / pure function; BTE scoring — behaviors tally on the Deception Rating Scale per question-answer window, 11+ points = deception highly likely (dig, never accuse); mild cues escalate to 4.0 alongside a heavy cue; discount arm-cross/high-shoulders in cold; note cue timing before/during/after the answer; C5 in order: change, context, clusters, culture, checklist; SLATE for statements: what\'s it engineered to make you feel, what archetype are they casting themselves as, active vs passive, absolutes, and shifts in speed/vocab/POV/chronology mark hot spots; full profile = need + pillar + locus + handedness + eye home + sensory words (see/hear/feel) + pronoun style + repeated adjectives + top stress tells.\nHockey: next-shift amnesia (exhale, open hands, next rep); observation mode is the flow switch; read opponents for fatigue and fear — those pay; goalie fidgeting with shoulders up after a goal = attack now; never show your own tells; bench reset = belly breath, shoulders down.\n\nIf a scenario falls outside social reading or mental performance, relate it back to these tools briefly or say it\'s outside your lane.';
+const AI_SYS = 'You are X-Ray Coach, a pocket coach inside a training app built on Chase Hughes\' "6 Minute X-Ray" behavior-profiling system and his confidence teachings. The user is Riley: a pro hockey player who also coaches kids and negotiates brand deals, training these skills daily.\n\nFORMAT (strict): Start with "**Focus on:**" then 2-3 numbered, concrete priorities for HIS exact scenario. Then 2-4 short sections with **bold** labels (like **Watch for**, **Your moves**, **The frame**). Plain text with **bold** only, no headers or bullet symbols. Under 180 words. Direct, personal, coach-voice. Never invent techniques outside the system below.\n\nTHE SYSTEM:\nFoundations: everyone suffers and wears a mask; baseline first, then read CHANGES; context x clusters (one cue is nothing, two on the same subject is a lead); lens of reasons kills judgment.\nEyes: blink ~9/min normal, ~70 stressed, ~3 locked-in; a blink-rate change marks the trigger topic; eye-home deviation on recall = possible fabrication; emotional memories pull eyes down; pupil dilation = liking (steady light only); confirmation glances point at the real decision-maker; returned eyebrow flash = open door.\nFace: lip compression = withheld objection; object-to-mouth or neck touch = needs reassurance; real expressions fade and engage the eyes, fake ones drop off and sit asymmetric (contempt is naturally half-faced); nostril flare = adrenaline (context decides anger/excitement/attraction); hushing = wants to stay quiet.\nBody: crossed arms with palms flat = self-soothing, with fists = anger; fingers opening = comfort, curling = disagreement; feet point at intent/leader/exit; dominant-shoulder retreat = unvoiced disagreement; shift to belly breathing = the topic matters; single-sided shrug = doesn\'t believe own words; barriers between you = needs protection; preening = cares what you think; throat touch = doubt.\nVerbal deception: pronoun absence, dropped contractions, question reversal, resume statements, exclusion qualifiers ("to the best of my knowledge"), strict chronology with no emotional lead, one fast/high-pitched sentence; never accuse — re-ask the stress line later; liking someone biases you toward belief.\nNeeds (the mask points at the need): significance -> acknowledge, acceptance -> include, approval -> grant fast, pity -> sympathize first, intelligence -> defer and ask, power -> respect the frame. Master question: what do they want me to THINK about them?\nFace-saving doors for honesty: socialize / minimize / rationalize / project, sized to the confession; keep your own face flat and warm.\nElicitation: hourglass (bury the real question mid-conversation), bracketing numbers, disbelief ("no way, seriously?"), naivety on their pride topic, informational hand-off (share yours first), echoing their last words, citations ("I heard..."), provocative statements instead of questions.\nConfidence OS: confidence = safety, composure = authority; pool speed (never move faster than you would in a pool); hear self-doubt as fiction (a 6-year-old tugging your sleeve); radical self-forgiveness; stop outsourcing approval; no hierarchy — the only contest is comfort; observation mode kills anxiety (you can\'t be curious and self-conscious at once); worry = rehearsing failure, cancel each loop with one positive rep; identity drives behavior; social anxiety is leftover tribal wiring — the same circuit that feared tigers fires at asking for a number (there are no tigers); nobody is coming with permission — author the moment (author-ity) and people assume you already have the proof; confidence transfers, and the true test is how confident you make others; every rep logs unconscious evidence and quiets the voice; "faking it" doesn\'t exist — acting confident reads as confident, and faking just means acting without self-permission; judging by others\' reactions keeps it feeling fake forever, and no graduation ceremony ever comes; unfamiliar is not unqualified — even experts feel imposter syndrome; confidence only turns toxic when welded to status-scanning; when the body revolts, answer it like a 9-year-old: I appreciate it, but I\'m deciding as a human, not an animal.\nAdvanced: compliance ladder — raise any three of vulnerability/openness/connection/suggestibility/focus/excitement and you get compliance; excitement only lands after the 50% mark of a conversation; needs are neuropeptide addictions — never block someone\'s feed (putting them in their place closes them forever), feed first; each need\'s driving fear: significance→dismissed/mocked, approval→rejected, acceptance→criticized/alienated, intelligence→seen as dumb, pity→ignored/disbelieved, power→disrespected/challenged — feed the need AND guard the fear; primary needs = significance(impact)/approval(reassurance)/acceptance(belonging), secondary = intelligence/pity/power; visual tells: significance = status symbols + leading decisions, approval = notch-above dress + never complains/sends food back + overt compliments, acceptance = memberships/tribe shirts + returns every eyebrow flash; pity play = confirm severity then pause so they feel heard; power subjects need to FEEL powerful (fear-based) — see their strength, never challenge it; intelligence play = tie their intellect to your goal; locus of control: internal (ownership language — use earn/control frames) vs external (blame language — use right-place-right-time frames), match the frame or lose social capital; decision map — six pillars drive choices (deviance: stand out/break norms; novelty: noticeably new/first; social: will others connect with me; conformity: is my peer group doing it; investment: what\'s my return; necessity: what makes this necessary), pillars bleed into neighbors, always pitch to THEIR pillar: uniqueness / first-ness / the reaction it creates / peer-proof / ROI / pure function; BTE scoring — behaviors tally on the Deception Rating Scale per question-answer window, 11+ points = deception highly likely (dig, never accuse); mild cues escalate to 4.0 alongside a heavy cue; discount arm-cross/high-shoulders in cold; note cue timing before/during/after the answer; C5 in order: change, context, clusters, culture, checklist; SLATE for statements: what\'s it engineered to make you feel, what archetype are they casting themselves as, active vs passive, absolutes, and shifts in speed/vocab/POV/chronology mark hot spots; full profile = need + pillar + locus + handedness + eye home + sensory words (see/hear/feel) + pronoun style + repeated adjectives + top stress tells; linguistics — sensory channels leak in verbs (visual see/look, auditory hear/sound, kinesthetic feel/grasp: match their channel), pronoun styles (self/team/others ~20% — speak their style, hit all three to crowds), harvest their exact adjectives and feed them back; compliance mechanics — repetition/reward/pain, bodies lead minds (tiny side-step mirrored = unconscious leadership; upright posture makes confidence easier), agreement prep: never close on a leaned-back body — hand them something to create the lean, then close; quadrant method: 4 elements max, initial observation → watch changes → abbreviate → circle when cause found.\nHockey: next-shift amnesia (exhale, open hands, next rep); observation mode is the flow switch; read opponents for fatigue and fear — those pay; goalie fidgeting with shoulders up after a goal = attack now; never show your own tells; bench reset = belly breath, shoulders down.\n\nIf a scenario falls outside social reading or mental performance, relate it back to these tools briefly or say it\'s outside your lane.';
 
 let chatLog = []; // session-only; wiped with the panel
 function aiKey() { return localStorage.getItem('xray_ai_key') || ''; }
@@ -2137,6 +2197,82 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener('scroll', coachKb);
 }
 
+/* =====================================================================
+   QUAD — Chase's post-it profiling system, live on the phone. Pick any 4
+   elements; tap tokens to log reads; tap a chip to circle it (cause
+   found); tap a circled chip to remove. Saved reads keep the person.
+   ===================================================================== */
+const QUAD_ELEMENTS = {
+  DF:  { label: 'Digital flex/ext', tokens: ['E', 'F'], hint: 'E = fingers opening (positive) · F = curling (negative)' },
+  LP:  { label: 'Lips', tokens: ['C', 'I'], hint: 'C = compression (withheld) · I = object insertion (needs reassurance)' },
+  NDS: { label: 'Needs', tokens: ['SI', 'AP', 'AC', 'IN', 'PI', 'ST'], hint: 'significance · approval · acceptance · intelligence · pity · strength' },
+  DEC: { label: 'Decision map', tokens: ['DE', 'NO', 'SO', 'CO', 'NE', 'INV'], hint: 'deviance · novelty · social · conformity · necessity · investment' },
+  SH:  { label: 'Shoulders', tokens: ['–', '↑', '↓', '2S', '1S'], hint: '– slight · ↑ raised · ↓ relaxed · 2S double shrug · 1S single-sided' },
+  DS:  { label: 'Dominant side', tokens: ['R', 'L', 'RET'], hint: 'R / L = dominant hand · RET = dominant-shoulder retreat (unvoiced no)' },
+  BR:  { label: 'Blink rate', tokens: ['–', '↑', '↓'], hint: '– normal · ↑ fast or rising · ↓ slow or falling; changes are the data' },
+  SS:  { label: 'Single shrug', tokens: ['S'], hint: 'S = each single-sided shrug (they don\'t believe their own words)' },
+  PRN: { label: 'Pronouns', tokens: ['S', 'T', 'O'], hint: 'S = self (I/me) · T = team (we/ours) · O = others (those people)' },
+  ADJ: { label: 'Adjectives', tokens: ['P', 'N'], hint: 'P = positive descriptor · N = negative — keep their exact words in the note' },
+  SNS: { label: 'Sensory words', tokens: ['V', 'A', 'K'], hint: 'V = see/look · A = hear/sound · K = feel/grasp — match their channel' },
+  BL:  { label: 'Breathing', tokens: ['C', 'A'], hint: 'C = chest · A = abdomen; a shift to A marks the topic that matters' },
+  BAR: { label: 'Barriers', tokens: ['P', 'R'], hint: 'P = barrier placed (needs protection) · R = barrier removed (back in)' },
+};
+function qload() { try { return JSON.parse(localStorage.getItem('xray_quad') || ''); } catch (e) { return null; } }
+let quad = qload() || { config: ['DF', 'NDS', 'DEC', 'LP'], name: '', cells: {}, saved: [] };
+function qsave() { localStorage.setItem('xray_quad', JSON.stringify(quad)); }
+function qcell(k) { if (!quad.cells[k]) quad.cells[k] = { chips: [], note: '' }; return quad.cells[k]; }
+function qdSaveRead(btn) {
+  quad.saved.unshift({ name: quad.name || 'Unnamed', date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), config: quad.config.slice(), cells: JSON.parse(JSON.stringify(quad.cells)) });
+  if (quad.saved.length > 20) quad.saved.pop();
+  qsave(); renderQuad();
+  btn.textContent = 'Saved ✓'; setTimeout(() => { btn.textContent = 'Save'; }, 1200);
+}
+function qdNewRead() { quad.name = ''; quad.cells = {}; qsave(); renderQuad(); }
+function renderQuad() {
+  document.getElementById('qdName').value = quad.name;
+  const grid = document.getElementById('qdGrid');
+  grid.innerHTML = '';
+  quad.config.forEach(k => {
+    const el = QUAD_ELEMENTS[k], cell = qcell(k);
+    const d = document.createElement('div');
+    d.className = 'qd-cell';
+    d.innerHTML = '<h5>' + k + ' · ' + el.label + '</h5>' +
+      '<div class="qd-chips">' + cell.chips.map((c, i) => '<span class="qd-chip' + (c.c ? ' circled' : '') + '" data-k="' + k + '" data-i="' + i + '">' + c.t + '</span>').join('') + '</div>' +
+      '<div class="qd-pal">' + el.tokens.map(t => '<button data-k="' + k + '" data-t="' + t + '">' + t + '</button>').join('') + '</div>' +
+      '<input class="qd-note" placeholder="topic / cause…" value="' + (cell.note || '').replace(/"/g, '&quot;') + '" data-k="' + k + '">' +
+      '<div class="qd-hint">' + el.hint + '</div>';
+    grid.appendChild(d);
+  });
+  grid.querySelectorAll('.qd-pal button').forEach(b => b.onclick = () => { qcell(b.dataset.k).chips.push({ t: b.dataset.t, c: false }); qsave(); renderQuad(); });
+  grid.querySelectorAll('.qd-chip').forEach(ch => ch.onclick = () => {
+    const cell = qcell(ch.dataset.k), i = +ch.dataset.i;
+    if (cell.chips[i].c) cell.chips.splice(i, 1); else cell.chips[i].c = true;
+    qsave(); renderQuad();
+  });
+  grid.querySelectorAll('.qd-note').forEach(n => n.oninput = () => { qcell(n.dataset.k).note = n.value; qsave(); });
+  const list = document.getElementById('qdSavedList');
+  list.innerHTML = '';
+  quad.saved.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'qd-saved';
+    d.innerHTML = '<span class="nm"></span><span class="dt">' + s.date + '</span><button data-a="load">Open</button><button data-a="del">✕</button>';
+    d.querySelector('.nm').textContent = s.name || 'Unnamed';
+    d.querySelector('[data-a="load"]').onclick = () => { quad.config = s.config.slice(); quad.cells = JSON.parse(JSON.stringify(s.cells)); quad.name = s.name; qsave(); renderQuad(); window.scrollTo(0, 0); };
+    d.querySelector('[data-a="del"]').onclick = () => { quad.saved.splice(i, 1); qsave(); renderQuad(); };
+    list.appendChild(d);
+  });
+  document.getElementById('qdSavedEyebrow').style.display = quad.saved.length ? '' : 'none';
+  const cfg = document.getElementById('qdConfig');
+  cfg.innerHTML = Object.keys(QUAD_ELEMENTS).map(k => '<button class="qd-cfg' + (quad.config.includes(k) ? ' on' : '') + '" data-k="' + k + '">' + k + '</button>').join('');
+  cfg.querySelectorAll('.qd-cfg').forEach(b => b.onclick = () => {
+    const k = b.dataset.k;
+    if (quad.config.includes(k)) { if (quad.config.length > 1) quad.config = quad.config.filter(x => x !== k); }
+    else if (quad.config.length < 4) quad.config.push(k);
+    qsave(); renderQuad();
+  });
+}
+
 initToday();
 render();
+renderQuad();
 </script>
