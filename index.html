@@ -137,6 +137,9 @@
   .item { padding: 14px 16px; border-bottom: 1px solid var(--line); }
   .item:last-child { border-bottom: none; }
   .item h4 { font-size: 14.5px; font-weight: 600; margin-bottom: 4px; }
+  .item h4.itemhead { display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 0; padding: 4px 0; }
+  .ex-body .item:has(> h4.itemhead) { padding-top: 4px; }
+  .ichev { color: var(--muted); font-size: 13px; margin-left: 10px; }
   .item .read { font-size: 13.5px; line-height: 1.5; color: var(--bone); }
   .item .use { font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 5px; }
   .item .use::before { content: 'USE — '; color: var(--amber); font-size: 10px; letter-spacing: 0.12em; }
@@ -2457,15 +2460,23 @@ const LIB_FLAT = {};
 LIBRARY.forEach(c => c.items.forEach(it => { LIB_FLAT[it.name] = { it: it, cat: c.cat }; }));
 
 let planEx = true;
+const itemOpen = {};
+function itemIsOpen(it) {
+  if (itemOpen[it.name] !== undefined) return itemOpen[it.name];
+  return it.read.length < 350;
+}
 function planExamples() {
   const names = (PLAN_CARDS[planSel - 1] || []).filter(n => LIB_FLAT[n]);
   if (!names.length) return '';
   return '<div class="plan-ex">' +
     '<button class="ex-head" id="planExBtn">What to look for this week (' + names.length + ')<span>' + (planEx ? 'hide ▾' : 'show ▸') + '</span></button>' +
-    (planEx ? '<div class="ex-body">' + names.map(n => {
+    (planEx ? '<div class="ex-body">' + names.map((n, i) => {
       const it = LIB_FLAT[n].it;
-      return '<div class="item"><h4>' + it.name + '</h4><div class="read">' + it.read + '</div>' +
-        (it.use ? '<div class="use">' + it.use + '</div>' : '') + '</div>';
+      const open = itemIsOpen(it);
+      return '<div class="item">' +
+        '<h4 class="itemhead" data-i="' + i + '">' + it.name + '<span class="ichev">' + (open ? '▾' : '▸') + '</span></h4>' +
+        (open ? '<div class="read">' + it.read + '</div>' + (it.use ? '<div class="use">' + it.use + '</div>' : '') : '') +
+      '</div>';
     }).join('') + '</div>' : '') +
   '</div>';
 }
@@ -2497,6 +2508,14 @@ function renderPlan() {
     '<button class="donebtn' + (isDone ? ' done' : '') + '" id="planDoneBtn">' + (isDone ? '✓ Week complete' : 'Mark week complete') + '</button>';
   const exBtn = document.getElementById('planExBtn');
   if (exBtn) exBtn.onclick = () => { planEx = !planEx; renderPlan(); };
+  const names = (PLAN_CARDS[planSel - 1] || []).filter(n => LIB_FLAT[n]);
+  document.querySelectorAll('.itemhead').forEach(h => {
+    h.onclick = () => {
+      const it = LIB_FLAT[names[+h.dataset.i]].it;
+      itemOpen[it.name] = !itemIsOpen(it);
+      renderPlan();
+    };
+  });
   document.getElementById('planExamplesBtn').onclick = () => openWex(planSel);
   document.getElementById('planStudyBtn').onclick = () => openLibrary(PLAN_LIB[planSel - 1]);
   document.getElementById('planDoneBtn').onclick = () => {
