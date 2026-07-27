@@ -2330,6 +2330,16 @@ const PLAN = [
   { t: 'Quadrant reps', focus: 'The Quad tab, daily, loaded with your weakest skills.', how: 'Run a quadrant on every meaningful interaction this week. Load it with the elements you struggle with most — not your favorites — and swap out anything you\'ve mastered.', why: 'Writing forces observation, and rotating elements forces breadth. Comfort picks train nothing.', use: 'Every circled entry is a found cause — a trigger you can deliberately use or avoid next time you talk to that person. Saved reads become playbooks.' },
   { t: 'The full compass', focus: 'Everything at once — the complete profile, unassisted.', how: 'The challenge: watch a show with real people alongside someone and compete for who catches more compass items. Then run it for real: before your next important conversation, answer the compass questions — how does this person view the world? What are they afraid of in THIS decision? How do their need and pillar shape it? Which sensory words, pronouns, and adjectives fit them? Which way do I lean for the ask? What did their body say when the key topic came up?', why: 'The compass is the graduation exercise: every technique in the system converging on one page about one person.', use: 'The final question is the whole game: what does this person need in order to feel like the HERO of their own story? Give them that, and persuasion stops being something you do to them.' },
 ];
+/* Which library category each week studies — powers the Study button. */
+const PLAN_LIB = ['Foundations', 'Eyes', 'Eyes', 'Eyes', 'Face', 'Face', 'Face', 'Body', 'Body', 'Body', 'Body', 'Body', 'Body', 'Body', 'Deception — verbal', 'Elicitation — extracting information', 'Elicitation — extracting information', 'Needs — the mask they wear', 'Decision Map — how people choose', 'Needs — the mask they wear', 'Advanced reads — compliance & control', 'Advanced reads — compliance & control', 'Advanced reads — compliance & control', 'The BTE — scoring behavior like a scientist', 'The BTE — scoring behavior like a scientist'];
+function openLibrary(catName) {
+  showTab('profiling', document.querySelectorAll('nav button')[2]);
+  document.querySelectorAll('#library .cat').forEach(c => {
+    const isTarget = c.querySelector('.name').textContent === catName;
+    c.classList.toggle('open', isTarget);
+    if (isTarget) setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  });
+}
 let planSel = null;
 function renderPlan() {
   const doneW = state.weeks || [];
@@ -2352,7 +2362,9 @@ function renderPlan() {
     '<div class="fld"><b>How to train it —</b> ' + p.how + '</div>' +
     '<div class="fld"><b>Why it works —</b> ' + p.why + '</div>' +
     '<div class="fld"><b>Using it —</b> ' + p.use + '</div>' +
+    '<button class="donebtn" id="planStudyBtn">Study this — open the ' + PLAN_LIB[planSel - 1].split(' — ')[0] + ' cards</button>' +
     '<button class="donebtn' + (isDone ? ' done' : '') + '" id="planDoneBtn">' + (isDone ? '✓ Week complete' : 'Mark week complete') + '</button>';
+  document.getElementById('planStudyBtn').onclick = () => openLibrary(PLAN_LIB[planSel - 1]);
   document.getElementById('planDoneBtn').onclick = () => {
     const w = planSel;
     if (state.weeks.includes(w)) state.weeks = state.weeks.filter(x => x !== w);
