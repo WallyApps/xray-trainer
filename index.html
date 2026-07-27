@@ -2353,15 +2353,47 @@ function openLibrary(catName) {
   });
 }
 let planSel = null;
+const PLAN_CARDS = [
+  ['The four truths', 'Truth 1 — everyone is suffering', 'Truth 2 — everyone wears a mask', "Truth 3 — everyone pretends they're not", 'Truth 4 — everyone is built by childhood', 'Lens of reasons'],
+  ['Positive / negative side', 'Eye home'],
+  ['Blink rate', 'Shutter speed', 'Pupil dilation'],
+  ['Confirmation glance', 'Eyebrow flash'],
+  ['Lip compression', 'Object insertion'],
+  ['True vs false expressions', 'Artificial smile'],
+  ['Nostril flaring', 'Hushing'],
+  ['Crossed arms — the exceptions', 'Genital protection / fig leaf', 'Arms behind back', 'Elbows in', 'Finger tension'],
+  ['Digital extension', 'Digital flexion', 'Palms down', 'Hands to chest'],
+  ['Feet honesty'],
+  ['Dominant-side tells', 'Breathing location', 'Throat & neck'],
+  ['Shoulder shrugs'],
+  ['Barrier behavior'],
+  ['Hygienic / preening behavior', 'Fidgeting'],
+  ['Context × clusters', 'Baseline, then change', 'The two rules of lie detection', 'Hesitancy & echo', 'Psychological distancing', 'Pitch rise', 'Speed increase', 'Pronoun absence', 'Resume statement', 'Non-contraction', 'Question reversal', 'Ambiguity', 'Politeness spike', 'Over-apologizing', 'The small confession', 'Exclusion qualifiers', 'Chronology tell'],
+  ['The hourglass method', 'Bridging to the target topic', 'Provocative statements', 'The echo', 'Naivety', 'Disbelief', 'Bracketing'],
+  ['The need to be recognized', 'Informational hand-off', 'Flattery', 'Baiting complaints', 'Citations', 'Indirect criticism', 'Socialize it', 'Minimize it', 'Rationalize it', 'Project it'],
+  ['The master question', 'Significance', 'Acceptance', 'Approval', 'Pity', 'Intelligence', 'Power / strength', 'The fear behind each mask', 'Everyone is a drug addict'],
+  ['The decision map', 'Deviance', 'Novelty', 'Social', 'Conformity', 'Investment', 'Necessity'],
+  ['The master question', 'Primary vs secondary needs', 'The fear behind each mask', 'The decision map'],
+  ['Sensory preference'],
+  ['Pronoun identification'],
+  ['Adjective harvesting'],
+  ['The quadrant method', 'How the table works', 'Timing: before, during, after', 'Modifiers: red circles and temperature'],
+  ['The full profile', 'The C5 framework', 'SLATE — reading statements', 'The Deception Rating Scale', 'The compliance ladder', 'Excitement comes late', 'Locus of control — the read', 'Locus of control — the use', 'Bodies lead minds', 'Agreement prep'],
+];
+const LIB_FLAT = {};
+LIBRARY.forEach(c => c.items.forEach(it => { LIB_FLAT[it.name] = { it: it, cat: c.cat }; }));
+
 let planEx = true;
 function planExamples() {
-  const cat = LIBRARY.find(c => c.cat === PLAN_LIB[planSel - 1]);
-  if (!cat) return '';
+  const names = (PLAN_CARDS[planSel - 1] || []).filter(n => LIB_FLAT[n]);
+  if (!names.length) return '';
   return '<div class="plan-ex">' +
-    '<button class="ex-head" id="planExBtn">What to look for this week (' + cat.items.length + ')<span>' + (planEx ? 'hide ▾' : 'show ▸') + '</span></button>' +
-    (planEx ? '<div class="ex-body">' + cat.items.map(it =>
-      '<div class="item"><h4>' + it.name + '</h4><div class="read">' + it.read + '</div>' +
-      (it.use ? '<div class="use">' + it.use + '</div>' : '') + '</div>').join('') + '</div>' : '') +
+    '<button class="ex-head" id="planExBtn">What to look for this week (' + names.length + ')<span>' + (planEx ? 'hide ▾' : 'show ▸') + '</span></button>' +
+    (planEx ? '<div class="ex-body">' + names.map(n => {
+      const it = LIB_FLAT[n].it;
+      return '<div class="item"><h4>' + it.name + '</h4><div class="read">' + it.read + '</div>' +
+        (it.use ? '<div class="use">' + it.use + '</div>' : '') + '</div>';
+    }).join('') + '</div>' : '') +
   '</div>';
 }
 
