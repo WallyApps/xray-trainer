@@ -283,6 +283,14 @@
   .plan-pill.done { background: var(--amber-dim); border-color: rgba(224, 164, 88, 0.55); color: var(--amber); }
   .plan-detail .fld { margin-top: 9px; font-size: 13.5px; line-height: 1.55; color: var(--bone); }
   .plan-detail .fld b { color: var(--amber); }
+  .plan-ex { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .ex-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    background: none; border: 0; padding: 6px 0; color: var(--amber); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; text-align: left; }
+  .ex-head span { font-size: 13px; color: var(--muted); letter-spacing: 0; }
+  .ex-body { margin-top: 4px; }
+  .ex-body .item { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .ex-body .item:last-child { border-bottom: 0; padding-bottom: 2px; }
 
   /* ---------- premium: layered surfaces, motion, reward ---------- */
   .card, .cat, .check, .unit, .principle, .mantra {
@@ -2345,6 +2353,18 @@ function openLibrary(catName) {
   });
 }
 let planSel = null;
+let planEx = true;
+function planExamples() {
+  const cat = LIBRARY.find(c => c.cat === PLAN_LIB[planSel - 1]);
+  if (!cat) return '';
+  return '<div class="plan-ex">' +
+    '<button class="ex-head" id="planExBtn">What to look for this week (' + cat.items.length + ')<span>' + (planEx ? 'hide ▾' : 'show ▸') + '</span></button>' +
+    (planEx ? '<div class="ex-body">' + cat.items.map(it =>
+      '<div class="item"><h4>' + it.name + '</h4><div class="read">' + it.read + '</div>' +
+      (it.use ? '<div class="use">' + it.use + '</div>' : '') + '</div>').join('') + '</div>' : '') +
+  '</div>';
+}
+
 function renderPlan() {
   const doneW = state.weeks || [];
   if (planSel == null) {
@@ -2366,8 +2386,11 @@ function renderPlan() {
     '<div class="fld"><b>How to train it —</b> ' + p.how + '</div>' +
     '<div class="fld"><b>Why it works —</b> ' + p.why + '</div>' +
     '<div class="fld"><b>Using it —</b> ' + p.use + '</div>' +
+    planExamples() +
     '<button class="donebtn" id="planStudyBtn">Study this — open the ' + PLAN_LIB[planSel - 1].split(' — ')[0] + ' cards</button>' +
     '<button class="donebtn' + (isDone ? ' done' : '') + '" id="planDoneBtn">' + (isDone ? '✓ Week complete' : 'Mark week complete') + '</button>';
+  const exBtn = document.getElementById('planExBtn');
+  if (exBtn) exBtn.onclick = () => { planEx = !planEx; renderPlan(); };
   document.getElementById('planStudyBtn').onclick = () => openLibrary(PLAN_LIB[planSel - 1]);
   document.getElementById('planDoneBtn').onclick = () => {
     const w = planSel;
