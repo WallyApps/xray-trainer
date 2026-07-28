@@ -140,6 +140,8 @@
   .item h4.itemhead { display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 0; padding: 4px 0; }
   .ex-body .item:has(> h4.itemhead) { padding-top: 4px; }
   .ichev { color: var(--muted); font-size: 13px; margin-left: 10px; }
+  .cardhead { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  .collapsed { display: none; }
   .item .read { font-size: 13.5px; line-height: 1.5; color: var(--bone); }
   .item .use { font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 5px; }
   .item .use::before { content: 'USE — '; color: var(--amber); font-size: 10px; letter-spacing: 0.12em; }
@@ -427,27 +429,36 @@
     <div class="eyebrow">Cue of the day</div>
     <div class="card">
       <span class="tag" id="cueTag"></span>
-      <h3 id="cueName"></h3>
-      <p id="cueRead"></p>
-      <p class="use" id="cueUse"></p>
-      <p class="sub">Learn it this morning. Your profiling rep hunts it today. Tonight you log whether you saw it.</p>
+      <h3 class="cardhead" id="cueHead" onclick="toggleCard('cue')">
+        <span id="cueName"></span><span class="ichev" id="cueChev">▸</span>
+      </h3>
+      <div id="cueBody" class="collapsed">
+        <p id="cueRead"></p>
+        <p class="use" id="cueUse"></p>
+        <p class="sub">Learn it this morning. Your profiling rep hunts it today. Tonight you log whether you saw it.</p>
+      </div>
     </div>
 
     <div class="eyebrow">Always-on anchor</div>
     <div class="card">
-      <h3>The 3-second scan</h3>
-      <p>Every new person you talk to today: <b style="color:var(--amber)">Feet → Hands → Blink.</b> Three seconds, every single time, until it runs without you. Here's how to read what you see:</p>
-      <div class="scan-key">
-        <div><b>Feet</b> pointed at you = engaged · at the exit = they want out · at one person = that's the leader</div>
-        <div><b>Hands</b> loose, open fingers = comfortable, agreeing · curled or tense = stressed, disagreeing</div>
-        <div><b>Blink</b> fast = stressed · barely blinking = locked in · sudden change = something just hit them</div>
+      <h3 class="cardhead" id="anchorHead" onclick="toggleCard('anchor')">
+        The 3-second scan<span class="ichev" id="anchorChev">▸</span>
+      </h3>
+      <p style="margin-top: 4px;">Every new person you talk to today: <b style="color:var(--amber)">Feet → Hands → Blink.</b></p>
+      <div id="anchorBody" class="collapsed">
+        <p>Three seconds, every single time, until it runs without you. Here's how to read what you see:</p>
+        <div class="scan-key">
+          <div><b>Feet</b> pointed at you = engaged · at the exit = they want out · at one person = that's the leader</div>
+          <div><b>Hands</b> loose, open fingers = comfortable, agreeing · curled or tense = stressed, disagreeing</div>
+          <div><b>Blink</b> fast = stressed · barely blinking = locked in · sudden change = something just hit them</div>
+        </div>
+        <p style="margin-top: 10px;">Got a minute? Finish the <b style="color:var(--amber)">60-second profile:</b></p>
+        <div class="scan-key">
+          <div><b>Need</b> ask: what do they want me to THINK about them? · brags = significance · "we" = acceptance · fishing = approval · struggles = pity · correcting = intelligence · control = power</div>
+          <div><b>Pillar</b> one visible choice tells you: stands out = deviance · newest = novelty · reaction-chasing = social · matches peers = conformity · ROI logic = investment · bare function = necessity</div>
+        </div>
+        <p class="sub">Scan on every greeting; need + pillar when you get a minute. That's a real profile — and habit-stacking it is what makes profiling automatic.</p>
       </div>
-      <p style="margin-top: 10px;">Got a minute? Finish the <b style="color:var(--amber)">60-second profile:</b></p>
-      <div class="scan-key">
-        <div><b>Need</b> ask: what do they want me to THINK about them? · brags = significance · "we" = acceptance · fishing = approval · struggles = pity · correcting = intelligence · control = power</div>
-        <div><b>Pillar</b> one visible choice tells you: stands out = deviance · newest = novelty · reaction-chasing = social · matches peers = conformity · ROI logic = investment · bare function = necessity</div>
-      </div>
-      <p class="sub">Scan on every greeting; need + pillar when you get a minute. That's a real profile — and habit-stacking it is what makes profiling automatic.</p>
     </div>
 
     <div class="eyebrow">Today's profiling rep</div>
@@ -1474,6 +1485,14 @@ function checkDayComplete() {
     state.streak = (state.lastComplete === yesterday) ? (state.streak || 0) + 1 : 1;
     state.lastComplete = todayKey;
   }
+}
+
+function toggleCard(which) {
+  const body = document.getElementById(which + 'Body');
+  const chev = document.getElementById(which + 'Chev');
+  const open = !body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', open);
+  chev.textContent = open ? '▸' : '▾';
 }
 
 function toggleDrill(which) {
