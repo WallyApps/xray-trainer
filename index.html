@@ -538,6 +538,14 @@
     <div class="eyebrow">The Mind path</div>
     <div id="pathMind"></div>
 
+    <div class="eyebrow">The confidence plan</div>
+    <div class="card">
+      <h3>Not giving a f*** is a skill</h3>
+      <p>Same idea as the X-Ray plan — one brick at a time. Weeks 1–6 build the operating system (safety, forgiveness, permission). Weeks 7–9 are the weapons you use daily. Weeks 10–12 are the core lesson: <b style="color:var(--amber)">there are no tigers</b> — and the mastery test isn't feeling bulletproof, it's making everyone around you a little more confident too.</p>
+    </div>
+    <div class="plan-pills" id="confPlanPills"></div>
+    <div class="card plan-detail" id="confPlanDetail"></div>
+
     <div class="eyebrow">The 25-week plan</div>
     <div class="card">
       <h3>Skill, not knowledge</h3>
@@ -1406,6 +1414,7 @@ if (!state.checks) state.checks = [false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
 if (!state.weeks) state.weeks = [];
+if (!state.confWeeks) state.confWeeks = [];
 
 /* ---- today tab ----
    The profiling rep is drawn only from Learn-path units you've unlocked, and
@@ -2418,6 +2427,89 @@ function openLibrary(catName) {
     if (isTarget) setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
   });
 }
+function openMind(catName) {
+  showTab('confidence', document.querySelectorAll('nav button')[3]);
+  document.querySelectorAll('#principles .cat').forEach(c => {
+    const isTarget = c.querySelector('.name').textContent === catName;
+    c.classList.toggle('open', isTarget);
+    if (isTarget) setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  });
+}
+const CONF_FLAT = {};
+PRIN_FLAT.forEach(x => { CONF_FLAT[x.h] = { read: x.p }; });
+CONFIDENCE_DRILLS.forEach(x => { if (!CONF_FLAT[x.name]) CONF_FLAT[x.name] = { read: x.why, use: x.do }; });
+const CONF_PLAN = [
+  { t: 'Confidence = safety', focus: 'Rewire the definition — confidence isn\'t certainty of a good outcome, it\'s trusting you\'ll be OK no matter the outcome.', how: 'Before anything that makes you nervous this week, run one line silently: "However this goes, I\'ll be OK." Pair it with pace — never move faster than you would in a pool, all week, everywhere.', why: 'Composure reads as authority because a body that isn\'t bracing for a verdict signals safety to everyone around it. People lean into that. They don\'t lean into hype.', use: 'Use it right before walking into any room that used to intimidate you — a tryout, a meeting, a first date. Slow pace plus that one line does more than any pump-up talk ever could.' },
+  { t: 'Hear it as fiction', focus: 'Catch the inner critic and downgrade it from truth to fiction.', how: 'Every self-critical thought this week: picture it as a 6-year-old tugging your hand saying "somebody\'s gonna laugh at you." Consider the source. Smile at it instead of obeying it.', why: 'The moment you hear the thought as fiction instead of fact is the moment it loses its grip — you can\'t stay scared of something you\'ve already relabeled as make-believe.', use: 'Your fastest in-the-moment reset — works mid-conversation, mid-game, mid-anything. No arguing with the thought required, just relabel it and move.' },
+  { t: 'Radical self-forgiveness', focus: 'Get so forgiving of your own past it would look delusional to anyone watching.', how: 'Pick one memory that still stings and forgive it completely this week — not "working on it," fully done. Repeat daily until it stops carrying a charge.', why: 'Confidence only lives in a body that feels safe in itself. A nervous system still punishing you for old mistakes can\'t relax into the present, no matter what you achieve next.', use: 'Run this before any performance where old failures might creep back in — a big game, a big pitch. Clear the account before you play.' },
+  { t: 'Step into a role', focus: 'Borrow permission from a role instead of waiting to feel ready for it.', how: 'Pick your role for the week — pro, captain, host — and act from its built-in permission all week, the way a firefighter runs into a building because the uniform grants it. Say "I\'m the type of person that…" once and act in line with it all week.', why: 'Waiting to feel confident first has it backwards — the role grants the permission, and the feeling follows the behavior, not the other way around. Identity drives behavior, not the reverse.', use: 'The moment you\'re hesitating on something you\'d obviously do if you already had the title — act from the role first. You don\'t need the title, you need the behavior.' },
+  { t: 'Stop outsourcing', focus: 'Stop letting other people\'s reactions set your confidence level.', how: 'Catch every moment this week you check a face for approval before deciding how you feel about something. Grant yourself the approval first, instead — every time.', why: 'If other people\'s opinions can raise your confidence, their opinions can also take it away. You stay programmable for as long as the remote sits in their hands.', use: 'The instant you notice yourself scanning a room for reactions — stop, self-approve internally, and keep moving. That\'s the whole rep.' },
+  { t: 'Kill hierarchy thinking', focus: 'Drop the ranking instinct completely — nobody is above or below you in any room.', how: 'Every time you catch yourself ranking someone this week — bigger name, better job, more followers — replace it with collaboration: what could we build, not who outranks who. Run the only competition allowed: most comfortable person in the room.', why: 'Hierarchy thinking manufactures fear of judgment out of nothing. You can\'t be nervous about someone\'s opinion of you if you\'ve stopped keeping score against them in the first place — and status-chasing is what turns confidence toxic, not confidence itself.', use: 'Walk into any room that used to intimidate you and silently ask "can I be the most comfortable person here" instead of "where do I rank." That reframe alone changes your posture before you say a word.' },
+  { t: 'Observation mode', focus: 'Get your attention off yourself and onto the room — self-focus is the anxious mode.', how: 'The instant you feel self-conscious this week, flip your attention outward and profile someone instead — read their feet, hands, or need. You cannot run self-monitoring and observation mode at the same time.', why: 'Anxiety needs you looking inward to survive. The second your attention goes outward — to reading the room instead of monitoring yourself — the anxious loop has nothing left to run on.', use: 'Your emergency exit from any spiral, on the ice or off it. Profile somebody, anybody, and the spiral breaks on its own.' },
+  { t: 'Worry is rehearsal', focus: 'Treat every worry as an accidental rehearsal for failure, and cancel it on purpose.', how: 'Every time you catch yourself worrying this week, immediately run one deliberate mental rep of the same situation going right. One for one, no exceptions.', why: 'Your brain doesn\'t know the difference between a rehearsed worry and a rehearsed win — it just logs reps. Worrying for free trains failure; canceling it trains the outcome you actually want.', use: 'Use it the night before or the hour before anything that makes you anxious — one positive rep per worry loop, every time it fires.' },
+  { t: 'Shame = narcissism', focus: 'Recognize carrying shame as a form of self-importance, and set it down.', how: 'Notice any shame you\'re carrying this week and ask: does feeling bad right now actually change what happened? It doesn\'t. Believing it does is its own kind of arrogance. When it gets heavy, zoom out on it like Google Maps — street, city, country, planet — until it shrinks to its real size.', why: 'Shame convinces you your suffering is doing something useful — protecting you, paying a debt. It isn\'t. It\'s just weight nobody asked you to carry, and it looks a lot smaller zoomed out.', use: 'Use it any time guilt from something old is bleeding into something happening right now. Name it, zoom out on it, then set it down — today\'s moment doesn\'t owe yesterday\'s mistake anything.' },
+  { t: 'No tigers', focus: 'Recognize social fear for what it actually is — an ancient survival circuit firing at nothing, and everyone around you is running the exact same wiring.', how: 'Every time anxiety spikes this week, name it out loud in your head: "tiger brain — there\'s no tiger here." Then do the thing anyway while the feeling is still on. Deliberately risk one small social injury daily — nothing happens, and that\'s the point.', why: 'The fear circuit evolved to keep you from being banished by the tribe or eaten in the dark — it can\'t tell a real predator from asking a stranger a question. None of your ancestors died a virgin; the catastrophe your brain predicts has never once actually happened. And the #1 thing anxious people lack isn\'t courage, it\'s the realization that everyone around them is exactly as insecure and masked as they are.', use: 'The master override for every version of social fear — parties, asks, walk-ups, tryouts. Name the tiger, act anyway, log the evidence that nothing happened. Your brain is unconsciously keeping score every single time.' },
+  { t: 'Author-ity', focus: 'Stop waiting for permission that is never coming — become the author of the moment instead.', how: 'Pick one situation daily this week and be its author: initiate, direct, decide — without waiting for a cue or sign that it\'s okay. Afterward, do not check a single face for how it landed.', why: 'Nobody is ever going to tap you on the shoulder and say "you\'re allowed now." People read authorship as authority — when you act like you already have standing, their brains assume you must, and they hand you real acceptance back.', use: 'The moment you catch yourself waiting for an invitation, a green light, or someone else to go first — go first. That\'s the whole move, every time.' },
+  { t: 'Confidence transfers', focus: 'The real mastery test isn\'t how confident you feel — it\'s how confident you make everyone around you.', how: 'Make one person visibly more confident every day this week — hand a nervous person the frame: "you\'ve got this, you pick, you lead." Notice that transferring it outward is a completely different skill than performing it for yourself.', why: 'The whole point was never to feel bulletproof — it was to stop needing to. Once you\'re not scanning for status or checking faces for approval, you have surplus calm left over, and the only useful thing to do with surplus is hand it to someone else. There\'s no faking it and no graduation ceremony — even Chase felt like a fraud the first time he taught this. Unfamiliar isn\'t unqualified.', use: 'The finish line of the whole system: you\'ll know you\'ve mastered not giving a f*** when you\'re the reason someone else in the room stops giving one too.' },
+];
+
+const CONF_CARDS = [
+  ['Confidence = safety', 'Pool speed', 'Pool speed day'],
+  ['Hear it as fiction', 'The fiction filter'],
+  ['Radical self-forgiveness', 'Forgiveness rep'],
+  ['Step into a role', 'Step into the role', 'Identity drives behavior', 'Identity check'],
+  ['Stop outsourcing', 'Cancel the outsourcing'],
+  ['Kill hierarchy thinking', 'No-hierarchy day', 'Comfort contest', "Confidence doesn't ruin people — status does"],
+  ['Observation mode'],
+  ['Worry is rehearsal for failure', 'Worry = rehearsal'],
+  ['Shame = narcissism', 'Drop the bag', 'Zoom out', 'Google Maps zoom'],
+  ['Everyone is insecure — literally everyone', 'The tiger brain', 'Fear is a liar', 'Your brain is collecting evidence', 'Talk to the 9-year-old like an authority', 'Tiger check', 'One social injury', 'Everyone likes you', 'Talk to the kid'],
+  ['Nobody is coming with permission', 'Author-ity', 'Author one moment', 'Permission slip'],
+  ['Confidence transfers', 'Transfer rep', 'There is no "faking it"', 'Even Chase feels like a fraud'],
+];
+
+const CONF_LIB = [
+  'The operating system', 'The operating system', 'The operating system', 'The operating system', 'The operating system', 'The operating system',
+  'The weapons', 'The weapons', 'The weapons',
+  'No tigers — where the fear comes from', 'No tigers — where the fear comes from', 'No tigers — where the fear comes from',
+];
+
+const CONF_EXAMPLES = [
+  [{c:'Confidence = safety', s:'You\'re about to walk into a room full of people you don\'t know and your stomach drops.', r:'Run the line: "However this goes, I\'ll be OK." You\'re not predicting a great night, you\'re just refusing to bet your safety on the outcome. Watch your shoulders drop when you actually mean it.'},
+   {c:'Confidence = safety', s:'Someone asks you a question you don\'t have a polished answer for.', r:'A composed "not sure yet, let me think on it" reads as more authority than a fumbled fake answer. Composure IS the authority — you don\'t need the answer to have it.'},
+   {c:'Pool speed', s:'You just got embarrassed in front of a group and want to bolt for the door.', r:'Slow your walk down on purpose, like you\'re moving through water. Panic reads instantly in fast movement — glacial pace is what makes it invisible.'}],
+  [{c:'Hear it as fiction', s:'You\'re about to say something in a group and a voice says "that\'s a dumb thing to say."', r:'Picture a 6-year-old tugging your hand saying it. Consider the source. Say the thing anyway — you wouldn\'t take relationship advice from a six-year-old either.'},
+   {c:'Hear it as fiction', s:'You replay an awkward moment from earlier today on a loop.', r:'That loop is the same kid tugging your sleeve. Label it: "fiction, not fact," and let the loop run out of fuel instead of feeding it attention.'},
+   {c:'The fiction filter', s:'You\'re nervous to text someone back because you\'re overthinking how it\'ll land.', r:'Same filter — hear the anxious voice as a kid\'s worst-case guess, not a prediction. Send the text.'}],
+  [{c:'Radical self-forgiveness', s:'You keep replaying a mistake from a game or a conversation weeks ago.', r:'Forgive it completely, on purpose, out loud in your head — not "I\'m working on it," fully done. The past doesn\'t need your ongoing punishment to stay in the past.'},
+   {c:'Forgiveness rep', s:'You\'re about to walk into a similar situation to one where you messed up before.', r:'Do the forgiveness rep first — clear the account before you play, so old failure doesn\'t get a vote in tonight\'s performance.'},
+   {c:'Radical self-forgiveness', s:'A friend brings up an old embarrassing story of yours, laughing.', r:'If you\'ve actually forgiven it, you can laugh too — genuinely, not performed. If it still stings, that\'s the tell you haven\'t cleared it yet.'}],
+  [{c:'Step into a role', s:'You\'re at a dinner and nobody\'s really leading the conversation or making a decision on where to go next.', r:'Step into "host" for the night — pick the next spot, make the call. The role grants the permission; you don\'t need to feel like a leader first.'},
+   {c:'Identity drives behavior', s:'You keep saying "I\'m just not a confident person" as a kind of explanation.', r:'That\'s the identity driving the behavior — backwards. Flip the sentence: "I\'m the type of person who speaks up," and start acting like it\'s already true today.'},
+   {c:'Identity check', s:'You\'re deciding whether to introduce yourself to someone new at a party.', r:'Say the identity line first — "I\'m the type of person that talks to anyone" — then walk over. The line comes before the feeling, not after.'}],
+  [{c:'Stop outsourcing', s:'You tell a joke and immediately scan the table for reactions before deciding if it landed.', r:'Catch the scan. Approve it yourself first — "that was funny" — before anyone else\'s face gets to vote.'},
+   {c:'Cancel the outsourcing', s:'Someone doesn\'t respond to something you said the way you hoped.', r:'Notice the dip in your mood chasing their reaction. Grant yourself the approval you were fishing for, and watch the dip level out on its own.'}],
+  [{c:'Kill hierarchy thinking', s:'You meet someone clearly more successful or well-known than you at dinner.', r:'Drop the ranking instinct — you\'re not below them. Run "most comfortable person in the room" instead of "where do I stack up." That\'s the only scoreboard that matters.'},
+   {c:'Comfort contest', s:'You walk into a room and immediately feel smaller than everyone in it.', r:'Quietly compete for one thing only: most comfortable person here. Nobody else knows you\'re playing, and you\'ll usually win just by trying.'},
+   {c:"Confidence doesn't ruin people — status does", s:'You notice yourself constantly checking where you rank compared to your buddies.', r:'That status-scanning is what turns confidence toxic, not confidence itself. Drop the ranking and what\'s left is just calm — which is the actual goal.'}],
+  [{c:'Observation mode', s:'You start feeling self-conscious mid-conversation, like everyone\'s watching you.', r:'Flip it immediately — profile the person across from you instead. Read their hands, their pace, their need. You can\'t spiral about yourself while genuinely reading someone else.'},
+   {c:'Observation mode', s:'You\'re waiting to be introduced to a group and your mind starts racing about how you\'ll come across.', r:'Get curious about them instead — who\'s the leader here, who\'s uncomfortable, who\'s performing. The second your attention goes outward, the racing has nothing left to feed on.'}],
+  [{c:'Worry is rehearsal for failure', s:'You\'re lying awake the night before something big, running worst-case scenarios.', r:'Each loop is a rehearsal for failure whether you like it or not. Run one deliberate positive version of the same scene going right — one for one, every time it fires.'},
+   {c:'Worry = rehearsal', s:'You catch yourself worrying about a conversation you haven\'t even had yet.', r:'Cancel it on the spot — picture the same exact conversation going well, in detail. Your brain can\'t tell rehearsed-worry from rehearsed-win, so make it log the right one.'}],
+  [{c:'Shame = narcissism', s:'You\'re still beating yourself up over something you did months ago.', r:'Ask honestly: does feeling bad right now change what happened? It doesn\'t. Believing it does is the arrogance — set the bag down.'},
+   {c:'Zoom out', s:'A problem feels enormous and consuming today.', r:'Zoom out on it like Google Maps — street, city, country, planet. Most things that feel massive up close disappear entirely from orbit.'},
+   {c:'Drop the bag', s:'Old guilt from a past relationship or mistake creeps into a totally unrelated moment today.', r:'Name it as the bag it is, and set it down on purpose. Today\'s moment doesn\'t owe yesterday\'s mistake anything.'}],
+  [{c:'The tiger brain', s:'You feel a genuine spike of fear before walking up to someone you don\'t know.', r:'That\'s the ancient circuit mistaking a stranger for a predator. Name it: "tiger brain, no tiger here." Walk up anyway while the feeling is still on — that\'s the actual rep.'},
+   {c:'Everyone is insecure — literally everyone', s:'You assume everyone else at the party is more comfortable and confident than you are.', r:'They\'re not. Everyone in that room is running the same insecure, masked operating system you are — you\'re not the exception, you\'re the rule.'},
+   {c:'Your brain is collecting evidence', s:'You do the scary thing — the ask, the walk-up — and nothing bad happens.', r:'That\'s a logged data point whether you notice it or not: "we did it, nothing happened." The voice doesn\'t vanish, it just gets quieter with every rep you stack.'}],
+  [{c:'Author-ity', s:'Nobody in the group is deciding what to do next and everyone\'s just standing around.', r:'Decide for the group. Direct it. Nobody is coming to hand you permission — people read the decision itself as proof you were allowed to make it.'},
+   {c:'Author one moment', s:'You want to suggest something but you\'re waiting for someone else to say it first.', r:'Say it first. That\'s the whole rep — go first, without checking if it\'s okay to.'},
+   {c:'Permission slip', s:'You do something a little bold and immediately want to check how people reacted.', r:'Don\'t check a single face. The self-permission was the real threshold — checking reactions afterward is what makes it feel fake.'}],
+  [{c:'Confidence transfers', s:'A friend is visibly nervous before something — a date, a tryout, a big conversation.', r:'Hand them the frame directly: "you\'ve got this, you pick, you lead." Making someone else more confident is a harder and more valuable skill than performing confidence yourself.'},
+   {c:'Transfer rep', s:'You\'re in a group where one person is clearly holding back, unsure if they belong.', r:'Actively include them — ask their opinion first, defer to them on something small. Watch them visibly change in real time. That\'s the actual mastery test.'},
+   {c:'There is no "faking it"', s:'You feel like you\'re still faking confidence even after months of practicing all of this.', r:'There\'s no fake version if people see confident — that\'s just what confidence looks like from outside. There\'s no graduation ceremony either. Out of the comfort zone is exactly where you\'re supposed to be.'}],
+];
+
 let planSel = null;
 const WEEK_EXAMPLES = [
   [{c:'Truth 1 — suffering', s:'A guy at a party keeps steering every story back to himself and won\'t let a silence sit for two seconds.', r:'He is terrified of a moment where nobody needs him. The talking is the bandage. Give him one genuine "that\'s actually impressive" and watch him settle down — you just fed the need directly instead of making him work for it.'}, {c:'Truth 1 — suffering', s:'Your buddy cancels plans last minute for the third time and you\'re about to write him off as flaky.', r:'Flaky is a verdict. Underwater is a reason. Something at home, at work or in his head is eating him and cancelling is the only lever he has left. Text "no stress, you good?" instead of "wow again?" — one of those gets you the truth.'}, {c:'Truth 1 — suffering', s:'The barista is clipped and cold with you and you did nothing.', r:'She is still inside the argument with the customer two people ahead of you. What lands on you is almost always leftover from somewhere else. Stay warm and watch her face reset — that reset tells you it was never about you.'}, {c:'Truth 1 — suffering', s:'The most successful guy at the dinner table goes quiet when someone else\'s win gets talked about.', r:'Success does not delete insecurity, it just moves it. He is quietly checking whether he still counts. Money and status make people MORE afraid of the drop, not less.'}, {c:'Truth 2 — the mask', s:'Someone works their job title, their car or their salary into the conversation within the first five minutes.', r:'Significance need, loud and clear. Nobody who feels significant needs to announce it to a stranger. Give the recognition early and unprompted and you will get a completely different person for the rest of the night.'}, {c:'Truth 2 — the mask', s:'A friend makes constant self-deprecating jokes about his own weight, job or dating life.', r:'He is beating you to the punch. If he says it first, it can\'t be used against him. The mask is the joke; the wound is the exact subject he jokes about. Never pile on — go warm on the very thing he mocks and you\'ll watch him drop it.'}, {c:'Truth 3 — the pretending', s:'Someone tells you "I\'m just brutally honest, I don\'t sugarcoat anything."', r:'That\'s a permission slip written before the crime. People who are actually honest don\'t need to announce a policy. Expect something unkind next, and notice he\'s already framed your reaction as YOU being too sensitive.'}, {c:'Truth 3 — the pretending', s:'A girl says "honestly I don\'t even care what people think" — twice — about the same situation.', r:'Anything denied twice, unprompted, is live. The repetition IS the tell. Do not point it out; just quietly file that this subject matters enormously and treat it gently.'}, {c:'Truth 4 — childhood', s:'You ask a coworker how he\'s doing and he immediately lists what he\'s accomplished this week.', r:'He was loved for output, so a check-in registers as an evaluation. Ask him something with zero performance in it — "what did you do this weekend that had nothing to do with work?" — and watch him relax.'}, {c:'Truth 4 — childhood', s:'A friend deflects every serious subject with a joke, every single time, within one sentence.', r:'Humor got him love and got him out of trouble as a kid. It is armor, not personality. Don\'t chase the serious topic — sit in the silence after the joke without laughing and he\'ll often finish the real sentence himself.'}, {c:'Truth 4 — childhood', s:'You lower your voice and slow down, and the person across from you visibly relaxes and starts telling you more.', r:'Calm reads as safety to someone who grew up in chaos. You just found a lever: your volume and pace matter more to this person than anything you actually say.'}, {c:'Lens of reasons', s:'A guy cuts you off in traffic and you feel the heat come up.', r:'Behavior has reasons, not verdicts. He\'s late, he\'s panicking, he learned to drive from someone who drove like that. The read isn\'t "he\'s a jerk" — it\'s "something built that." Judgment burns attention you need for observing.'}, {c:'The master question', s:'Someone spends the whole dinner talking about the countries they\'ve visited and the hotels they stayed in.', r:'Ask yourself: what do they want me to think about them? Answer: that I\'m cultured, successful, worth knowing. That answer names the need (significance) and the fear underneath it in one shot — being seen as ordinary or overlooked.'}, {c:'The master question', s:'A coworker mentions, unprompted, how busy and overwhelmed they\'ve been all week.', r:'What do they want you to think? That I have it hard, that my struggle is real. That\'s the pity need talking — the fear is being disbelieved or having the hardship waved off as nothing.'}, {c:'The needs cheat sheet', s:'Someone brings up their promotion, their gym PR, and their new car within ten minutes of meeting you.', r:'Match it to the sheet: significance — wants impact, fears being ignored or made to feel small. Acknowledge the specific win before they have to bring it up again.'}, {c:'The needs cheat sheet', s:'A friend keeps saying "we always..." and "people like us..." through the whole conversation.', r:'Acceptance — wants to belong, fears being the odd one out or criticized by the group. Use inclusive language back and you\'ll get an easy yes.'}, {c:'The needs cheat sheet', s:'Someone asks "that was okay, right? You\'re not mad?" after almost everything they do.', r:'Approval — wants reassurance, fears disapproval or rejection. Give the reassurance immediately and unprompted, don\'t make them ask twice.'}, {c:'The needs cheat sheet', s:'A person corrects a small, irrelevant detail in your story and cites a stat to back it up.', r:'Intelligence — wants to be seen as smart, fears being seen as wrong or dumb. Defer to their expertise on purpose and watch them relax instantly.'}, ],
@@ -2528,7 +2620,7 @@ function renderPlan() {
   const exBtn = document.getElementById('planExBtn');
   if (exBtn) exBtn.onclick = () => { planEx = !planEx; renderPlan(); };
   const names = (PLAN_CARDS[planSel - 1] || []).filter(n => LIB_FLAT[n]);
-  document.querySelectorAll('.itemhead').forEach(h => {
+  document.querySelectorAll('#planDetail .itemhead').forEach(h => {
     h.onclick = () => {
       const it = LIB_FLAT[names[+h.dataset.i]].it;
       itemOpen[it.name] = !itemIsOpen(it);
@@ -2545,31 +2637,96 @@ function renderPlan() {
   };
 }
 
+let confPlanSel = null;
+let confPlanEx = true;
+function confPlanExamples() {
+  const names = (CONF_CARDS[confPlanSel - 1] || []).filter(n => CONF_FLAT[n]);
+  if (!names.length) return '';
+  return '<div class="plan-ex">' +
+    '<button class="ex-head" id="confPlanExBtn">What to practice this week (' + names.length + ')<span>' + (confPlanEx ? 'hide ▾' : 'show ▸') + '</span></button>' +
+    (confPlanEx ? '<div class="ex-body">' + names.map((n, i) => {
+      const it = { name: n, read: CONF_FLAT[n].read, use: CONF_FLAT[n].use };
+      const open = itemIsOpen(it);
+      return '<div class="item">' +
+        '<h4 class="itemhead" data-i="' + i + '">' + it.name + '<span class="ichev">' + (open ? '▾' : '▸') + '</span></h4>' +
+        (open ? '<div class="read">' + it.read + '</div>' + (it.use ? '<div class="use">' + it.use + '</div>' : '') : '') +
+      '</div>';
+    }).join('') + '</div>' : '') +
+  '</div>';
+}
+function renderConfPlan() {
+  const doneW = state.confWeeks || [];
+  if (confPlanSel == null) {
+    const firstOpen = CONF_PLAN.findIndex((_, i) => !doneW.includes(i + 1));
+    confPlanSel = firstOpen === -1 ? CONF_PLAN.length : firstOpen + 1;
+  }
+  const pills = document.getElementById('confPlanPills');
+  pills.innerHTML = CONF_PLAN.map((_, i) => {
+    const w = i + 1;
+    return '<button class="plan-pill' + (doneW.includes(w) ? ' done' : '') + (confPlanSel === w ? ' on' : '') + '" data-w="' + w + '">W' + w + '</button>';
+  }).join('');
+  pills.querySelectorAll('.plan-pill').forEach(b => b.onclick = () => { confPlanSel = +b.dataset.w; renderConfPlan(); });
+  const p = CONF_PLAN[confPlanSel - 1];
+  const isDone = doneW.includes(confPlanSel);
+  document.getElementById('confPlanDetail').innerHTML =
+    '<span class="tag">Week ' + confPlanSel + (isDone ? ' · complete' : '') + '</span>' +
+    '<h3>' + p.t + '</h3>' +
+    '<div class="fld"><b>Focus —</b> ' + p.focus + '</div>' +
+    '<div class="fld"><b>How to train it —</b> ' + p.how + '</div>' +
+    '<div class="fld"><b>Why it works —</b> ' + p.why + '</div>' +
+    '<div class="fld"><b>Using it —</b> ' + p.use + '</div>' +
+    confPlanExamples() +
+    '<button class="examplesbtn" id="confPlanExamplesBtn">See ' + (CONF_EXAMPLES[confPlanSel - 1] || []).length + ' real-life examples for this week</button>' +
+    '<button class="donebtn" id="confPlanStudyBtn">Study this — open ' + CONF_LIB[confPlanSel - 1].split(' — ')[0] + ' cards</button>' +
+    '<button class="donebtn' + (isDone ? ' done' : '') + '" id="confPlanDoneBtn">' + (isDone ? '✓ Week complete' : 'Mark week complete') + '</button>';
+  const exBtn = document.getElementById('confPlanExBtn');
+  if (exBtn) exBtn.onclick = () => { confPlanEx = !confPlanEx; renderConfPlan(); };
+  const names = (CONF_CARDS[confPlanSel - 1] || []).filter(n => CONF_FLAT[n]);
+  document.querySelectorAll('#confPlanDetail .itemhead').forEach(h => {
+    h.onclick = () => {
+      const n = names[+h.dataset.i];
+      const it = { name: n, read: CONF_FLAT[n].read };
+      itemOpen[it.name] = !itemIsOpen(it);
+      renderConfPlan();
+    };
+  });
+  document.getElementById('confPlanExamplesBtn').onclick = () => openWex(confPlanSel, CONF_EXAMPLES, 'Week');
+  document.getElementById('confPlanStudyBtn').onclick = () => openMind(CONF_LIB[confPlanSel - 1]);
+  document.getElementById('confPlanDoneBtn').onclick = () => {
+    const w = confPlanSel;
+    if (state.confWeeks.includes(w)) state.confWeeks = state.confWeeks.filter(x => x !== w);
+    else { state.confWeeks.push(w); state.xp += 25; }
+    save(state); renderConfPlan(); render();
+  };
+}
+
 /* ---------- week examples viewer ---------- */
-let wexWeek = null, wexIdx = 0;
-function openWex(week) {
+let wexWeek = null, wexIdx = 0, wexData = WEEK_EXAMPLES, wexLabel = 'Week';
+function openWex(week, data, label) {
   wexWeek = week; wexIdx = 0;
+  wexData = data || WEEK_EXAMPLES;
+  wexLabel = label || 'Week';
   document.getElementById('wex').classList.add('on');
   renderWex();
 }
 function closeWex() { document.getElementById('wex').classList.remove('on'); }
 function renderWex() {
-  const list = WEEK_EXAMPLES[wexWeek - 1] || [];
+  const list = wexData[wexWeek - 1] || [];
   if (!list.length) { closeWex(); return; }
   const x = list[wexIdx];
-  document.getElementById('wexWeek').textContent = 'Week ' + wexWeek + ' · ' + (wexIdx + 1) + ' / ' + list.length;
+  document.getElementById('wexWeek').textContent = wexLabel + ' ' + wexWeek + ' · ' + (wexIdx + 1) + ' / ' + list.length;
   document.getElementById('wexProg').textContent = (wexIdx + 1) + ' / ' + list.length;
   document.getElementById('wexCue').textContent = x.c;
   document.getElementById('wexS').textContent = x.s;
   document.getElementById('wexR').textContent = x.r;
 }
 function wexNext() {
-  const list = WEEK_EXAMPLES[wexWeek - 1] || [];
+  const list = wexData[wexWeek - 1] || [];
   wexIdx = (wexIdx + 1) % list.length;
   renderWex();
 }
 function wexPrev() {
-  const list = WEEK_EXAMPLES[wexWeek - 1] || [];
+  const list = wexData[wexWeek - 1] || [];
   wexIdx = (wexIdx - 1 + list.length) % list.length;
   renderWex();
 }
@@ -2578,4 +2735,5 @@ initToday();
 render();
 renderQuad();
 renderPlan();
+renderConfPlan();
 </script>
