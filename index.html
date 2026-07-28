@@ -147,6 +147,15 @@
   .weeklinks .wl-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
   .weeklinks .wl-t { flex: 1; font-size: 14px; color: var(--bone); }
   .weeklinks .wl-arrow { color: var(--muted); }
+  .rep-list { padding: 4px 18px; }
+  .rep-row { border-bottom: 1px solid var(--line); }
+  .rep-row:last-child { border-bottom: 0; }
+  .rep-head { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 13px 0; margin: 0; }
+  .rep-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
+  .rep-t { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--bone); }
+  .rep-status { color: var(--green); font-size: 13px; font-weight: 700; }
+  .rep-sub { margin: -8px 0 12px; font-size: 13px; color: var(--muted); }
+  .rep-body { padding-bottom: 14px; }
   .collapsed { display: none; }
   .item .read { font-size: 13.5px; line-height: 1.5; color: var(--bone); }
   .item .use { font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 5px; }
@@ -477,56 +486,78 @@
       </div>
     </div>
 
-    <div class="eyebrow">Today's Quad read</div>
-    <div class="card">
-      <h3>Profile someone live</h3>
-      <p>Pick 4 elements, log a real read on someone today.</p>
-      <button class="donebtn" id="quadBtn">Open the Quad</button>
-    </div>
+    <div class="eyebrow">Today's reps</div>
+    <div class="card rep-list">
 
-    <div class="eyebrow">Today's profiling rep</div>
-    <div class="card">
-      <span class="tag" id="pdrillTag"></span>
-      <h3 id="pdrillName"></h3>
-      <p id="pdrillDo"></p>
-      <p class="look" id="pdrillLook"></p>
-      <p class="sub" id="pdrillWhy"></p>
-      <button class="donebtn" id="pdrillBtn" onclick="toggleDrill('p')">Mark done</button>
-    </div>
-
-    <div class="eyebrow">Today's confidence rep</div>
-    <div class="card">
-      <span class="tag">Confidence</span>
-      <h3 id="cdrillName"></h3>
-      <p id="cdrillDo"></p>
-      <p class="sub" id="cdrillWhy"></p>
-      <button class="donebtn" id="cdrillBtn" onclick="toggleDrill('c')">Mark done</button>
-    </div>
-
-    <div class="eyebrow">The evidence stack</div>
-    <div class="card">
-      <span class="tag">Automatic</span>
-      <h3 class="cardhead" id="evHead" onclick="toggleCard('ev')">
-        <span id="evCount">0 reps collected</span><span class="ichev" id="evChev">▸</span>
-      </h3>
-      <div id="evBody" class="collapsed">
-        <p>Every time today you act WITH the fear still on — the ask, the walk-up, the hand raised — tap it. Your brain logs the proof unconsciously; this is the visible scoreboard of the voice getting quieter.</p>
+      <div class="rep-row">
+        <h4 class="rep-head" onclick="toggleCard('pdrill')">
+          <span class="rep-tag" id="pdrillTag"></span>
+          <span class="rep-t" id="pdrillName"></span>
+          <span class="rep-status" id="pdrillStat"></span>
+          <span class="ichev" id="pdrillChev">▸</span>
+        </h4>
+        <div id="pdrillBody" class="rep-body collapsed">
+          <p id="pdrillDo"></p>
+          <p class="look" id="pdrillLook"></p>
+          <p class="sub" id="pdrillWhy"></p>
+          <button class="donebtn" id="pdrillBtn" onclick="toggleDrill('p')">Mark done</button>
+        </div>
       </div>
-      <button class="donebtn" id="evBtn">+1 — did it with the feeling on</button>
-      <p class="sub" id="evSub"></p>
-    </div>
 
-    <div class="eyebrow">Today's review</div>
-    <div class="card">
-      <span class="tag">Memory</span>
-      <h3 class="cardhead" id="revHead" onclick="toggleCard('rev')">
-        Daily review<span class="ichev" id="revChev">▸</span>
-      </h3>
-      <p id="quizDueLine"></p>
-      <div id="revBody" class="collapsed">
-        <p class="sub">Covers only what you've learned on the path. Nail a card and it returns in 1 → 2 → 4 → 7 → 14 days; miss it and it resets to daily. This is what makes it permanent. (Passing a lesson also checks this box.)</p>
+      <div class="rep-row">
+        <h4 class="rep-head" onclick="toggleCard('cdrill')">
+          <span class="rep-tag">Confidence</span>
+          <span class="rep-t" id="cdrillName"></span>
+          <span class="rep-status" id="cdrillStat"></span>
+          <span class="ichev" id="cdrillChev">▸</span>
+        </h4>
+        <div id="cdrillBody" class="rep-body collapsed">
+          <p id="cdrillDo"></p>
+          <p class="sub" id="cdrillWhy"></p>
+          <button class="donebtn" id="cdrillBtn" onclick="toggleDrill('c')">Mark done</button>
+        </div>
       </div>
-      <button class="donebtn" id="quizBtn">Start review</button>
+
+      <div class="rep-row">
+        <h4 class="rep-head" onclick="toggleCard('quad')">
+          <span class="rep-tag">Quad</span>
+          <span class="rep-t">Profile someone live</span>
+          <span class="rep-status" id="quadStat"></span>
+          <span class="ichev" id="quadChev">▸</span>
+        </h4>
+        <div id="quadBody" class="rep-body collapsed">
+          <p>Pick 4 elements, log a real read on someone today.</p>
+          <button class="donebtn" id="quadBtn">Open the Quad</button>
+        </div>
+      </div>
+
+      <div class="rep-row">
+        <h4 class="rep-head" onclick="toggleCard('ev')">
+          <span class="rep-tag">Evidence</span>
+          <span class="rep-t" id="evCount">0 reps collected</span>
+          <span class="ichev" id="evChev">▸</span>
+        </h4>
+        <p class="rep-sub" id="evSub"></p>
+        <div id="evBody" class="rep-body collapsed">
+          <p>Every time today you act WITH the fear still on — the ask, the walk-up, the hand raised — tap it. Your brain logs the proof unconsciously; this is the visible scoreboard of the voice getting quieter.</p>
+          <button class="donebtn" id="evBtn">+1 — did it with the feeling on</button>
+        </div>
+      </div>
+
+      <div class="rep-row">
+        <h4 class="rep-head" onclick="toggleCard('rev')">
+          <span class="rep-tag">Memory</span>
+          <span class="rep-t">Daily review</span>
+          <span class="rep-status" id="revStat"></span>
+          <span class="ichev" id="revChev">▸</span>
+        </h4>
+        <p class="rep-sub" id="quizDueLine"></p>
+        <div id="revBody" class="rep-body collapsed">
+          <p class="sub">Covers only what you've learned on the path. Nail a card and it returns in 1 → 2 → 4 → 7 → 14 days; miss it and it resets to daily. This is what makes it permanent. (Passing a lesson also checks this box.)</p>
+          <button class="donebtn" id="quizBtn">Start review</button>
+        </div>
+      </div>
+
     </div>
 
     <div class="eyebrow">The daily check — ask yourself</div>
@@ -1558,6 +1589,8 @@ function render() {
   pb.classList.toggle('done', !!state.p);
   cb.textContent = state.c ? '✓ Done' : 'Mark done';
   cb.classList.toggle('done', !!state.c);
+  document.getElementById('pdrillStat').textContent = state.p ? '✓' : '';
+  document.getElementById('cdrillStat').textContent = state.c ? '✓' : '';
   if (planSel != null) document.getElementById('wlinkXrayT').textContent = 'Week ' + planSel + ' — ' + PLAN[planSel - 1].t;
   if (confPlanSel != null) document.getElementById('wlinkMindT').textContent = 'Week ' + confPlanSel + ' — ' + CONF_PLAN[confPlanSel - 1].t;
   document.getElementById('wlinkXray').onclick = () => jumpToPlan('profiling');
@@ -1566,6 +1599,7 @@ function render() {
   quadBtn.textContent = state.quad ? '✓ Logged today — open again' : 'Open the Quad';
   quadBtn.classList.toggle('done', !!state.quad);
   quadBtn.onclick = () => showTab('quad', document.querySelectorAll('nav button')[5]);
+  document.getElementById('quadStat').textContent = state.quad ? '✓' : '';
   document.querySelectorAll('.check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
   const qb = document.getElementById('quizBtn');
   const launch = document.getElementById('quizLaunch');
@@ -1586,6 +1620,7 @@ function render() {
     launch.textContent = 'Daily review — ' + due + ' due';
     launch.onclick = startQuiz;
   }
+  document.getElementById('revStat').textContent = state.q ? '✓' : '';
   document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q && state.quad));
   document.getElementById('evCount').textContent = state.evTotal + ' rep' + (state.evTotal === 1 ? '' : 's') + ' collected';
   document.getElementById('evSub').textContent = state.evToday > 0
