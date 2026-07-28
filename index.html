@@ -141,6 +141,12 @@
   .ex-body .item:has(> h4.itemhead) { padding-top: 4px; }
   .ichev { color: var(--muted); font-size: 13px; margin-left: 10px; }
   .cardhead { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  .weeklinks { padding: 6px 18px; }
+  .weeklinks .wlink { display: flex; align-items: center; gap: 10px; padding: 12px 0; cursor: pointer; border-bottom: 1px solid var(--line); }
+  .weeklinks .wlink:last-child { border-bottom: 0; }
+  .weeklinks .wl-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
+  .weeklinks .wl-t { flex: 1; font-size: 14px; color: var(--bone); }
+  .weeklinks .wl-arrow { color: var(--muted); }
   .collapsed { display: none; }
   .item .read { font-size: 13.5px; line-height: 1.5; color: var(--bone); }
   .item .use { font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 5px; }
@@ -461,6 +467,23 @@
       </div>
     </div>
 
+    <div class="eyebrow">This week</div>
+    <div class="card weeklinks">
+      <div class="wlink" id="wlinkXray">
+        <span class="wl-tag">X-Ray</span><span class="wl-t" id="wlinkXrayT">—</span><span class="wl-arrow">→</span>
+      </div>
+      <div class="wlink" id="wlinkMind">
+        <span class="wl-tag">Mind</span><span class="wl-t" id="wlinkMindT">—</span><span class="wl-arrow">→</span>
+      </div>
+    </div>
+
+    <div class="eyebrow">Today's Quad read</div>
+    <div class="card">
+      <h3>Profile someone live</h3>
+      <p>Pick 4 elements, log a real read on someone today — a teammate, a coach, anyone in front of you. The reps compound.</p>
+      <button class="donebtn" id="quadBtn">Open the Quad</button>
+    </div>
+
     <div class="eyebrow">Today's profiling rep</div>
     <div class="card">
       <span class="tag" id="pdrillTag"></span>
@@ -538,14 +561,6 @@
     <div class="eyebrow">The Mind path</div>
     <div id="pathMind"></div>
 
-    <div class="eyebrow">The 25-week plan</div>
-    <div class="card">
-      <h3>Skill, not knowledge</h3>
-      <p>Knowing this stuff does nothing — the skill does everything. Four phases: <b style="color:var(--amber)">Visual</b> (see behavior live) → <b style="color:var(--amber)">Audio</b> (hear between the lines) → <b style="color:var(--amber)">Response</b> (alter your language to what you read) → <b style="color:var(--amber)">Mental</b> (the whole compass, no notes). One brick at a time: a skill moves to the next only once the last one runs without you.</p>
-    </div>
-    <div class="plan-pills" id="planPills"></div>
-    <div class="card plan-detail" id="planDetail"></div>
-
     <footer>Pass a lesson with 6/7 or better. Three lessons beat a unit. Beat a unit to unlock the next.</footer>
   </main>
 
@@ -555,6 +570,15 @@
     <button class="quizlaunch" id="quizLaunch">Daily review</button>
     <div class="eyebrow">The library</div>
     <div id="library"></div>
+
+    <div class="eyebrow">The 25-week plan</div>
+    <div class="card">
+      <h3>Skill, not knowledge</h3>
+      <p>Knowing this stuff does nothing — the skill does everything. Four phases: <b style="color:var(--amber)">Visual</b> (see behavior live) → <b style="color:var(--amber)">Audio</b> (hear between the lines) → <b style="color:var(--amber)">Response</b> (alter your language to what you read) → <b style="color:var(--amber)">Mental</b> (the whole compass, no notes). One brick at a time: a skill moves to the next only once the last one runs without you.</p>
+    </div>
+    <div class="plan-pills" id="planPills"></div>
+    <div class="card plan-detail" id="planDetail"></div>
+
     <footer>Context × clusters. One data point is nothing — find a second.</footer>
   </main>
 
@@ -1402,7 +1426,7 @@ function save(s) { localStorage.setItem('xray', JSON.stringify(s)); }
 let state = load();
 if (state.today !== todayKey) {
   state.today = todayKey;
-  state.p = false; state.c = false; state.q = false; state.checks = [false, false, false, false];
+  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false];
   state.counted = false;
   state.pdrill = null;
   state.cue = null; state.debrief = null; state.debriefXP = false;
@@ -1489,7 +1513,7 @@ DAILY_CHECKS.forEach((q, i) => {
 });
 
 function checkDayComplete() {
-  if (state.p && state.c && state.q && !state.counted) {
+  if (state.p && state.c && state.q && state.quad && !state.counted) {
     state.counted = true;
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     state.streak = (state.lastComplete === yesterday) ? (state.streak || 0) + 1 : 1;
@@ -1518,6 +1542,14 @@ function render() {
   pb.classList.toggle('done', !!state.p);
   cb.textContent = state.c ? '✓ Done' : 'Mark done';
   cb.classList.toggle('done', !!state.c);
+  if (planSel != null) document.getElementById('wlinkXrayT').textContent = 'Week ' + planSel + ' — ' + PLAN[planSel - 1].t;
+  if (confPlanSel != null) document.getElementById('wlinkMindT').textContent = 'Week ' + confPlanSel + ' — ' + CONF_PLAN[confPlanSel - 1].t;
+  document.getElementById('wlinkXray').onclick = () => jumpToPlan('profiling');
+  document.getElementById('wlinkMind').onclick = () => jumpToPlan('confidence');
+  const quadBtn = document.getElementById('quadBtn');
+  quadBtn.textContent = state.quad ? '✓ Logged today — open again' : 'Open the Quad';
+  quadBtn.classList.toggle('done', !!state.quad);
+  quadBtn.onclick = () => showTab('quad', document.querySelectorAll('nav button')[5]);
   document.querySelectorAll('.check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
   const qb = document.getElementById('quizBtn');
   const launch = document.getElementById('quizLaunch');
@@ -1538,7 +1570,7 @@ function render() {
     launch.textContent = 'Daily review — ' + due + ' due';
     launch.onclick = startQuiz;
   }
-  document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q));
+  document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q && state.quad));
   document.getElementById('evCount').textContent = state.evTotal + ' rep' + (state.evTotal === 1 ? '' : 's') + ' collected';
   document.getElementById('evSub').textContent = state.evToday > 0
     ? 'Today: ' + state.evToday + ' — the voice gets quieter with every single one.'
@@ -1843,6 +1875,12 @@ function showTab(name, btn) {
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
   window.scrollTo(0, 0);
+}
+function jumpToPlan(tab) {
+  const idx = tab === 'profiling' ? 2 : 3;
+  showTab(tab, document.querySelectorAll('nav button')[idx]);
+  const pillsId = tab === 'profiling' ? 'planPills' : 'confPlanPills';
+  setTimeout(() => document.getElementById(pillsId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 }
 
 /* ---- quiz: spaced repetition (Leitner boxes) over flashcards + scenarios ----
@@ -2340,6 +2378,7 @@ function qdSaveRead(btn) {
   if (quad.saved.length > 20) quad.saved.pop();
   qsave(); renderQuad();
   btn.textContent = 'Saved ✓'; setTimeout(() => { btn.textContent = 'Save'; }, 1200);
+  if (!state.quad) { state.quad = true; checkDayComplete(); save(state); render(); }
 }
 function qdNewRead() { quad.name = ''; quad.cells = {}; qsave(); renderQuad(); }
 function renderQuad() {
@@ -2733,8 +2772,8 @@ function wexPrev() {
 }
 
 initToday();
-render();
 renderQuad();
 renderPlan();
 renderConfPlan();
+render();
 </script>
