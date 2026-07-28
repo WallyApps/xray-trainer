@@ -480,7 +480,7 @@
     <div class="eyebrow">Today's Quad read</div>
     <div class="card">
       <h3>Profile someone live</h3>
-      <p>Pick 4 elements, log a real read on someone today — a teammate, a coach, anyone in front of you. The reps compound.</p>
+      <p>Pick 4 elements, log a real read on someone today.</p>
       <button class="donebtn" id="quadBtn">Open the Quad</button>
     </div>
 
@@ -506,8 +506,12 @@
     <div class="eyebrow">The evidence stack</div>
     <div class="card">
       <span class="tag">Automatic</span>
-      <h3 id="evCount">0 reps collected</h3>
-      <p>Every time today you act WITH the fear still on — the ask, the walk-up, the hand raised — tap it. Your brain logs the proof unconsciously; this is the visible scoreboard of the voice getting quieter.</p>
+      <h3 class="cardhead" id="evHead" onclick="toggleCard('ev')">
+        <span id="evCount">0 reps collected</span><span class="ichev" id="evChev">▸</span>
+      </h3>
+      <div id="evBody" class="collapsed">
+        <p>Every time today you act WITH the fear still on — the ask, the walk-up, the hand raised — tap it. Your brain logs the proof unconsciously; this is the visible scoreboard of the voice getting quieter.</p>
+      </div>
       <button class="donebtn" id="evBtn">+1 — did it with the feeling on</button>
       <p class="sub" id="evSub"></p>
     </div>
@@ -515,9 +519,13 @@
     <div class="eyebrow">Today's review</div>
     <div class="card">
       <span class="tag">Memory</span>
-      <h3>Daily review</h3>
+      <h3 class="cardhead" id="revHead" onclick="toggleCard('rev')">
+        Daily review<span class="ichev" id="revChev">▸</span>
+      </h3>
       <p id="quizDueLine"></p>
-      <p class="sub">Covers only what you've learned on the path. Nail a card and it returns in 1 → 2 → 4 → 7 → 14 days; miss it and it resets to daily. This is what makes it permanent. (Passing a lesson also checks this box.)</p>
+      <div id="revBody" class="collapsed">
+        <p class="sub">Covers only what you've learned on the path. Nail a card and it returns in 1 → 2 → 4 → 7 → 14 days; miss it and it resets to daily. This is what makes it permanent. (Passing a lesson also checks this box.)</p>
+      </div>
       <button class="donebtn" id="quizBtn">Start review</button>
     </div>
 
@@ -1445,6 +1453,11 @@ if (!state.confWeeks) state.confWeeks = [];
    The profiling rep is drawn only from Learn-path units you've unlocked, and
    pinned for the day so it doesn't swap mid-day when you beat a unit. Runs as
    a function (called at the bottom) because it needs UNITS. */
+function currentConfWeek() {
+  const doneW = state.confWeeks || [];
+  const firstOpen = CONF_PLAN.findIndex((_, i) => !doneW.includes(i + 1));
+  return firstOpen === -1 ? CONF_PLAN.length : firstOpen + 1;
+}
 function initToday() {
   // Cue of the day — one technique from unlocked units, pinned for the day.
   // Prefer units that have field drills so the daily rep can hunt the cue.
@@ -1479,7 +1492,10 @@ function initToday() {
   }
   const cd = CONFIDENCE_DRILLS[dayIndex % CONFIDENCE_DRILLS.length];
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  document.getElementById('mantraText').textContent = MANTRAS[dayIndex % MANTRAS.length];
+  const confWeekCards = (CONF_CARDS[currentConfWeek() - 1] || []).filter(n => CONF_FLAT[n]);
+  document.getElementById('mantraText').textContent = confWeekCards.length
+    ? CONF_FLAT[confWeekCards[dayIndex % confWeekCards.length]].read
+    : MANTRAS[dayIndex % MANTRAS.length];
   document.getElementById('pdrillTag').textContent = pd.tag;
   document.getElementById('pdrillName').textContent = pd.name;
   document.getElementById('pdrillDo').textContent = pd.do;
