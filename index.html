@@ -2715,6 +2715,9 @@ const WEEK_EXAMPLES = [
   [{c:'The full profile', s:'You sit down with someone you\'ve never met and want the entire system running at once, not one piece at a time.', r:'Layer it: read the mask and the need first (Foundations), baseline their eyes/face/body in the first two minutes, then let deception and elicitation run in the background as the conversation continues. It becomes one motion, not four separate steps.'}, {c:'The C5 framework', s:'You want a repeatable structure for reading someone from the moment you meet them.', r:'Context, Cluster, Change, Confirm, Conclude — run the five C\'s in order and you avoid the single-cue mistake that ruins most amateur reads.'}, {c:'SLATE — reading statements', s:'Someone gives you a long explanation for why they were late.', r:'Run SLATE on the statement itself, not just the body language — the structure of what someone says carries as much signal as how they say it.'}, {c:'The Deception Rating Scale', s:'You\'ve collected several cues on someone and want to know if it adds up to something real.', r:'Score it on a scale rather than a binary "lying or not" — most reads land in an ambiguous middle, and the scale keeps you honest about your own certainty.'}, {c:'The compliance ladder', s:'You want someone to agree to something moderately big, cold.', r:'Start with a small, easy yes and build up. By Week 25 this should be automatic — you no longer think about doing it, you just do it.'}, {c:'Locus of control — the use', s:'You\'re trying to motivate two different people to fix the same problem.', r:'One believes outcomes depend on their own effort (internal locus); the other believes outcomes depend on circumstances (external locus). Motivate the first with responsibility, the second with removing obstacles.'}, {c:'Bodies lead minds', s:'You want someone to feel more confident right before a big moment.', r:'Change the body first — posture, breathing, movement — and the mind follows within seconds. This is the same principle powering the whole Mind tab, applied live.'}, {c:'Agreement prep', s:'You want a "yes" that sticks, not one that gets walked back later.', r:'Get several small, real agreements stacked before the big ask — each one makes the next easier and more durable. By week 25 you should notice yourself doing this without planning it.'}],
 ];
 
+// Populated below by a dedicated content pass — one array of hard MC questions per week.
+const WEEK_QUIZ = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
+
 const PLAN_CARDS = [
   ['The four truths', 'Truth 1 — everyone is suffering', 'Truth 2 — everyone wears a mask', "Truth 3 — everyone pretends they're not", 'Truth 4 — everyone is built by childhood', 'Lens of reasons', 'The master question', 'The needs cheat sheet'],
   ['Positive / negative side', 'Eye home'],
@@ -2790,6 +2793,7 @@ function renderPlan() {
     '<div class="fld"><b>Using it —</b> ' + p.use + '</div>' +
     planExamples() +
     '<button class="examplesbtn" id="planExamplesBtn">See ' + (WEEK_EXAMPLES[planSel - 1] || []).length + ' real-life examples for this week</button>' +
+    '<button class="quizbtn" id="planQuizBtn">Test yourself — ' + (WEEK_QUIZ[planSel - 1] || []).length + ' hard questions on this week</button>' +
     '<button class="donebtn" id="planStudyBtn">Study this — open the ' + PLAN_LIB[planSel - 1].split(' — ')[0] + ' cards</button>' +
     '<button class="donebtn' + (isDone ? ' done' : '') + '" id="planDoneBtn">' + (isDone ? '✓ Week complete' : 'Mark week complete') + '</button>';
   const exBtn = document.getElementById('planExBtn');
@@ -2803,6 +2807,7 @@ function renderPlan() {
     };
   });
   document.getElementById('planExamplesBtn').onclick = () => openWex(planSel);
+  document.getElementById('planQuizBtn').onclick = () => startWeekQuiz(WEEK_QUIZ, planSel, 'X-Ray');
   document.getElementById('planStudyBtn').onclick = () => openLibrary(PLAN_LIB[planSel - 1]);
   document.getElementById('planDoneBtn').onclick = () => {
     const w = planSel;
