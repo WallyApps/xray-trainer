@@ -233,6 +233,8 @@
   .wex-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
   .wex-s { font-size: 15px; line-height: 1.5; color: var(--bone); }
   .wex-r { font-size: 14px; line-height: 1.55; color: var(--muted); }
+  .wex-nav { display: flex; gap: 10px; padding: 14px 0 0; flex-shrink: 0; }
+  .wex-nav .donebtn { flex: 1; }
   .examplesbtn {
     width: 100%; padding: 14px; border-radius: 10px; cursor: pointer; margin-top: 10px;
     background: var(--panel-2); border: 1px solid var(--amber); color: var(--amber);
@@ -723,6 +725,10 @@
       <div class="wex-r" id="wexR"></div>
     </div>
     <div class="qhint">Tap for the next example</div>
+  </div>
+  <div class="wex-nav">
+    <button class="donebtn" onclick="event.stopPropagation(); wexPrev()">← Back</button>
+    <button class="donebtn" onclick="event.stopPropagation(); wexNext()">Next →</button>
   </div>
 </div>
 
@@ -1484,6 +1490,8 @@ if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
 if (!state.weeks) state.weeks = [];
 if (!state.confWeeks) state.confWeeks = [];
+if (!state.wexProgress) state.wexProgress = {};
+if (!state.quizProgress) state.quizProgress = {};
 
 /* ---- today tab ----
    The profiling rep is drawn only from Learn-path units you've unlocked, and
@@ -1855,6 +1863,7 @@ function buildEverydayQs(u, pool) {
   return qs;
 }
 function startLesson(uIdx, lessonNum) {
+  activeWeekQuizKey = null;
   const u = UNITS[uIdx];
   // Distractors come from the whole track so tiny units still get 4 options.
   const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
@@ -1895,7 +1904,9 @@ function startDrill(uIdx) {
   const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
   startCustomDrill(() => buildDrillQs(u, distractorPool, 8), uIdx);
 }
+let activeWeekQuizKey = null;
 function startCustomDrill(feed, uIdx) {
+  activeWeekQuizKey = null;
   drillFeed = feed;
   deck = feed();
   if (!deck.length) return;
@@ -1926,12 +1937,25 @@ function startMixDrill() {
 function startWeekQuiz(bank, weekIdx, label) {
   const qs = (bank[weekIdx - 1] || []);
   if (!qs.length) return;
+  const key = label + ':' + weekIdx;
+  const saved = state.quizProgress[key];
+  if (saved && saved.qi < saved.deck.length) {
+    activeWeekQuizKey = key;
+    drillFeed = null;
+    deck = saved.deck; qi = saved.qi; hits = saved.hits;
+    mode = 'drill'; lessonUnit = -1;
+    document.getElementById('coachBtn').style.display = 'none';
+    document.getElementById('quiz').classList.add('on');
+    showCard();
+    return;
+  }
   let served = false;
   startCustomDrill(() => {
     if (served) return [];
     served = true;
     return shuffle(qs.slice()).map(q => shuffleOpts({ type: 'mc', cat: label + ' · Week ' + weekIdx, q: q.q, opts: q.opts, a: q.a, why: q.why }));
   });
+  activeWeekQuizKey = key;
 }
 
 /* ---- tabs ---- */
@@ -1987,6 +2011,7 @@ function shuffle(a) {
   return a;
 }
 function startQuiz(size) {
+  activeWeekQuizKey = null;
   const n = (typeof size === 'number') ? size : DECK_SIZE; // guard: onclick passes an event object
   const all = reviewPool();
   if (!all.length) return;
@@ -2018,6 +2043,7 @@ function showCard() {
     document.getElementById('qBack').style.display = 'none';
     document.getElementById('qProg').textContent = 'Done';
     if (mode === 'drill') {
+      if (activeWeekQuizKey) { delete state.quizProgress[activeWeekQuizKey]; save(state); activeWeekQuizKey = null; }
       card.innerHTML = '<div class="qdone win"><div class="big">' + hits + ' right of ' + qi + '</div><p>Pool cleared — nothing left in this rotation. That\'s mastery doing its job.</p></div>';
       return;
     }
@@ -2098,11 +2124,22 @@ function answerMC(i) {
   if (i === q.a) {
     hits++;
     state.xp += (mode === 'lesson' ? XP_LESSON : XP_REVIEW);
-    save(state);
+  }
+  if (activeWeekQuizKey) state.quizProgress[activeWeekQuizKey] = { deck, qi, hits };
+  save(state);
+}
+function nextCard() {
+  qi++;
+  if (activeWeekQuizKey) { state.quizProgress[activeWeekQuizKey] = { deck, qi, hits }; save(state); }
+  showCard();
+}
+function prevCard() {
+  if (qi > 0) {
+    qi--;
+    if (activeWeekQuizKey) { state.quizProgress[activeWeekQuizKey] = { deck, qi, hits }; save(state); }
+    showCard();
   }
 }
-function nextCard() { qi++; showCard(); }
-function prevCard() { if (qi > 0) { qi--; showCard(); } }
 function flipCard() {
   document.getElementById('qCard').classList.add('flipped');
   const hint = document.getElementById('qHint');
@@ -3124,15 +3161,22 @@ function renderConfPlan() {
 }
 
 /* ---------- week examples viewer ---------- */
-let wexWeek = null, wexIdx = 0, wexData = WEEK_EXAMPLES, wexLabel = 'Week';
+let wexWeek = null, wexIdx = 0, wexData = WEEK_EXAMPLES, wexLabel = 'Week', wexKeyStr = null;
 function openWex(week, data, label) {
-  wexWeek = week; wexIdx = 0;
+  wexWeek = week;
   wexData = data || WEEK_EXAMPLES;
   wexLabel = label || 'Week';
+  wexKeyStr = (wexData === CONF_EXAMPLES ? 'conf' : 'xray') + ':' + week;
+  const list = wexData[week - 1] || [];
+  const saved = state.wexProgress[wexKeyStr];
+  wexIdx = (saved != null && saved < list.length) ? saved : 0;
   document.getElementById('wex').classList.add('on');
   renderWex();
 }
 function closeWex() { document.getElementById('wex').classList.remove('on'); }
+function saveWexProgress() {
+  if (wexKeyStr) { state.wexProgress[wexKeyStr] = wexIdx; save(state); }
+}
 function renderWex() {
   const list = wexData[wexWeek - 1] || [];
   if (!list.length) { closeWex(); return; }
@@ -3146,11 +3190,13 @@ function renderWex() {
 function wexNext() {
   const list = wexData[wexWeek - 1] || [];
   wexIdx = (wexIdx + 1) % list.length;
+  saveWexProgress();
   renderWex();
 }
 function wexPrev() {
   const list = wexData[wexWeek - 1] || [];
   wexIdx = (wexIdx - 1 + list.length) % list.length;
+  saveWexProgress();
   renderWex();
 }
 
