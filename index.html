@@ -180,6 +180,10 @@
   }
   #quiz.on { display: flex; }
   .qtop { display: flex; justify-content: space-between; align-items: center; max-width: 560px; margin: 0 auto 14px; width: 100%; }
+  .speed-bar { display: none; position: relative; max-width: 560px; margin: 0 auto 14px; width: 100%; height: 8px; background: var(--panel-2); border-radius: 5px; overflow: hidden; }
+  .speed-bar.on { display: block; }
+  .speed-fill { height: 100%; background: var(--amber); width: 100%; }
+  .speed-num { position: absolute; right: 0; top: -22px; font-size: 12px; color: var(--amber); font-weight: 700; letter-spacing: 0.04em; }
   .qtop .prog { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
   .qtop .close { background: none; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); padding: 7px 14px; font-size: 13px; cursor: pointer; }
   .qcard {
@@ -539,6 +543,18 @@
       </div>
 
       <div class="rep-row">
+        <h4 class="rep-head" onclick="toggleCard('speedq')">
+          <span class="rep-tag">Speed</span>
+          <span class="rep-t">5-second reads</span>
+          <span class="ichev" id="speedqChev">▸</span>
+        </h4>
+        <div id="speedqBody" class="rep-body collapsed">
+          <p>Instant-guess drill — 5 seconds per card, no time to reason. Forces the read to compress instead of staying a slow, deliberate process.</p>
+          <button class="donebtn" id="speedqBtn">Start speed round</button>
+        </div>
+      </div>
+
+      <div class="rep-row">
         <h4 class="rep-head" onclick="toggleCard('ev')">
           <span class="rep-tag">Evidence</span>
           <span class="rep-t" id="evCount">0 reps collected</span>
@@ -599,7 +615,8 @@
 
     <div class="eyebrow" id="powerEyebrow">Power drills</div>
     <button class="quizlaunch" id="weakBtn" style="margin-bottom: 8px;">Weak spots ∞</button>
-    <button class="quizlaunch" id="mixBtn">Everything mixed ∞</button>
+    <button class="quizlaunch" id="mixBtn" style="margin-bottom: 8px;">Everything mixed ∞</button>
+    <button class="quizlaunch" id="speedBtn">Speed round — 5s to answer ⚡</button>
 
     <div class="eyebrow">The X-Ray path</div>
     <div id="pathXray"></div>
@@ -694,6 +711,7 @@
     <div class="prog" id="qProg"></div>
     <button class="close" onclick="closeQuiz()">Close</button>
   </div>
+  <div id="speedBar" class="speed-bar"><div id="speedFill" class="speed-fill"></div><span id="speedNum" class="speed-num"></span></div>
   <div class="qcard" id="qCard" onclick="flipCard()">
     <div class="qcat" id="qCat"></div>
     <div class="qcue" id="qCue"></div>
@@ -1613,6 +1631,8 @@ function render() {
   quadBtn.classList.toggle('done', !!state.quad);
   quadBtn.onclick = () => showTab('quad', document.querySelectorAll('nav button')[5]);
   document.getElementById('quadStat').textContent = state.quad ? '✓' : '';
+  const speedqBtn = document.getElementById('speedqBtn');
+  if (speedqBtn) speedqBtn.onclick = startSpeedRound;
   document.querySelectorAll('.check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
   const qb = document.getElementById('quizBtn');
   const launch = document.getElementById('quizLaunch');
@@ -1747,7 +1767,8 @@ function renderLearn() {
     });
   });
   const weak = weakCards().length, learned = reviewPool().length;
-  const wb = document.getElementById('weakBtn'), mb = document.getElementById('mixBtn');
+  const speedPoolLen = reviewPool().filter(c => c.type === 'mc').length;
+  const wb = document.getElementById('weakBtn'), mb = document.getElementById('mixBtn'), sb = document.getElementById('speedBtn');
   document.getElementById('powerEyebrow').style.display = learned ? '' : 'none';
   wb.style.display = weak ? '' : 'none';
   wb.textContent = 'Weak spots ∞ — ' + weak + ' card' + (weak === 1 ? '' : 's') + ' to fix';
@@ -1755,6 +1776,8 @@ function renderLearn() {
   mb.style.display = learned ? '' : 'none';
   mb.textContent = 'Everything mixed ∞ — all ' + learned + ' learned cards';
   mb.onclick = startMixDrill;
+  sb.style.display = speedPoolLen ? '' : 'none';
+  sb.onclick = startSpeedRound;
 }
 
 /* Every fact that comes from LIBRARY or HOCKEY carries a real-world "use"
@@ -1864,6 +1887,7 @@ function buildEverydayQs(u, pool) {
 }
 function startLesson(uIdx, lessonNum) {
   activeWeekQuizKey = null;
+  speedActive = false; stopSpeedTimers();
   const u = UNITS[uIdx];
   // Distractors come from the whole track so tiny units still get 4 options.
   const distractorPool = UNITS.filter(x => x.section === u.section).flatMap(x => x.facts);
@@ -1905,8 +1929,13 @@ function startDrill(uIdx) {
   startCustomDrill(() => buildDrillQs(u, distractorPool, 8), uIdx);
 }
 let activeWeekQuizKey = null;
+let speedActive = false, speedTimeoutHandle = null, speedIntervalHandle = null, speedAdvanceHandle = null;
+function stopSpeedTimers() {
+  clearTimeout(speedTimeoutHandle); clearInterval(speedIntervalHandle); clearTimeout(speedAdvanceHandle);
+}
 function startCustomDrill(feed, uIdx) {
   activeWeekQuizKey = null;
+  stopSpeedTimers();
   drillFeed = feed;
   deck = feed();
   if (!deck.length) return;
@@ -1924,6 +1953,7 @@ function weakCards() {
 }
 function startWeakDrill() {
   if (!weakCards().length) return;
+  speedActive = false;
   startCustomDrill(() => {
     const pool = weakCards();
     if (!pool.length) return [];
@@ -1932,13 +1962,24 @@ function startWeakDrill() {
 }
 function startMixDrill() {
   if (!reviewPool().length) return;
+  speedActive = false;
   startCustomDrill(() => pickFresh(reviewPool(), c => c.id, 8).map(c => c.type === 'mc' ? shuffleOpts(c) : c));
+}
+/* Speed round: same pool as mixed drill, MC only (no flashcards — there's
+   nothing to "guess in 5 seconds" on a flash card), but every card is timed.
+   No time = auto-miss. Forces an instant read instead of a reasoned one. */
+function startSpeedRound() {
+  const pool = reviewPool().filter(c => c.type === 'mc');
+  if (!pool.length) return;
+  speedActive = true;
+  startCustomDrill(() => pickFresh(pool, c => c.id, 8).map(c => shuffleOpts(c)));
 }
 function startWeekQuiz(bank, weekIdx, label) {
   const qs = (bank[weekIdx - 1] || []);
   if (!qs.length) return;
   const key = label + ':' + weekIdx;
   const saved = state.quizProgress[key];
+  speedActive = false;
   if (saved && saved.qi < saved.deck.length) {
     activeWeekQuizKey = key;
     drillFeed = null;
@@ -2012,6 +2053,7 @@ function shuffle(a) {
 }
 function startQuiz(size) {
   activeWeekQuizKey = null;
+  speedActive = false; stopSpeedTimers();
   const n = (typeof size === 'number') ? size : DECK_SIZE; // guard: onclick passes an event object
   const all = reviewPool();
   if (!all.length) return;
@@ -2033,6 +2075,8 @@ function showCard() {
   const card = document.getElementById('qCard');
   document.getElementById('qBtns').classList.remove('show');
   card.classList.remove('flipped');
+  stopSpeedTimers();
+  document.getElementById('speedBar').classList.toggle('on', speedActive);
   if (qi >= deck.length && mode === 'drill' && drillFeed) {
     // Endless: refill with the next rotation batch and keep going.
     deck = deck.concat(drillFeed());
@@ -2105,12 +2149,47 @@ function showCard() {
       });
       document.getElementById('qWhy').classList.add('show');
       document.getElementById('qNext').classList.add('show');
+    } else if (speedActive) {
+      startSpeedTimer();
     }
   }
+}
+const SPEED_MS = 5000;
+function startSpeedTimer() {
+  const fill = document.getElementById('speedFill'), num = document.getElementById('speedNum');
+  fill.style.transition = 'none';
+  fill.style.width = '100%';
+  void fill.offsetWidth;
+  fill.style.transition = 'width ' + (SPEED_MS / 1000) + 's linear';
+  fill.style.width = '0%';
+  let secs = SPEED_MS / 1000;
+  num.textContent = secs + 's';
+  speedIntervalHandle = setInterval(() => {
+    secs--;
+    num.textContent = Math.max(secs, 0) + 's';
+  }, 1000);
+  speedTimeoutHandle = setTimeout(speedTimeout, SPEED_MS);
+}
+function speedTimeout() {
+  const q = deck[qi];
+  if (!q || q._done) return;
+  q._done = true;
+  q._picked = -1;
+  document.querySelectorAll('#qCard .opt').forEach((el, j) => {
+    el.disabled = true;
+    if (j === q.a) el.classList.add('right');
+  });
+  document.getElementById('qWhy').classList.add('show');
+  document.getElementById('qNext').classList.add('show');
+  if (q.id) gradeSRS(q.id, false);
+  if (activeWeekQuizKey) state.quizProgress[activeWeekQuizKey] = { deck, qi, hits };
+  save(state);
+  speedAdvanceHandle = setTimeout(nextCard, 1100);
 }
 function answerMC(i) {
   const q = deck[qi];
   if (q._done) return;
+  clearTimeout(speedTimeoutHandle); clearInterval(speedIntervalHandle);
   q._done = true;
   q._picked = i;
   document.querySelectorAll('#qCard .opt').forEach((el, j) => {
@@ -2127,8 +2206,10 @@ function answerMC(i) {
   }
   if (activeWeekQuizKey) state.quizProgress[activeWeekQuizKey] = { deck, qi, hits };
   save(state);
+  if (speedActive) speedAdvanceHandle = setTimeout(nextCard, 700);
 }
 function nextCard() {
+  clearTimeout(speedAdvanceHandle);
   qi++;
   if (activeWeekQuizKey) { state.quizProgress[activeWeekQuizKey] = { deck, qi, hits }; save(state); }
   showCard();
@@ -2156,6 +2237,7 @@ function gradeCard(hit) {
   showCard();
 }
 function closeQuiz() {
+  stopSpeedTimers();
   document.getElementById('quiz').classList.remove('on');
   document.getElementById('coachBtn').style.display = '';
   render();
