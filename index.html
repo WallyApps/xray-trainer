@@ -545,11 +545,11 @@
       <div class="rep-row">
         <h4 class="rep-head" onclick="toggleCard('speedq')">
           <span class="rep-tag">Speed</span>
-          <span class="rep-t">10-second reads</span>
+          <span class="rep-t">12-second reads</span>
           <span class="ichev" id="speedqChev">▸</span>
         </h4>
         <div id="speedqBody" class="rep-body collapsed">
-          <p>Instant-guess drill — 10 seconds per card, no time to overthink it. Forces the read to compress instead of staying a slow, deliberate process.</p>
+          <p>Instant-guess drill — 12 seconds per card, no time to overthink it. Forces the read to compress instead of staying a slow, deliberate process.</p>
           <button class="donebtn" id="speedqBtn">Start speed round</button>
         </div>
       </div>
@@ -616,7 +616,7 @@
     <div class="eyebrow" id="powerEyebrow">Power drills</div>
     <button class="quizlaunch" id="weakBtn" style="margin-bottom: 8px;">Weak spots ∞</button>
     <button class="quizlaunch" id="mixBtn" style="margin-bottom: 8px;">Everything mixed ∞</button>
-    <button class="quizlaunch" id="speedBtn">Speed round — 10s to answer ⚡</button>
+    <button class="quizlaunch" id="speedBtn">Speed round — 12s to answer ⚡</button>
 
     <div class="eyebrow">The X-Ray path</div>
     <div id="pathXray"></div>
@@ -2154,7 +2154,7 @@ function showCard() {
     }
   }
 }
-const SPEED_MS = 10000;
+const SPEED_MS = 12000;
 function startSpeedTimer() {
   const fill = document.getElementById('speedFill'), num = document.getElementById('speedNum');
   fill.style.transition = 'none';
