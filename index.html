@@ -2379,10 +2379,18 @@ async function aiReply(text) {
       signal: ctrl.signal
     });
     clearTimeout(to);
-    if (!res.ok) throw new Error('http ' + res.status);
+    if (!res.ok) {
+      let detail = 'HTTP ' + res.status;
+      try { const j = await res.json(); if (j.error && j.error.message) detail = j.error.message; } catch (e) {}
+      return { error: detail };
+    }
     const j = await res.json();
-    return (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || null;
-  } catch (e) { clearTimeout(to); return null; }
+    const content = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || null;
+    return content ? { content } : { error: 'Empty response from OpenAI' };
+  } catch (e) {
+    clearTimeout(to);
+    return { error: e.name === 'AbortError' ? 'Request timed out (15s)' : (e.message || 'Network error — request never reached OpenAI') };
+  }
 }
 
 let coachSeeded = false;
@@ -2483,12 +2491,13 @@ async function coachSend(preset) {
     const typing = coachMsg('<i>· · ·</i>', 'bot typing');
     const out = await aiReply(text);
     typing.remove();
-    if (out) {
-      coachMsg(mdLite(out), 'bot');
-      chatLog.push({ role: 'assistant', content: out });
+    if (out && out.content) {
+      coachMsg(mdLite(out.content), 'bot');
+      chatLog.push({ role: 'assistant', content: out.content });
       return;
     }
-    coachMsg('<i>AI unreachable — offline answer:</i><br><br>' + coachReply(text), 'bot');
+    const reason = (out && out.error) ? out.error : 'unknown error';
+    coachMsg('<i>AI unreachable — ' + reason.replace(/</g, '&lt;') + '. Offline answer below:</i><br><br>' + coachReply(text), 'bot');
     return;
   }
   setTimeout(() => coachMsg(coachReply(text), 'bot'), 350);
