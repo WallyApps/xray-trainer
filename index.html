@@ -425,6 +425,9 @@
   .cmsg.typing i { letter-spacing: 3px; }
   .coach-msgs { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
   .cmsg { max-width: 90%; padding: 11px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.6; }
+  .cmsg-src { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+  .cmsg-src.ai { color: var(--green); }
+  .cmsg-src.off { color: var(--muted); }
   .cmsg.user { align-self: flex-end; background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.4); border-bottom-right-radius: 4px; }
   .cmsg.bot { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
   .cmsg.bot b { color: var(--amber); }
@@ -2476,7 +2479,7 @@ function coachReply(text) {
       '<b>' + x.it.name + '</b><br>' + x.it.read + (x.it.use ? '<br><i>Use it: ' + x.it.use + '</i>' : '')
     ).join('<br><br>');
   }
-  if (best) return composeReply(best); // weak single-keyword match beats nothing
+  if (best && bestScore >= 1 && text.trim().length >= 8) return composeReply(best); // a real (if weak) match, on a real sentence — not a bare greeting
   return 'Give me the situation and I\'ll give you the game plan — try one of the buttons below, or something like "negotiation call in an hour" or "think my buddy\'s lying."';
 }
 async function coachSend(preset) {
@@ -2492,15 +2495,15 @@ async function coachSend(preset) {
     const out = await aiReply(text);
     typing.remove();
     if (out && out.content) {
-      coachMsg(mdLite(out.content), 'bot');
+      coachMsg('<div class="cmsg-src ai">⚡ live AI</div>' + mdLite(out.content), 'bot');
       chatLog.push({ role: 'assistant', content: out.content });
       return;
     }
     const reason = (out && out.error) ? out.error : 'unknown error';
-    coachMsg('<i>AI unreachable — ' + reason.replace(/</g, '&lt;') + '. Offline answer below:</i><br><br>' + coachReply(text), 'bot');
+    coachMsg('<div class="cmsg-src off">offline — AI unreachable: ' + reason.replace(/</g, '&lt;') + '</div>' + coachReply(text), 'bot');
     return;
   }
-  setTimeout(() => coachMsg(coachReply(text), 'bot'), 350);
+  setTimeout(() => coachMsg('<div class="cmsg-src off">offline</div>' + coachReply(text), 'bot'), 350);
 }
 function openCoach() {
   const box = document.getElementById('coachMsgs');
