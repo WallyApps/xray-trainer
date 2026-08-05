@@ -263,6 +263,14 @@
   }
   .mantra .lbl { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amber); margin-bottom: 8px; }
   .mantra p { font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.45; text-wrap: balance; }
+  .wp-preview {
+    margin-top: 14px; padding: 32px 20px; border-radius: 12px; min-height: 140px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    background: linear-gradient(180deg, var(--panel-2), var(--ink)); border: 1px solid var(--line);
+  }
+  .wp-preview span { font-family: var(--serif); font-style: italic; font-weight: 700; font-size: 21px; line-height: 1.4; color: var(--bone); text-wrap: balance; }
+  .wp-btns { display: flex; gap: 10px; margin-top: 12px; }
+  .wp-btns .donebtn { flex: 1; }
 
   /* ---------- learn path ---------- */
   .xpwrap { display: flex; align-items: center; gap: 12px; }
@@ -650,7 +658,17 @@
 
   <!-- ==================== CONFIDENCE ==================== -->
   <main id="tab-confidence">
-    <div class="eyebrow first">The playbook</div>
+    <div class="eyebrow first">Your wallpaper</div>
+    <div class="card">
+      <p class="sub">The trick: state the limiting belief so bluntly it sounds absurd — your brain rejects it on sight instead of quietly running it in the background all day.</p>
+      <div class="wp-preview"><span id="wpText"></span></div>
+      <div class="wp-btns">
+        <button class="donebtn" id="wpShuffle">Shuffle</button>
+        <button class="donebtn" id="wpDownload">Download wallpaper</button>
+      </div>
+    </div>
+
+    <div class="eyebrow">The playbook</div>
     <div id="principles"></div>
 
     <div class="eyebrow">The confidence plan</div>
@@ -805,6 +823,8 @@ const LIBRARY = [
     { name: 'Lens of reasons', read: 'Actions are products of childhood experiences of pain and reward. Behavior has reasons, not verdicts.', use: 'When someone acts badly, ask what built that — it kills judgment and sharpens observation.' },
     { name: 'Context × clusters', read: 'One data point means nothing. A cue only counts when it clusters with a second cue AND fits the context of the moment.', use: 'See one flag? Hunt for the second before you conclude anything.' },
     { name: 'Baseline, then change', read: 'Movement of bodies creates moods. Read their normal early, then watch for CHANGES — and identify exactly what caused each change.', use: 'The change is the message. The trigger is the meaning.' },
+    { name: 'Reading judgment as self-report', read: 'People assume everyone is wired like them — so the insults they reach for on OTHER people are the exact words they privately believe would hurt the most. What someone mocks or puts other people down for is a direct readout of their own deepest insecurity, aimed outward instead of inward.', use: 'Listen to what someone rips on other people for — being fake, being lazy, being unattractive, being dumb. That specific target is very often their own private fear on display, not a neutral opinion about the other person.' },
+    { name: 'Childhood apps', read: 'Around age 8-9 every kid installs three unconscious survival programs: what earned love/attention, what kept or won friends, and what guaranteed safety or reward. The exact reward differs by kid — for one it might be recognition, for a kid from real scarcity it might have literally been food or water. These programs run for life, without asking permission, long after the childhood conditions that built them are gone.', use: 'The program that kept a kid safe often looks completely different in an adult body doing the same job. A kid who appeased a difficult parent for approval can grow into the adult everyone calls the office kiss-ass with their boss — same exact app, new authority figure. Spot it by asking: what did this behavior earn as a kid, and who\'s playing the parent role now?' },
     { name: 'The needs cheat sheet', read: 'Memorize the pair, need → fear, plus how to spot it:<div class="needrow"><b>Significance</b> — wants impact/credit <span class="arrow">→</span> fears being dismissed, ignored, made to feel small.<div class="needsub"><span class="needk">Looks like</span> status symbols — watch, car, brand names, displayed physique, the latest phone.</div><div class="needsub"><span class="needk">Sounds like</span> works achievements into the conversation, steers it back to themselves, wants to decide first and lead.</div></div><div class="needrow"><b>Acceptance</b> — wants to belong <span class="arrow">→</span> fears criticism, gossip, being left out.<div class="needsub"><span class="needk">Looks like</span> tribe merch, multiple memberships (gym, team, club), multiple pets, matches whatever room they\'re in.</div><div class="needsub"><span class="needk">Sounds like</span> heavy "we" language — "people like us."</div></div><div class="needrow"><b>Approval</b> — wants reassurance <span class="arrow">→</span> fears rejection, disapproval, contempt.<div class="needsub"><span class="needk">Looks like</span> dressed a notch more formal than the room, carries things to give away (gum, meds).</div><div class="needsub"><span class="needk">Sounds like</span> fishes for "you\'re doing great," asks permission that isn\'t needed, self-deprecates hoping to be corrected.</div></div><div class="needrow"><b>Pity</b> — wants sympathy for their struggle <span class="arrow">→</span> fears being disbelieved, ignored, misunderstood.<div class="needsub"><span class="needk">Sounds like</span> leads with struggles, tragedy, bad breaks — needs you to feel it before anything else can happen.</div></div><div class="needrow"><b>Intelligence</b> — wants to be seen as smart <span class="arrow">→</span> fears being seen as dumb or wrong.<div class="needsub"><span class="needk">Sounds like</span> corrects small, irrelevant details, cites stats and sources unprompted, name-drops expertise.</div></div><div class="needrow"><b>Power/strength</b> — wants to feel powerful <span class="arrow">→</span> fears being disrespected, punked, challenged.<div class="needsub"><span class="needk">Sounds like</span> short, absolute statements, decides for the table without being asked, stories of toughness.</div></div>', use: 'Every mask in Week 1 is protecting one of these six. Notice the pattern: the three PRIMARY needs (Significance, Acceptance, Approval) usually show up visually before they even speak. The three SECONDARY needs (Pity, Intelligence, Power) mostly show up in what they say. Match the tell to the need, then you already know the fear — feed the need AND respect the fear, both at once.' },
   ]},
   { cat: 'Eyes', items: [
@@ -3091,7 +3111,7 @@ const WEEK_QUIZ = [
 ];
 
 const PLAN_CARDS = [
-  ['The four truths', 'Truth 1 — everyone is suffering', 'Truth 2 — everyone wears a mask', "Truth 3 — everyone pretends they're not", 'Truth 4 — everyone is built by childhood', 'Lens of reasons', 'The master question', 'The needs cheat sheet'],
+  ['The four truths', 'Truth 1 — everyone is suffering', 'Truth 2 — everyone wears a mask', "Truth 3 — everyone pretends they're not", 'Truth 4 — everyone is built by childhood', 'Lens of reasons', 'The master question', 'The needs cheat sheet', 'Reading judgment as self-report', 'Childhood apps'],
   ['Positive / negative side', 'Eye home'],
   ['Blink rate', 'Shutter speed', 'Pupil dilation'],
   ['Confirmation glance', 'Eyebrow flash'],
@@ -3293,6 +3313,90 @@ function wexPrev() {
   saveWexProgress();
   renderWex();
 }
+
+/* ---- confidence wallpaper: state the limiting belief so bluntly it reads
+   as absurd, per Chase's "I don't deserve money, money is for other people"
+   trick — the point is the recoil, not the affirmation. ---- */
+const WALLPAPER_LINES = [
+  'I don\'t deserve to feel confident. Confidence is for other people.',
+  'Everyone in this room is judging me and deciding if I matter.',
+  'I need a stranger\'s approval before I\'m allowed to relax.',
+  'My worth is decided by people who don\'t know my name.',
+  'I have to earn the right to take up space.',
+  'If someone doesn\'t like me, I must have done something wrong.',
+  'I\'m not allowed to be confident until I\'m perfect.',
+  'Everyone else already has this figured out except me.',
+];
+let wpIdx = Math.floor(Math.random() * WALLPAPER_LINES.length);
+function renderWallpaperPreview() {
+  const el = document.getElementById('wpText');
+  if (el) el.textContent = WALLPAPER_LINES[wpIdx];
+}
+function wpShuffleLine() {
+  if (WALLPAPER_LINES.length > 1) {
+    let next;
+    do { next = Math.floor(Math.random() * WALLPAPER_LINES.length); } while (next === wpIdx);
+    wpIdx = next;
+  }
+  renderWallpaperPreview();
+}
+function downloadWallpaper() {
+  const W = 1170, H = 2532;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#1a2433');
+  grad.addColorStop(1, '#0d1219');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  const line = WALLPAPER_LINES[wpIdx];
+  ctx.fillStyle = '#e9e4d8';
+  ctx.textAlign = 'center';
+  const maxWidth = W * 0.8;
+  let fontSize = 92;
+  const wrapText = (text, maxW) => {
+    const words = text.split(' ');
+    const lines = [];
+    let cur = '';
+    words.forEach(w => {
+      const test = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
+      else cur = test;
+    });
+    if (cur) lines.push(cur);
+    return lines;
+  };
+  ctx.font = 'italic 700 ' + fontSize + 'px Georgia, serif';
+  let lines = wrapText(line, maxWidth);
+  while (lines.length > 6 && fontSize > 48) {
+    fontSize -= 6;
+    ctx.font = 'italic 700 ' + fontSize + 'px Georgia, serif';
+    lines = wrapText(line, maxWidth);
+  }
+  ctx.textBaseline = 'middle';
+  const lineHeight = fontSize * 1.4;
+  const totalH = lines.length * lineHeight;
+  let y = H / 2 - totalH / 2 + lineHeight / 2;
+  lines.forEach(l => { ctx.fillText(l, W / 2, y); y += lineHeight; });
+  ctx.font = '600 26px -apple-system, sans-serif';
+  ctx.fillStyle = '#8b95a3';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('X-RAY TRAINER', W / 2, H - 90);
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'confidence-wallpaper.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }, 'image/png');
+}
+document.getElementById('wpShuffle').onclick = wpShuffleLine;
+document.getElementById('wpDownload').onclick = downloadWallpaper;
+renderWallpaperPreview();
 
 initToday();
 renderQuad();
