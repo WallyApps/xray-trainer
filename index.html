@@ -345,9 +345,10 @@
   .plan-detail .fld b { color: var(--amber); }
   .plan-ex { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
   .ex-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    background: none; border: 0; padding: 6px 0; color: var(--amber); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; text-align: left; }
-  .ex-head span { font-size: 13px; color: var(--muted); letter-spacing: 0; }
+    background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.35); border-radius: 8px;
+    padding: 12px 14px; color: var(--amber); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; text-align: left; }
+  .ex-head span { font-size: 14px; color: var(--amber); letter-spacing: 0; }
   .ex-body { margin-top: 4px; }
   .ex-body .item { padding: 10px 0; border-bottom: 1px solid var(--line); }
   .ex-body .item:last-child { border-bottom: 0; padding-bottom: 2px; }
@@ -3147,7 +3148,7 @@ const PLAN_CARDS = [
 const LIB_FLAT = {};
 LIBRARY.forEach(c => c.items.forEach(it => { LIB_FLAT[it.name] = { it: it, cat: c.cat }; }));
 
-let planEx = true;
+let planEx = false;
 const itemOpen = {};
 function itemIsOpen(it) {
   if (itemOpen[it.name] !== undefined) return itemOpen[it.name];
@@ -3227,7 +3228,7 @@ function renderPlan() {
 }
 
 let confPlanSel = null;
-let confPlanEx = true;
+let confPlanEx = false;
 function confPlanExamples() {
   const names = (CONF_CARDS[confPlanSel - 1] || []).filter(n => CONF_FLAT[n]);
   if (!names.length) return '';
