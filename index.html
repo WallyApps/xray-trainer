@@ -640,18 +640,23 @@
 
   <!-- ==================== PROFILING ==================== -->
   <main id="tab-profiling">
-    <div class="eyebrow first">Review what you've learned</div>
+    <div class="eyebrow first">The 25-week plan</div>
+    <div class="card">
+      <h3 class="cardhead" id="planIntroHead" onclick="toggleCard('planIntro')">
+        Skill, not knowledge<span class="ichev" id="planIntroChev">▸</span>
+      </h3>
+      <div id="planIntroBody" class="collapsed">
+        <p>Knowing this stuff does nothing — the skill does everything. Four phases: <b style="color:var(--amber)">Visual</b> (see behavior live) → <b style="color:var(--amber)">Audio</b> (hear between the lines) → <b style="color:var(--amber)">Response</b> (alter your language to what you read) → <b style="color:var(--amber)">Mental</b> (the whole compass, no notes). One brick at a time: a skill moves to the next only once the last one runs without you.</p>
+      </div>
+    </div>
+    <div class="plan-pills" id="planPills"></div>
+    <p class="sub" id="planHint">Tap a week to open it.</p>
+    <div class="card plan-detail" id="planDetail"></div>
+
+    <div class="eyebrow">Review what you've learned</div>
     <button class="quizlaunch" id="quizLaunch">Daily review</button>
     <div class="eyebrow">The library</div>
     <div id="library"></div>
-
-    <div class="eyebrow">The 25-week plan</div>
-    <div class="card">
-      <h3>Skill, not knowledge</h3>
-      <p>Knowing this stuff does nothing — the skill does everything. Four phases: <b style="color:var(--amber)">Visual</b> (see behavior live) → <b style="color:var(--amber)">Audio</b> (hear between the lines) → <b style="color:var(--amber)">Response</b> (alter your language to what you read) → <b style="color:var(--amber)">Mental</b> (the whole compass, no notes). One brick at a time: a skill moves to the next only once the last one runs without you.</p>
-    </div>
-    <div class="plan-pills" id="planPills"></div>
-    <div class="card plan-detail" id="planDetail"></div>
 
     <footer>Context × clusters. One data point is nothing — find a second.</footer>
   </main>
@@ -2033,6 +2038,7 @@ function showTab(name, btn) {
 function jumpToPlan(tab) {
   const idx = tab === 'profiling' ? 2 : 3;
   showTab(tab, document.querySelectorAll('nav button')[idx]);
+  if (tab === 'profiling') { planDetailOpen = true; renderPlan(); }
   const pillsId = tab === 'profiling' ? 'planPills' : 'confPlanPills';
   setTimeout(() => document.getElementById(pillsId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 }
@@ -2837,6 +2843,7 @@ const CONF_QUIZ = [
 ];
 
 let planSel = null;
+let planDetailOpen = false;
 const WEEK_EXAMPLES = [
   [{c:'Truth 1 — everyone is suffering', s:'A guy at a party keeps steering every story back to himself and won\'t let a silence sit for two seconds.', r:'He is terrified of a moment where nobody needs him. The talking is the bandage. Give him one genuine "that\'s actually impressive" and watch him settle down — you just fed the need directly instead of making him work for it.'}, {c:'Truth 1 — everyone is suffering', s:'Your buddy cancels plans last minute for the third time and you\'re about to write him off as flaky.', r:'Flaky is a verdict. Underwater is a reason. Something at home, at work or in his head is eating him and cancelling is the only lever he has left. Text "no stress, you good?" instead of "wow again?" — one of those gets you the truth.'}, {c:'Truth 1 — everyone is suffering', s:'The barista is clipped and cold with you and you did nothing.', r:'She is still inside the argument with the customer two people ahead of you. What lands on you is almost always leftover from somewhere else. Stay warm and watch her face reset — that reset tells you it was never about you.'}, {c:'Truth 1 — everyone is suffering', s:'The most successful guy at the dinner table goes quiet when someone else\'s win gets talked about.', r:'Success does not delete insecurity, it just moves it. He is quietly checking whether he still counts. Money and status make people MORE afraid of the drop, not less.'}, {c:'Truth 2 — everyone wears a mask', s:'Someone works their job title, their car or their salary into the conversation within the first five minutes.', r:'Significance need, loud and clear. Nobody who feels significant needs to announce it to a stranger. Give the recognition early and unprompted and you will get a completely different person for the rest of the night.'}, {c:'Truth 2 — everyone wears a mask', s:'A friend makes constant self-deprecating jokes about his own weight, job or dating life.', r:'He is beating you to the punch. If he says it first, it can\'t be used against him. The mask is the joke; the wound is the exact subject he jokes about. Never pile on — go warm on the very thing he mocks and you\'ll watch him drop it.'}, {c:"Truth 3 — everyone pretends they're not", s:'Someone tells you "I\'m just brutally honest, I don\'t sugarcoat anything."', r:'That\'s a permission slip written before the crime. People who are actually honest don\'t need to announce a policy. Expect something unkind next, and notice he\'s already framed your reaction as YOU being too sensitive.'}, {c:"Truth 3 — everyone pretends they're not", s:'A girl says "honestly I don\'t even care what people think" — twice — about the same situation.', r:'Anything denied twice, unprompted, is live. The repetition IS the tell. Do not point it out; just quietly file that this subject matters enormously and treat it gently.'}, {c:'Truth 4 — everyone is built by childhood', s:'You ask a coworker how he\'s doing and he immediately lists what he\'s accomplished this week.', r:'He was loved for output, so a check-in registers as an evaluation. Ask him something with zero performance in it — "what did you do this weekend that had nothing to do with work?" — and watch him relax.'}, {c:'Truth 4 — everyone is built by childhood', s:'A friend deflects every serious subject with a joke, every single time, within one sentence.', r:'Humor got him love and got him out of trouble as a kid. It is armor, not personality. Don\'t chase the serious topic — sit in the silence after the joke without laughing and he\'ll often finish the real sentence himself.'}, {c:'Truth 4 — everyone is built by childhood', s:'You lower your voice and slow down, and the person across from you visibly relaxes and starts telling you more.', r:'Calm reads as safety to someone who grew up in chaos. You just found a lever: your volume and pace matter more to this person than anything you actually say.'}, {c:'Lens of reasons', s:'A guy cuts you off in traffic and you feel the heat come up.', r:'Behavior has reasons, not verdicts. He\'s late, he\'s panicking, he learned to drive from someone who drove like that. The read isn\'t "he\'s a jerk" — it\'s "something built that." Judgment burns attention you need for observing.'}, {c:'The master question', s:'Someone spends the whole dinner talking about the countries they\'ve visited and the hotels they stayed in.', r:'Ask yourself: what do they want me to think about them? Answer: that I\'m cultured, successful, worth knowing. That answer names the need (significance) and the fear underneath it in one shot — being seen as ordinary or overlooked.'}, {c:'The master question', s:'A coworker mentions, unprompted, how busy and overwhelmed they\'ve been all week.', r:'What do they want you to think? That I have it hard, that my struggle is real. That\'s the pity need talking — the fear is being disbelieved or having the hardship waved off as nothing.'}, {c:'The needs cheat sheet', s:'Someone brings up their promotion, their gym PR, and their new car within ten minutes of meeting you.', r:'Match it to the sheet: significance — wants impact, fears being ignored or made to feel small. Acknowledge the specific win before they have to bring it up again.'}, {c:'The needs cheat sheet', s:'A friend keeps saying "we always..." and "people like us..." through the whole conversation.', r:'Acceptance — wants to belong, fears being the odd one out or criticized by the group. Use inclusive language back and you\'ll get an easy yes.'}, {c:'The needs cheat sheet', s:'Someone asks "that was okay, right? You\'re not mad?" after almost everything they do.', r:'Approval — wants reassurance, fears disapproval or rejection. Give the reassurance immediately and unprompted, don\'t make them ask twice.'}, {c:'The needs cheat sheet', s:'A person corrects a small, irrelevant detail in your story and cites a stat to back it up.', r:'Intelligence — wants to be seen as smart, fears being seen as wrong or dumb. Defer to their expertise on purpose and watch them relax instantly.'}, ],
 
@@ -3173,7 +3180,17 @@ function renderPlan() {
     const w = i + 1;
     return '<button class="plan-pill' + (doneW.includes(w) ? ' done' : '') + (planSel === w ? ' on' : '') + '" data-w="' + w + '">W' + w + '</button>';
   }).join('');
-  pills.querySelectorAll('.plan-pill').forEach(b => b.onclick = () => { planSel = +b.dataset.w; renderPlan(); });
+  pills.querySelectorAll('.plan-pill').forEach(b => b.onclick = () => { planSel = +b.dataset.w; planDetailOpen = true; renderPlan(); document.getElementById('planDetail').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  const hint = document.getElementById('planHint');
+  const detailEl = document.getElementById('planDetail');
+  if (!planDetailOpen) {
+    if (hint) hint.style.display = '';
+    detailEl.style.display = 'none';
+    detailEl.innerHTML = '';
+    return;
+  }
+  if (hint) hint.style.display = 'none';
+  detailEl.style.display = '';
   const p = PLAN[planSel - 1];
   const isDone = doneW.includes(planSel);
   document.getElementById('planDetail').innerHTML =
