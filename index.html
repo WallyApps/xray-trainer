@@ -13,6 +13,8 @@
     --amber-dim: rgba(224, 164, 88, 0.14);
     --green: #6fb07f;
     --green-dim: rgba(111, 176, 127, 0.15);
+    --red: #d16b6b;
+    --red-dim: rgba(209, 107, 107, 0.14);
     --serif: Georgia, 'Times New Roman', serif;
     --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
@@ -141,21 +143,6 @@
   .ex-body .item:has(> h4.itemhead) { padding-top: 4px; }
   .ichev { color: var(--muted); font-size: 13px; margin-left: 10px; }
   .cardhead { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-  .weeklinks { padding: 6px 18px; }
-  .weeklinks .wlink { display: flex; align-items: center; gap: 10px; padding: 12px 0; cursor: pointer; border-bottom: 1px solid var(--line); }
-  .weeklinks .wlink:last-child { border-bottom: 0; }
-  .weeklinks .wl-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-  .weeklinks .wl-t { flex: 1; font-size: 14px; color: var(--bone); }
-  .weeklinks .wl-arrow { color: var(--muted); }
-  .rep-list { padding: 4px 18px; }
-  .rep-row { border-bottom: 1px solid var(--line); }
-  .rep-row:last-child { border-bottom: 0; }
-  .rep-head { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 13px 0; margin: 0; }
-  .rep-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-  .rep-t { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--bone); }
-  .rep-status { color: var(--green); font-size: 13px; font-weight: 700; }
-  .rep-sub { margin: -8px 0 12px; font-size: 13px; color: var(--muted); }
-  .rep-body { padding-bottom: 14px; }
   .collapsed { display: none; }
   .item .read { font-size: 13.5px; line-height: 1.5; color: var(--bone); }
   .item .use { font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 5px; }
@@ -263,14 +250,14 @@
   }
   .mantra .lbl { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amber); margin-bottom: 8px; }
   .mantra p { font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.45; text-wrap: balance; }
-  .wp-preview {
-    margin-top: 14px; padding: 32px 20px; border-radius: 12px; min-height: 140px;
-    display: flex; align-items: center; justify-content: center; text-align: center;
-    background: linear-gradient(180deg, var(--panel-2), var(--ink)); border: 1px solid var(--line);
+  .mantra.negative { border-color: var(--red); background: var(--red-dim); }
+  .mantra.negative .lbl { color: var(--red); }
+  .shufflebtn {
+    margin-top: 12px; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: inline-block;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--bone);
+    font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
   }
-  .wp-preview span { font-family: var(--serif); font-style: italic; font-weight: 700; font-size: 21px; line-height: 1.4; color: var(--bone); text-wrap: balance; }
-  .wp-btns { display: flex; gap: 10px; margin-top: 12px; }
-  .wp-btns .donebtn { flex: 1; }
+  .shufflebtn:active { transform: scale(0.96); }
 
   /* ---------- learn path ---------- */
   .xpwrap { display: flex; align-items: center; gap: 12px; }
@@ -343,6 +330,9 @@
   .plan-pill.done { background: var(--amber-dim); border-color: rgba(224, 164, 88, 0.55); color: var(--amber); }
   .plan-detail .fld { margin-top: 9px; font-size: 13.5px; line-height: 1.55; color: var(--bone); }
   .plan-detail .fld b { color: var(--amber); }
+  .plan-detail .fld ul { margin: 6px 0 0; padding-left: 18px; }
+  .plan-detail .fld li { margin-top: 6px; }
+  .plan-detail .fld li:first-child { margin-top: 0; }
   .plan-ex { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
   .ex-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
     background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.35); border-radius: 8px;
@@ -462,6 +452,13 @@
     <div class="mantra">
       <div class="lbl">Today's frame</div>
       <p id="mantraText"></p>
+      <button class="shufflebtn" onclick="shuffleMantra()">Shuffle</button>
+    </div>
+
+    <div class="mantra negative">
+      <div class="lbl">Your wallpaper</div>
+      <p id="wpText"></p>
+      <button class="shufflebtn" id="wpShuffle">Shuffle</button>
     </div>
 
     <div class="eyebrow">Cue of the day</div>
@@ -473,7 +470,11 @@
       <div id="cueBody" class="collapsed">
         <p id="cueRead"></p>
         <p class="use" id="cueUse"></p>
-        <p class="sub">Learn it this morning. Your profiling rep hunts it today. Tonight you log whether you saw it.</p>
+        <p class="sub" id="cueSpotLine"></p>
+        <div class="spotrow">
+          <button class="donebtn" id="spotYes">Spotted it (+10 XP)</button>
+          <button class="donebtn" id="spotNo">Didn't see it</button>
+        </div>
       </div>
     </div>
 
@@ -500,120 +501,11 @@
       </div>
     </div>
 
-    <div class="eyebrow">This week</div>
-    <div class="card weeklinks">
-      <div class="wlink" id="wlinkXray">
-        <span class="wl-tag">X-Ray</span><span class="wl-t" id="wlinkXrayT">—</span><span class="wl-arrow">→</span>
-      </div>
-      <div class="wlink" id="wlinkMind">
-        <span class="wl-tag">Mind</span><span class="wl-t" id="wlinkMindT">—</span><span class="wl-arrow">→</span>
-      </div>
-    </div>
-
-    <div class="eyebrow">Today's reps</div>
-    <div class="card rep-list">
-
-      <div class="rep-row">
-        <h4 class="rep-head" onclick="toggleCard('pdrill')">
-          <span class="rep-tag" id="pdrillTag"></span>
-          <span class="rep-t" id="pdrillName"></span>
-          <span class="rep-status" id="pdrillStat"></span>
-          <span class="ichev" id="pdrillChev">▸</span>
-        </h4>
-        <div id="pdrillBody" class="rep-body collapsed">
-          <p id="pdrillDo"></p>
-          <p class="look" id="pdrillLook"></p>
-          <p class="sub" id="pdrillWhy"></p>
-          <button class="donebtn" id="pdrillBtn" onclick="toggleDrill('p')">Mark done</button>
-        </div>
-      </div>
-
-      <div class="rep-row">
-        <h4 class="rep-head" onclick="toggleCard('cdrill')">
-          <span class="rep-tag">Confidence</span>
-          <span class="rep-t" id="cdrillName"></span>
-          <span class="rep-status" id="cdrillStat"></span>
-          <span class="ichev" id="cdrillChev">▸</span>
-        </h4>
-        <div id="cdrillBody" class="rep-body collapsed">
-          <p id="cdrillDo"></p>
-          <p class="sub" id="cdrillWhy"></p>
-          <button class="donebtn" id="cdrillBtn" onclick="toggleDrill('c')">Mark done</button>
-        </div>
-      </div>
-
-      <div class="rep-row">
-        <h4 class="rep-head" onclick="toggleCard('quad')">
-          <span class="rep-tag">Quad</span>
-          <span class="rep-t">Profile someone live</span>
-          <span class="rep-status" id="quadStat"></span>
-          <span class="ichev" id="quadChev">▸</span>
-        </h4>
-        <div id="quadBody" class="rep-body collapsed">
-          <p>Pick 4 elements, log a real read on someone today.</p>
-          <button class="donebtn" id="quadBtn">Open the Quad</button>
-        </div>
-      </div>
-
-      <div class="rep-row">
-        <h4 class="rep-head" onclick="toggleCard('speedq')">
-          <span class="rep-tag">Speed</span>
-          <span class="rep-t">12-second reads</span>
-          <span class="ichev" id="speedqChev">▸</span>
-        </h4>
-        <div id="speedqBody" class="rep-body collapsed">
-          <p>Instant-guess drill — 12 seconds per card, no time to overthink it. Forces the read to compress instead of staying a slow, deliberate process.</p>
-          <button class="donebtn" id="speedqBtn">Start speed round</button>
-        </div>
-      </div>
-
-      <div class="rep-row">
-        <h4 class="rep-head" onclick="toggleCard('ev')">
-          <span class="rep-tag">Evidence</span>
-          <span class="rep-t" id="evCount">0 reps collected</span>
-          <span class="ichev" id="evChev">▸</span>
-        </h4>
-        <p class="rep-sub" id="evSub"></p>
-        <div id="evBody" class="rep-body collapsed">
-          <p>Every time today you act WITH the fear still on — the ask, the walk-up, the hand raised — tap it. Your brain logs the proof unconsciously; this is the visible scoreboard of the voice getting quieter.</p>
-          <button class="donebtn" id="evBtn">+1 — did it with the feeling on</button>
-        </div>
-      </div>
-
-      <div class="rep-row">
-        <h4 class="rep-head" onclick="toggleCard('rev')">
-          <span class="rep-tag">Memory</span>
-          <span class="rep-t">Daily review</span>
-          <span class="rep-status" id="revStat"></span>
-          <span class="ichev" id="revChev">▸</span>
-        </h4>
-        <p class="rep-sub" id="quizDueLine"></p>
-        <div id="revBody" class="rep-body collapsed">
-          <p class="sub">Covers only what you've learned on the path. Nail a card and it returns in 1 → 2 → 4 → 7 → 14 days; miss it and it resets to daily. This is what makes it permanent. (Passing a lesson also checks this box.)</p>
-          <button class="donebtn" id="quizBtn">Start review</button>
-        </div>
-      </div>
-
-    </div>
-
     <div class="eyebrow">The daily check — ask yourself</div>
     <div id="dailyChecks"></div>
 
-    <div class="eyebrow">Tonight — the debrief</div>
-    <div class="card">
-      <span class="tag">Evening</span>
-      <h3>Did you spot today's cue?</h3>
-      <p id="cueSpotLine"></p>
-      <div class="spotrow">
-        <button class="donebtn" id="spotYes">Spotted it (+10 XP)</button>
-        <button class="donebtn" id="spotNo">Didn't see it</button>
-      </div>
-      <button class="donebtn" id="nightBtn">3-card night review</button>
-      <p class="sub">Your last retrieval before sleep is the one your brain consolidates overnight. Two minutes, then lights out.</p>
-    </div>
-
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
-    <footer>Two reps + the quiz = day counts toward your streak</footer>
+    <footer>All seven daily-check questions, plus spotting the cue — that's what counts toward your streak.</footer>
   </main>
 
   <!-- ==================== LEARN (Duolingo path) ==================== -->
@@ -665,26 +557,16 @@
 
   <!-- ==================== CONFIDENCE ==================== -->
   <main id="tab-confidence">
-    <div class="eyebrow first">Your wallpaper</div>
-    <div class="card">
-      <p class="sub">The trick: state the limiting belief so bluntly it sounds absurd — your brain rejects it on sight instead of quietly running it in the background all day.</p>
-      <div class="wp-preview"><span id="wpText"></span></div>
-      <div class="wp-btns">
-        <button class="donebtn" id="wpShuffle">Shuffle</button>
-        <button class="donebtn" id="wpDownload">Download wallpaper</button>
-      </div>
-    </div>
-
-    <div class="eyebrow">The playbook</div>
-    <div id="principles"></div>
-
-    <div class="eyebrow">The confidence plan</div>
+    <div class="eyebrow first">The confidence plan</div>
     <div class="card">
       <h3>Not giving a f*** is a skill</h3>
       <p>Same idea as the X-Ray plan — one brick at a time. Weeks 1–6 build the operating system (safety, forgiveness, permission). Weeks 7–9 are the weapons you use daily. Weeks 10–12 are the core lesson: <b style="color:var(--amber)">there are no tigers</b> — and the mastery test isn't feeling bulletproof, it's making everyone around you a little more confident too.</p>
     </div>
     <div class="plan-pills" id="confPlanPills"></div>
     <div class="card plan-detail" id="confPlanDetail"></div>
+
+    <div class="eyebrow">The playbook</div>
+    <div id="principles"></div>
 
     <footer>Confidence = safety. Composure = authority.</footer>
   </main>
@@ -720,14 +602,13 @@
     <div class="card">
       <span class="tag">Pre-game</span>
       <h3>Before you step on the ice</h3>
-      <p><b style="color:var(--amber)">1.</b> Say your identity line: "I'm the type of player that…" — and finish it the same way every game.<br>
-      <b style="color:var(--amber)">2.</b> Catch every "what if I mess up" loop and cancel it with one rep of the same moment going right. Worry is rehearsal for failure — out-rep it.<br>
-      <b style="color:var(--amber)">3.</b> Step into the role. A firefighter runs into buildings because the role grants permission. Your role: pro. Play with its permission.<br>
-      <b style="color:var(--amber)">4.</b> Pool speed in the room and in warmups. Slow hands, slow head turns. Composure = authority, and your own body is watching you.</p>
+      <div id="gamedayChecks"></div>
+      <button class="shufflebtn" id="gamedayReset">Reset for next game</button>
     </div>
 
     <div class="eyebrow">On-ice mind</div>
     <div id="hockeyCards"></div>
+    <button class="examplesbtn" id="hockeyExamplesBtn">See 18 real-life examples — stay in flow</button>
     <footer>Be the most comfortable player on the ice. That's the whole scoreboard.</footer>
   </main>
 </div>
@@ -1434,13 +1315,24 @@ const MANTRAS = [
   'There is no graduation ceremony. No certificate. Only reps.',
   'Give yourself permission — nobody else is checking.',
   'I appreciate what you\'re trying to do — but I make these decisions as a human, not an animal.',
+  'Most of man\'s misery comes from taking seriously what God meant to be fun. This is a game.',
 ];
 
 const DAILY_CHECKS = [
-  'Can I move slower than the other person today?',
-  'Am I okay with social injury?',
   'Am I delusionally self-forgiving?',
+  'Can I move slower than the other person today?',
+  'Have I run the line — however this goes, I\'ll be OK?',
+  'Am I hearing today\'s self-doubt as fiction — no tigers?',
+  'Have I gotten curious about someone instead of watching myself?',
   'Can I be more comfortable than anyone else in the room?',
+  'Am I okay with social injury?',
+];
+
+const GAMEDAY_CHECKS = [
+  'Identity line — "I\'m the type of player that…" — same words, every game.',
+  'Catch every "what if I mess up" loop and cancel it with one rep of the same moment going right.',
+  'Step into the role. Your role: pro — play with the permission it grants.',
+  'Pool speed in the room and in warmups. Slow hands, slow head turns.',
 ];
 
 const CONFIDENCE_PRINCIPLES = [
@@ -1480,29 +1372,51 @@ const PRIN_FLAT = CONFIDENCE_PRINCIPLES.flatMap(g => g.items);
    and quizzed in the Learn path's Hockey unit + daily review. */
 const HOCKEY = [
   { cat: 'Before the game', items: [
-    { name: 'Worry is rehearsal for failure', read: 'Every pre-game "what if" loop is a failure rep your nervous system records. You don\'t suppress it — you cancel it with a deliberate rep of the same moment going right.', use: 'Night before and morning of: catch the loop, run the positive version once, move on.' },
-    { name: 'Step into the role', read: 'A firefighter runs into buildings because the role grants permission. Decide your player identity — "I\'m the type of player that…" — and play with the role\'s permission instead of waiting to feel ready.', use: 'Same identity line, every game, before you step on.' },
-    { name: 'Identity drives behavior', read: 'The Olympic athlete who starts gaining weight does whatever it takes — because "fat" isn\'t their identity. Decide you\'re a pro who thrives under pressure and behavior follows the decision.', use: 'You don\'t rise to the occasion; you sink to your identity. Set it deliberately.' },
-    { name: 'Generalized expectation on skates', read: 'Confidence isn\'t predicting a perfect game — it\'s the settled knowledge that you\'ll be OK either way. That safety is what lets you take the risk the highlight play requires.', use: 'Pre-game sentence: "However this goes, I\'m OK — so I\'m swinging."' },
+    { name: 'Worry is rehearsal for failure', read: '<ul><li>Every pre-game "what if" loop is <b>a failure rep your nervous system records</b>.</li><li>You don\'t suppress it — you <b>cancel it with a deliberate rep</b> of the same moment going right.</li></ul>', use: 'Night before and morning of: catch the loop, <b>run the positive version once</b>, move on.' },
+    { name: 'Step into the role', read: '<ul><li>A firefighter runs into buildings because <b>the role grants permission</b>.</li><li>Decide your player identity — "I\'m the type of player that…" — and <b>play with the role\'s permission</b> instead of waiting to feel ready.</li></ul>', use: 'Same identity line, every game, <b>before you step on</b>.' },
+    { name: 'Identity drives behavior', read: '<ul><li>The Olympic athlete who starts gaining weight <b>does whatever it takes</b> — because "fat" isn\'t their identity.</li><li>Decide you\'re a pro who thrives under pressure and <b>behavior follows the decision</b>.</li></ul>', use: '<ul><li>You don\'t rise to the occasion; <b>you sink to your identity</b>.</li><li><b>Set it deliberately</b>.</li></ul>' },
+    { name: 'Generalized expectation on skates', read: '<ul><li>Confidence isn\'t predicting a perfect game — it\'s <b>the settled knowledge that you\'ll be OK either way</b>.</li><li>That safety is <b>what lets you take the risk</b> the highlight play requires.</li></ul>', use: 'Pre-game sentence: "However this goes, <b>I\'m OK — so I\'m swinging</b>."' },
   ]},
   { cat: 'In the play — flow', items: [
-    { name: 'Flow lives in a safe body', read: 'Your brain only releases flow when it isn\'t bracing for judgment. Confidence = safety applies double on the ice: a body afraid of embarrassment plays stiff, grips the stick, and thinks instead of reads.', use: 'Everything in this tab is about removing threat, not adding hype.' },
-    { name: 'Observation mode is the flow switch', read: 'Flow is 100% external attention. Self-monitoring — "how did that look, what does coach think" — is the anxious mode, and you cannot read the ice while watching yourself.', use: 'The instant you notice self-focus, flip it: read the D\'s feet, the goalie\'s depth, the soft ice. Profiling the game IS flow.' },
-    { name: 'Next-shift amnesia', read: 'Radical self-forgiveness at game speed: the mistake is forgiven — completely, delusionally — before the next faceoff. Feeling bad about the last shift cannot change it; carrying it is shame, and shame is ego.', use: 'One physical reset: exhale, open the hands, eyes back on the play. Done means done.' },
-    { name: 'Social injury immunity', read: 'Fear of the turnover makes you play not-to-lose: chip it out, hide from the puck, safe plays only. Being genuinely OK with looking bad is what unlocks playing to win.', use: 'Want the puck after your worst shift. That\'s the rep.' },
+    { name: 'Flow lives in a safe body', read: '<ul><li>Your brain only <b>releases flow</b> when it isn\'t bracing for judgment.</li><li>Confidence = safety applies double on the ice: a body afraid of embarrassment <b>plays stiff, grips the stick, and thinks instead of reads</b>.</li></ul>', use: 'Everything in this tab is about <b>removing threat, not adding hype</b>.' },
+    { name: 'Observation mode is the flow switch', read: '<ul><li>Flow is <b>100% external attention</b>.</li><li>Self-monitoring — "how did that look, what does coach think" — is the anxious mode, and <b>you cannot read the ice while watching yourself</b>.</li></ul>', use: '<ul><li>The instant you notice self-focus, <b>flip it</b>: read the D\'s feet, the goalie\'s depth, the soft ice.</li><li><b>Profiling the game IS flow</b>.</li></ul>' },
+    { name: 'Next-shift amnesia', read: '<ul><li>Radical self-forgiveness at game speed: <b>the mistake is forgiven</b> — completely, delusionally — before the next faceoff.</li><li>Feeling bad about the last shift cannot change it; carrying it is shame, and <b>shame is ego</b>.</li></ul>', use: '<ul><li>One physical reset: <b>exhale, open the hands, eyes back on the play</b>.</li><li><b>Done means done</b>.</li></ul>' },
+    { name: 'Social injury immunity', read: '<ul><li>Fear of the turnover makes you <b>play not-to-lose</b>: chip it out, hide from the puck, safe plays only.</li><li>Being genuinely OK with looking bad is <b>what unlocks playing to win</b>.</li></ul>', use: '<ul><li><b>Want the puck</b> after your worst shift.</li><li>That\'s <b>the rep</b>.</li></ul>' },
   ]},
   { cat: 'Between whistles', items: [
-    { name: 'Pool speed between whistles', read: 'Never move faster than you would in a pool — between whistles, on the bench, in the room. Explode in the play; be glacial everywhere else. Composure = authority, and everyone is reading you: opponents, refs, coaches, scouts.', use: 'Slow head turns, slow water bottle, slow walk to the bench. Panic never shows.' },
-    { name: 'The bench reset', read: 'Apply the breathing-location cue to yourself: one full belly breath on the bench, shoulders pulled down out of your ears, hands open on your knees. You\'re telling your own nervous system "safe."', use: 'Every bench sit, win or lose the shift. It compounds.' },
-    { name: 'Never show your tells', read: 'Everything you read in them, they can read in you. After a mistake or a hit: slow blink, shoulders down, easy pace. The opponent who can\'t rattle you stops trying.', use: 'Your body language is a message you\'re always sending. Author it.' },
-    { name: 'The comfort contest', read: 'The only competition allowed beyond the scoreboard: be the most comfortable player on the ice. Not the biggest or loudest — the one whose body says "I have nothing to prove."', use: 'Ask it every period: am I the most comfortable guy out here right now?' },
+    { name: 'Pool speed between whistles', read: '<ul><li><b>Never move faster than you would in a pool</b> — between whistles, on the bench, in the room.</li><li>Explode in the play; <b>be glacial everywhere else</b>.</li><li>Composure = authority, and <b>everyone is reading you</b>: opponents, refs, coaches, scouts.</li></ul>', use: '<ul><li><b>Slow head turns, slow water bottle, slow walk</b> to the bench.</li><li><b>Panic never shows</b>.</li></ul>' },
+    { name: 'The bench reset', read: '<ul><li>Apply the breathing-location cue to yourself: <b>one full belly breath on the bench</b>, shoulders pulled down out of your ears, hands open on your knees.</li><li>You\'re telling your own nervous system <b>"safe."</b></li></ul>', use: '<ul><li><b>Every bench sit</b>, win or lose the shift.</li><li>It <b>compounds</b>.</li></ul>' },
+    { name: 'Never show your tells', read: '<ul><li>Everything you read in them, <b>they can read in you</b>.</li><li>After a mistake or a hit: <b>slow blink, shoulders down, easy pace</b>.</li><li>The opponent who can\'t rattle you <b>stops trying</b>.</li></ul>', use: '<ul><li>Your body language is <b>a message you\'re always sending</b>.</li><li><b>Author it</b>.</li></ul>' },
+    { name: 'The comfort contest', read: '<ul><li>The only competition allowed beyond the scoreboard: <b>be the most comfortable player on the ice</b>.</li><li>Not the biggest or loudest — <b>the one whose body says "I have nothing to prove."</b></li></ul>', use: 'Ask it every period: <b>am I the most comfortable guy out here right now</b>?' },
   ]},
   { cat: 'Reading the ice', items: [
-    { name: 'Read the ice like a room', read: 'Opponents leak everything: shoulders riding high = tight and afraid. Bent over, mouth open = gassed, beat him wide. Goalie fidgeting and re-strapping after a goal = not safe in his body, shoot now. A frustrated opponent slamming his stick = baitable.', use: 'One profiling read per shift. Fatigue and fear are the two that pay.' },
-    { name: 'No hierarchy on the ice', read: 'Ranking yourself against the guy across from you — "he\'s a better skater, he\'s got a contract" — creates fear of judgment mid-play. He\'s not above or below you. He\'s data: feet, hands, fatigue.', use: 'Turn every intimidating opponent into a profiling subject and the fear converts to curiosity.' },
+    { name: 'Read the ice like a room', read: '<ul><li>Opponents leak everything: shoulders riding high = <b>tight and afraid</b>.</li><li>Bent over, mouth open = <b>gassed, beat him wide</b>.</li><li>Goalie fidgeting and re-strapping after a goal = not safe in his body, <b>shoot now</b>.</li><li>A frustrated opponent slamming his stick = <b>baitable</b>.</li></ul>', use: '<ul><li><b>One profiling read per shift</b>.</li><li>Fatigue and fear are <b>the two that pay</b>.</li></ul>' },
+    { name: 'No hierarchy on the ice', read: '<ul><li>Ranking yourself against the guy across from you — "he\'s a better skater, he\'s got a contract" — <b>creates fear of judgment mid-play</b>.</li><li>He\'s <b>not above or below you</b>.</li><li>He\'s <b>data</b>: feet, hands, fatigue.</li></ul>', use: 'Turn every intimidating opponent into a profiling subject and <b>the fear converts to curiosity</b>.' },
   ]},
 ];
 const HOCKEY_FLAT = HOCKEY.flatMap(g => g.items);
+const HOCKEY_EXAMPLES = [
+  [
+    {c:'Worry is rehearsal for failure', s:'You\'re lying in bed the night before a big game running the same turnover mistake on a loop.', r:'Catch the loop and run ONE rep of the same play going right — clean first touch, tape-to-tape breakout. Your brain can\'t tell a rehearsed mistake from a rehearsed win, so make it log the right one.'},
+    {c:'Step into the role', s:'You\'re a call-up playing with guys who\'ve been in the league for years and you feel like you don\'t belong yet.', r:'Say the identity line before you touch the ice: "I\'m the type of player that competes every shift." The jersey already grants the permission — you don\'t need tenure to play like you belong.'},
+    {c:'Identity drives behavior', s:'You keep telling teammates "I\'m not really a physical player" as an excuse to avoid the corners.', r:'Flip the sentence: "I\'m the type of player who wins puck battles." Behavior follows the identity, not the other way around — decide it, then go finish a check.'},
+    {c:'Generalized expectation on skates', s:'You\'re about to jump on for a shift against the other team\'s top line and your stomach drops.', r:'Run the line: "However this shift goes, I\'m OK — so I\'m swinging." You\'re not predicting you\'ll win every battle, you\'re just not betting your safety on the outcome — so you can actually take the ice.'},
+    {c:'Flow lives in a safe body', s:'You notice you\'re gripping your stick white-knuckle tight in the third period of a close game.', r:'That\'s a body bracing for judgment, not playing. Open your hands, drop your shoulders — a stiff body can\'t read the play, it can only think about it.'},
+    {c:'Observation mode is the flow switch', s:'Mid-shift, you catch yourself thinking "did that last shift look bad to the coach."', r:'That\'s self-monitoring — flip it immediately: where\'s the D\'s stick, how deep is the goalie, who\'s tired. You can\'t read the ice and watch yourself at the same time — pick one.'},
+    {c:'Next-shift amnesia', s:'You just turned the puck over leading to a goal against and you\'re still replaying it two shifts later.', r:'One physical reset the second you hit the bench: exhale, open your hands, eyes back on the play. The mistake is forgiven completely before the next faceoff — carrying it is ego, not accountability.'},
+    {c:'Social injury immunity', s:'You\'re playing it safe with the puck — chipping it out, avoiding 1-on-1s — because you don\'t want to be the guy who coughs it up.', r:'That\'s playing not-to-lose. Want the puck again right after your worst shift — being genuinely OK with looking bad is what unlocks actually playing to win.'},
+    {c:'Pool speed between whistles', s:'You just got hit hard and you\'re scrambling to get back into position, visibly rattled.', r:'Slow head turns, slow glide back, easy pace. Explode in the play, be glacial everywhere else — panic in your pace is the only thing that actually shows.'},
+    {c:'The bench reset', s:'You come to the bench after a rough shift, breathing high in your chest, shoulders up around your ears.', r:'One full belly breath, shoulders down, hands open on your knees. You\'re telling your own nervous system "safe" — do it every single bench sit, win or lose the shift, and it compounds.'},
+    {c:'Never show your tells', s:'You just missed an open net and you can feel your whole body wanting to slump.', r:'Slow blink, shoulders down, easy pace back to the bench. Everything you\'d read in an opponent, they can read in you — the guy who can\'t be rattled stops getting tested.'},
+    {c:'The comfort contest', s:'You\'re skating against a guy with way more games and experience than you and start ranking yourself against his resume.', r:'Drop the ranking — ask instead: "am I the most comfortable guy out here right now?" That\'s the only competition beyond the scoreboard, and it\'s winnable regardless of whose resume is longer.'},
+    {c:'Read the ice like a room', s:'You\'re on a shift and need one quick read to decide where to attack.', r:'One profiling read: shoulders riding high on the D = tight and afraid, attack there. Goalie re-strapping after a goal = not safe in his body, shoot now. Fatigue and fear are the two that pay.'},
+    {c:'No hierarchy on the ice', s:'You\'re lined up against a guy with an NHL contract and feel small before the puck even drops.', r:'He\'s not above or below you — he\'s data: feet, hands, fatigue, same as anyone else. Turn the intimidation into a profiling target and the fear converts straight into curiosity.'},
+    {c:'Worry is rehearsal for failure', s:'Warming up before a game, you catch yourself picturing a bad giveaway in the neutral zone.', r:'Cancel the loop right there in the room — run one mental rep of a clean, safe breakout instead. Out-rep the failure before it ever gets ice time.'},
+    {c:'Flow lives in a safe body', s:'You\'re playing tight and thinking through every read instead of just seeing it and reacting.', r:'That\'s a body still bracing for embarrassment. Confidence = safety applies on the ice too — the second your body believes it\'s safe, you stop thinking and start reading again.'},
+    {c:'Step into the role', s:'It\'s a big game and part of you is waiting to "feel ready" before you play like it.', r:'Nobody feels ready first — the role grants the permission, the feeling follows. Say "pro" and play from it now, not after you feel it.'},
+    {c:'Pool speed between whistles', s:'The ref just missed an obvious call against you and you want to react.', r:'Slow water bottle, slow glide to position, easy face. Composure = authority — refs, coaches, and scouts are all reading you between whistles just as much as during the play.'},
+  ],
+];
 
 /* LEARN PATH — Duolingo-style units. Each unit: facts (quizzed as generated
    MCs) + a scenario category. 3 lessons of 7 questions beat a unit; 6/7 passes
@@ -1525,16 +1439,13 @@ function save(s) { localStorage.setItem('xray', JSON.stringify(s)); }
 let state = load();
 if (state.today !== todayKey) {
   state.today = todayKey;
-  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false];
+  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false, false, false, false];
   state.counted = false;
-  state.pdrill = null;
   state.cue = null; state.debrief = null; state.debriefXP = false;
-  state.evToday = 0;
   save(state);
 }
-if (!state.evTotal) state.evTotal = 0;
-if (state.evToday == null) state.evToday = 0;
-if (!state.checks) state.checks = [false, false, false, false];
+if (!state.checks) state.checks = [false, false, false, false, false, false, false];
+if (!state.gamedayChecks) state.gamedayChecks = [false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
 if (!state.weeks) state.weeks = [];
@@ -1572,44 +1483,17 @@ function initToday() {
   document.getElementById('cueUse').innerHTML = ITEM_USE[cue.cue] ? '<b>Use it:</b> ' + ITEM_USE[cue.cue] : '';
   document.getElementById('cueSpotLine').textContent = 'Today\'s cue: "' + cue.cue + '." One tap before bed keeps the loop honest.';
 
-  // Profiling rep: prefer a drill that trains today's cue (same unit), pinned per day.
-  const eligible = PROFILING_DRILLS.filter(d => unitUnlocked(d.unit));
-  const fullPool = eligible.length ? eligible : PROFILING_DRILLS.filter(d => d.unit === 1);
-  let pd = fullPool.find(d => d.name === state.pdrill);
-  if (!pd) {
-    const matched = fullPool.filter(d => d.unit === cue.unit);
-    const pool = matched.length ? matched : fullPool;
-    pd = pool[dayIndex % pool.length];
-    state.pdrill = pd.name;
-    save(state);
-  }
-  const cd = CONFIDENCE_DRILLS[dayIndex % CONFIDENCE_DRILLS.length];
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const confWeekCards = (CONF_CARDS[currentConfWeek() - 1] || []).filter(n => CONF_FLAT[n]);
   document.getElementById('mantraText').textContent = confWeekCards.length
     ? CONF_FLAT[confWeekCards[dayIndex % confWeekCards.length]].read
     : MANTRAS[dayIndex % MANTRAS.length];
-  document.getElementById('pdrillTag').textContent = pd.tag;
-  document.getElementById('pdrillName').textContent = pd.name;
-  document.getElementById('pdrillDo').textContent = pd.do;
-  document.getElementById('pdrillLook').textContent = pd.look;
-  document.getElementById('pdrillWhy').textContent = pd.why;
-  document.getElementById('cdrillName').textContent = cd.name;
-  document.getElementById('cdrillDo').textContent = cd.do;
-  document.getElementById('cdrillWhy').textContent = cd.why;
-
-  // Evening debrief handlers (XP once per day, choice can be changed).
+  // Cue-spot handlers (XP once per day, choice can be changed).
   document.getElementById('spotYes').onclick = () => {
     if (!state.debriefXP) { state.xp += 10; state.debriefXP = true; }
-    state.debrief = 'hit'; save(state); render();
+    state.debrief = 'hit'; save(state); checkDayComplete(); render();
   };
   document.getElementById('spotNo').onclick = () => { state.debrief = 'miss'; save(state); render(); };
-  document.getElementById('nightBtn').onclick = () => startQuiz(3);
-  document.getElementById('evBtn').onclick = () => {
-    state.evTotal++; state.evToday++;
-    if (state.evToday <= 3) state.xp += 5;
-    save(state); render();
-  };
 }
 
 const checksEl = document.getElementById('dailyChecks');
@@ -1617,12 +1501,24 @@ DAILY_CHECKS.forEach((q, i) => {
   const d = document.createElement('div');
   d.className = 'check';
   d.innerHTML = '<div class="box">✓</div><div class="q">' + q + '</div>';
-  d.onclick = () => { state.checks[i] = !state.checks[i]; save(state); render(); };
+  d.onclick = () => { state.checks[i] = !state.checks[i]; save(state); checkDayComplete(); render(); };
   checksEl.appendChild(d);
 });
 
+const gamedayEl = document.getElementById('gamedayChecks');
+GAMEDAY_CHECKS.forEach((q, i) => {
+  const d = document.createElement('div');
+  d.className = 'check';
+  d.innerHTML = '<div class="box">✓</div><div class="q">' + q + '</div>';
+  d.onclick = () => { state.gamedayChecks[i] = !state.gamedayChecks[i]; save(state); render(); };
+  gamedayEl.appendChild(d);
+});
+document.getElementById('gamedayReset').onclick = () => {
+  state.gamedayChecks = GAMEDAY_CHECKS.map(() => false); save(state); render();
+};
+
 function checkDayComplete() {
-  if (state.p && state.c && state.q && state.quad && !state.counted) {
+  if (state.checks.every(Boolean) && state.debrief === 'hit' && !state.counted) {
     state.counted = true;
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     state.streak = (state.lastComplete === yesterday) ? (state.streak || 0) + 1 : 1;
@@ -1646,50 +1542,19 @@ function toggleDrill(which) {
 }
 
 function render() {
-  const pb = document.getElementById('pdrillBtn'), cb = document.getElementById('cdrillBtn');
-  pb.textContent = state.p ? '✓ Done' : 'Mark done';
-  pb.classList.toggle('done', !!state.p);
-  cb.textContent = state.c ? '✓ Done' : 'Mark done';
-  cb.classList.toggle('done', !!state.c);
-  document.getElementById('pdrillStat').textContent = state.p ? '✓' : '';
-  document.getElementById('cdrillStat').textContent = state.c ? '✓' : '';
-  if (planSel != null) document.getElementById('wlinkXrayT').textContent = 'Week ' + planSel + ' — ' + PLAN[planSel - 1].t;
-  if (confPlanSel != null) document.getElementById('wlinkMindT').textContent = 'Week ' + confPlanSel + ' — ' + CONF_PLAN[confPlanSel - 1].t;
-  document.getElementById('wlinkXray').onclick = () => jumpToPlan('profiling');
-  document.getElementById('wlinkMind').onclick = () => jumpToPlan('confidence');
-  const quadBtn = document.getElementById('quadBtn');
-  quadBtn.textContent = state.quad ? '✓ Logged today — open again' : 'Open the Quad';
-  quadBtn.classList.toggle('done', !!state.quad);
-  quadBtn.onclick = () => showTab('quad', document.querySelectorAll('nav button')[5]);
-  document.getElementById('quadStat').textContent = state.quad ? '✓' : '';
-  const speedqBtn = document.getElementById('speedqBtn');
-  if (speedqBtn) speedqBtn.onclick = startSpeedRound;
-  document.querySelectorAll('.check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
-  const qb = document.getElementById('quizBtn');
+  document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
+  document.querySelectorAll('#gamedayChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.gamedayChecks[i]));
   const launch = document.getElementById('quizLaunch');
   const goLearn = () => showTab('learn', document.querySelectorAll('nav button')[1]);
   if (!reviewPool().length) {
-    document.getElementById('quizDueLine').textContent = 'Review only quizzes what you\'ve already learned. Pass your first lesson on the Learn path to unlock it.';
-    qb.textContent = 'Go to the Learn path';
-    qb.classList.remove('done');
-    qb.onclick = goLearn;
     launch.textContent = 'Daily review — pass a lesson to unlock';
     launch.onclick = goLearn;
   } else {
     const due = dueCount();
-    document.getElementById('quizDueLine').textContent = due + ' of your learned cards are due today.';
-    qb.textContent = state.q ? '✓ Done today — run it again anytime' : 'Start review';
-    qb.classList.toggle('done', !!state.q);
-    qb.onclick = startQuiz;
     launch.textContent = 'Daily review — ' + due + ' due';
     launch.onclick = startQuiz;
   }
-  document.getElementById('revStat').textContent = state.q ? '✓' : '';
-  document.getElementById('allClear').classList.toggle('show', !!(state.p && state.c && state.q && state.quad));
-  document.getElementById('evCount').textContent = state.evTotal + ' rep' + (state.evTotal === 1 ? '' : 's') + ' collected';
-  document.getElementById('evSub').textContent = state.evToday > 0
-    ? 'Today: ' + state.evToday + ' — the voice gets quieter with every single one.'
-    : 'First 3 each day earn +5 XP. The rep counts even when it goes badly — acting was the win.';
+  document.getElementById('allClear').classList.toggle('show', state.checks.every(Boolean) && state.debrief === 'hit');
   const sy = document.getElementById('spotYes'), sn = document.getElementById('spotNo');
   sy.classList.toggle('done', state.debrief === 'hit');
   sy.textContent = state.debrief === 'hit' ? '✓ Spotted it' : 'Spotted it (+10 XP)';
@@ -2657,31 +2522,31 @@ function renderQuad() {
    THE 25-WEEK PLAN — one skill per week, expanded with how/why/use.
    ===================================================================== */
 const PLAN = [
-  { t: 'See through the mask', focus: 'Run the four truths and the lens of reasons on every single person you meet this week.', how: 'In each interaction, silently answer: what\'s this person\'s suffering, and what mask covers it? The loud guy at the gym, the cold barista — name the protection, not the behavior. Masks form in childhood; shame decides their shape.', why: 'Once you see people as suffering + reward + shame wearing a mask, judgment dies and observation sharpens. Everything else in this system is built on this lens.', use: 'The mask points straight at the insecurity. Feed the need it protects and you become the safest person they know — which is who people open up to and say yes to.' },
-  { t: 'Map the sides', focus: 'Profile the gestural hemisphere — the positive/negative side — of everyone you meet.', how: 'Catch which side their eyes and hands drift to for good memories versus bad ones. Then test it: gesture to each side yourself and watch their face react. Log it from YOUR view (my right = R) so you never mentally flip it.', why: 'Emotional memory is lateralized and the body leaks the filing system. It\'s one of the few reads you can actively test in seconds.', use: 'Pitch ideas while gesturing to their positive side and the idea inherits the good feeling; park anything you want them to reject on the negative side.' },
-  { t: 'Blink week', focus: 'Blink rate and shutter speed in every conversation.', how: 'The movie-night drill: watch reality TV (real people, not actors) with the volume OFF and compete to spot blink-rate shifts; then rewatch WITH sound to find what caused each one. In conversations, just log fast/normal/slow and when it changes.', why: 'Training with the sound off forces the eye to learn the pattern without distraction. Blink tracks stress and fascination in real time — it\'s the closest thing to a live gauge on a face.', use: 'A spike marks the loaded topic — dig there gently. A slowdown marks fascination — stay right there. In a pitch, watch your number land on their eyelids.' },
-  { t: 'Glances & the flash', focus: 'Confirmation glances in every group, plus the eyebrow flash everywhere.', how: 'Whenever someone finishes speaking in a group, watch where their eyes flick. Flash the cashier, the barista, the stranger — count how many return it.', why: 'Glances expose whose approval the room actually runs on. The returned flash is pre-verbal acceptance — a door opening before a word is spoken.', use: 'Pitch the glance-target, not the loudest talker. A returned flash = approach now, they\'ve already accepted you.' },
-  { t: 'The mouth leaks first', focus: 'Lip compression and object insertion — always with the topic attached.', how: 'Every compression or pen-to-mouth this week gets a mental note of the EXACT topic on the table when it happened. The behavior without the topic is worthless; together they\'re gold.', why: 'The mouth clamps shut on withheld words and takes objects in when reassurance is needed — both fire before the person knows it.', use: 'Compression = surface the hidden objection: "before we move on — anything about X feel off?" Insertion = reassure on that exact topic before advancing anything.' },
-  { t: 'Real vs performed', focus: 'False facial expressions: asymmetry and sudden stops.', how: 'Watch every big expression this week for the two tells: stronger on one side, or snapping off instead of fading. Group photos and forced laughs are your practice lab.', why: 'Real emotion is symmetric and dissolves slowly; performed emotion is managed and drops when the audience looks away.', use: 'Performed agreement is not agreement — keep working the real objection. Performed delight at your offer means the real number is different; renegotiate.' },
-  { t: 'Nose & hush', focus: 'Nostril flaring and mouth-covering, with context.', how: 'Log each flare and each hush with what was being said: disagreement brewing, or excitement about your idea? Context decides everything with these two.', why: 'Flaring is raw adrenaline — the topic tells you which flavor. Hushing is self-silencing: the hand physically holds words in.', use: 'Flare + lean-in on your idea = push now while the adrenaline\'s on your side. A hush after your question = they know something — circle back privately, never in front of the group.' },
-  { t: 'Limb geography', focus: 'Arm crosses, fig leaf, single-arm wraps — and the hands inside them.', how: 'Every time arms cross this week, immediately check the fingers: fists or relaxed? Note the sentence that triggered the movement into the position.', why: 'The cross itself is weather; the hands inside it are the forecast. Fists and relaxed palms mean opposite things under the same crossed arms.', use: 'Fists = drop the pressure and rebuild safety before continuing. Palms flat on the body = they need comforting, not convincing.' },
-  { t: 'The hand dial', focus: 'Digital flexion and extension through whole conversations.', how: 'In every seated conversation, park part of your attention on their fingers the entire time. Note the topic for every opening and every curl.', why: 'Hands are a live agree/disagree meter that nobody thinks to manage — the most honest dial on the body.', use: 'The extension topic is your closer — replay it right before the ask. Flexion tells you exactly which point still needs work.' },
-  { t: 'Feet week', focus: 'Where feet point, everywhere you go.', how: 'Coffee lines: whose feet point at the cashier, whose at the exit? Groups: find the person collecting the most feet — that\'s the real leader. Meetings: watch feet rotate as interest changes.', why: 'Feet are the least-managed part of the body — faces are trained, feet aren\'t. They broadcast intent with no filter.', use: 'Feet at you = extend the conversation and the ask. Feet at the door = land your one key point and release them. The group\'s foot-target = your real audience.' },
-  { t: 'Torso trio', focus: 'Belly exposure, dominant hand, and breathing location.', how: 'Count exposed-torso postures (comfort). Speed-spot dominant hands — watch side, phone hand, wallet pocket. Log chest-vs-belly breathing at the START of each conversation, then hunt for the shift and its trigger.', why: 'An exposed torso means no threat is felt. The breathing SHIFT — not the state — marks the moment a topic actually lands.', use: 'A shift to belly breathing during a topic = that\'s what they truly care about. Build your offer on that topic, not the one they said mattered.' },
-  { t: 'Shoulder week', focus: 'Shrugs, single-sided shrugs, dominant-shoulder retreat, and the compliance wedge.', how: 'Shoulders only, all week. Catch single-sided shrugs on confident statements. Find the writing hand, then watch that shoulder for retreat on hard topics. Try one small stance shift and see if their shoulders follow you.', why: 'Shoulders guard the neck — ancient threat wiring — and they vote before words do.', use: 'A one-sided shrug on "I\'m sure" means they\'re not — press gently. Dominant retreat at your number = the unvoiced no; address it now. Shoulders following your wedge = leadership established.' },
-  { t: 'Barrier week', focus: 'Every barrier placement and removal, with its trigger.', how: 'Note each object placed between you — phone, cup, buttoned jacket (when it\'s not cold) — AND each removal, with the exact sentence that caused it.', why: 'Barriers are a live threat-meter: placement = protection needed, removal = safety restored.', use: 'Placement = slow down and warm the topic before advancing. Removal = doors open, move the ask forward. Or force the removal — hand them something.' },
-  { t: 'Preening week', focus: 'Hygienic gestures and what triggers them.', how: 'Log every posture-straighten, lip lick, and hair fix — plus the detail being discussed or the person who just arrived when it happened.', why: 'Grooming is the body preparing to matter to someone present. It fires on pride, attraction, and wanting to impress.', use: 'Preening at your arrival = you have influence here. Preening when a topic lands = they want to shine on that topic — hand them the spotlight and they\'ll love you for it.' },
-  { t: 'Stress detector', focus: 'Deception as stress clusters — review and drill.', how: 'Reread every Deception card, run Weak Spots on that unit, then watch interview and interrogation clips on YouTube tallying stress cues per question-answer window.', why: 'Deception is read through stress clusters scored inside windows — never single cues, never vibes. The 11-point discipline kills both paranoia and gullibility.', use: 'A heavy window = dig, never accuse — re-ask the stress sentence later, casually. Clean windows = believe them and relax the frame; trust given accurately is rapport.' },
-  { t: 'Statements, not questions', focus: 'Live elicitation with as few questions as possible.', how: 'Write 3-5 provocative statements for YOUR life ("bet the gym\'s dead at 6am," "I heard this league\'s a grind") and deploy them all week. Review nightly: did people open up? Did you slide back into questions? Tweak the statements.', why: 'Statements trigger the correction and expansion reflexes; questions trigger guardedness. People open to statements and clam to interrogation.', use: 'Information flows without pressure — and they remember the conversation as warm, not probed. That memory is the relationship.' },
-  { t: 'One secret per person', focus: 'A daily elicitation target using every technique.', how: 'Set a goal: one piece of information per person you talk to — a hobby, a budget, a timeline — rotating through the tools (bracket, disbelief, naivety, hourglass, hand-off, echo, citation). Keep a sample line for each technique on your phone.', why: 'Reps across all the tools build range, and the more they talk, the more profile data every OTHER technique gets to work with.', use: 'Elicitation is the data pump for the whole system: everything they volunteer feeds your needs, pillar, and locus reads for free.' },
-  { t: 'Needs in the wild', focus: 'Needs + fears mapping, live and online.', how: 'Write the need AND its fears for 9 real people into your phone contacts\' notes. Profile 13 friends from their socials — read what they say about OTHERS: the compliments people give are the compliments they crave. On LinkedIn, read their comments on other people\'s posts, not their own bio.', why: 'Praise offered mirrors praise desired — it\'s the cleanest window into the need. And the fears explain every past blowup they\'ve ever had.', use: 'Feed the need, never touch the fear. Old conflicts with these people suddenly make sense — and future ones become avoidable on purpose.' },
-  { t: 'Pillar spotting', focus: 'Place 12 people on the decision map.', how: 'Map 12 people this week, starting with close friends (they\'re probably on YOUR pillar — birds of a pillar flock together). For each, recall their last big decision and watch the pattern they can\'t see. Watch interviews and practice: how would you sell each person a restaurant? Argue a case to them on a jury?', why: 'Pillar patterns repeat in every decision a person has ever made. Spot it once and you can predict the next hundred choices.', use: 'Learn to describe the SAME thing six ways: unique / first / reaction-getting / peer-approved / high-return / purely necessary. That\'s one product, six pitches.' },
-  { t: 'Needs + pillars live', focus: 'Both reads, within minutes, on everyone.', how: 'All week: prove to yourself you can name the need AND the pillar of anyone within the first few minutes of conversation. No notes, no hesitation.', why: 'The need is the drug; the pillar is the buying logic. Together they\'re most of persuasion in two data points.', use: 'The full pitch skeleton: feed the need first (that\'s rapport), then frame the ask to the pillar (that\'s the decision). Everything else is decoration.' },
-  { t: 'Sensory week', focus: 'V/A/K detection everywhere.', how: 'Listen to a podcast purely to guess the host\'s sensory preference. Read a celebrity interview transcript and highlight every sense word. Classify your friends by their verbs: see/look, hear/sound, feel/grasp.', why: 'The channel is how a person encodes AND retrieves their life. Words in their channel feel ten times truer to them — they literally resonate.', use: 'Uncover: their channel words show you how they relive memories. Persuade: "picture this" / "sounds like" / "feels solid" — delivered in THEIR channel, not yours.' },
-  { t: 'Pronoun week', focus: 'Self / team / others — 15 identifications minimum.', how: 'Identify pronoun style 15 times this week, live or online. Scan a friend\'s posts and comments: is it I, we, or "those people"?', why: 'Pronouns reveal where identity lives — in the self, the tribe, or the outside world. It\'s a personality X-ray hiding in grammar.', use: 'Pitch the self-person their personal gain, the team-person the group\'s gain, the others-person the wider effect. Speaking to a crowd? Hit all three in one pitch.' },
-  { t: 'Adjective week', focus: 'Harvest positive and negative adjectives from everyone.', how: 'Ask about a vacation, then steer to traffic jams or a bad boss. Collect both lists — the words they use for joy and the words they use for misery. Keep them.', why: 'Those exact words are pre-wired emotional triggers: "amazing" already means good to them; their negative words already carry sting.', use: 'Describe your offer with THEIR positive adjectives and what to avoid with their negative ones. You\'re not persuading anymore — their own vocabulary is.' },
-  { t: 'Quadrant reps', focus: 'The Quad tab, daily, loaded with your weakest skills.', how: 'Run a quadrant on every meaningful interaction this week. Load it with the elements you struggle with most — not your favorites — and swap out anything you\'ve mastered.', why: 'Writing forces observation, and rotating elements forces breadth. Comfort picks train nothing.', use: 'Every circled entry is a found cause — a trigger you can deliberately use or avoid next time you talk to that person. Saved reads become playbooks.' },
-  { t: 'The full compass', focus: 'Everything at once — the complete profile, unassisted.', how: 'The challenge: watch a show with real people alongside someone and compete for who catches more compass items. Then run it for real: before your next important conversation, answer the compass questions — how does this person view the world? What are they afraid of in THIS decision? How do their need and pillar shape it? Which sensory words, pronouns, and adjectives fit them? Which way do I lean for the ask? What did their body say when the key topic came up?', why: 'The compass is the graduation exercise: every technique in the system converging on one page about one person.', use: 'The final question is the whole game: what does this person need in order to feel like the HERO of their own story? Give them that, and persuasion stops being something you do to them.' },
+  { t: 'See through the mask', focus: 'Run the four truths and the lens of reasons on every single person you meet this week.', how: '<ul><li>In each interaction, silently answer: <b>what\'s this person\'s suffering</b>, and what mask covers it?</li><li>The loud guy at the gym, the cold barista — <b>name the protection, not the behavior</b>.</li><li>Masks form in childhood; <b>shame decides their shape</b>.</li></ul>', why: '<ul><li>Once you see people as suffering + reward + shame wearing a mask, <b>judgment dies and observation sharpens</b>.</li><li>Everything else in this system is <b>built on this lens</b>.</li></ul>', use: '<ul><li>The mask <b>points straight at the insecurity</b>.</li><li>Feed the need it protects and you <b>become the safest person they know</b> — which is who people open up to and say yes to.</li></ul>' },
+  { t: 'Map the sides', focus: 'Profile the gestural hemisphere — the positive/negative side — of everyone you meet.', how: '<ul><li>Catch which side their <b>eyes and hands drift to</b> for good memories versus bad ones.</li><li>Then test it: <b>gesture to each side yourself</b> and watch their face react.</li><li><b>Log it from YOUR view</b> (my right = R) so you never mentally flip it.</li></ul>', why: '<ul><li>Emotional memory is lateralized and <b>the body leaks the filing system</b>.</li><li>It\'s one of the few reads <b>you can actively test in seconds</b>.</li></ul>', use: '<ul><li>Pitch ideas while gesturing to their positive side and <b>the idea inherits the good feeling</b>.</li><li><b>Park anything you want them to reject</b> on the negative side.</li></ul>' },
+  { t: 'Blink week', focus: 'Blink rate and shutter speed in every conversation.', how: '<ul><li>The movie-night drill: watch reality TV (real people, not actors) with the volume OFF and compete to <b>spot blink-rate shifts</b>; then rewatch WITH sound to find what caused each one.</li><li>In conversations, just <b>log fast/normal/slow and when it changes</b>.</li></ul>', why: '<ul><li>Training with the sound off <b>forces the eye to learn the pattern</b> without distraction.</li><li>Blink tracks stress and fascination in real time — it\'s the <b>closest thing to a live gauge on a face</b>.</li></ul>', use: '<ul><li>A spike marks the loaded topic — <b>dig there gently</b>.</li><li>A slowdown marks fascination — <b>stay right there</b>.</li><li>In a pitch, <b>watch your number land on their eyelids</b>.</li></ul>' },
+  { t: 'Glances & the flash', focus: 'Confirmation glances in every group, plus the eyebrow flash everywhere.', how: '<ul><li>Whenever someone finishes speaking in a group, <b>watch where their eyes flick</b>.</li><li>Flash the cashier, the barista, the stranger — <b>count how many return it</b>.</li></ul>', why: '<ul><li>Glances expose <b>whose approval the room actually runs on</b>.</li><li>The returned flash is pre-verbal acceptance — <b>a door opening before a word is spoken</b>.</li></ul>', use: '<ul><li><b>Pitch the glance-target</b>, not the loudest talker.</li><li>A returned flash = <b>approach now, they\'ve already accepted you</b>.</li></ul>' },
+  { t: 'The mouth leaks first', focus: 'Lip compression and object insertion — always with the topic attached.', how: '<ul><li>Every compression or pen-to-mouth this week gets a <b>mental note of the EXACT topic</b> on the table when it happened.</li><li>The behavior without the topic is worthless; <b>together they\'re gold</b>.</li></ul>', why: '<ul><li>The mouth clamps shut on withheld words and takes objects in when reassurance is needed — <b>both fire before the person knows it</b>.</li></ul>', use: '<ul><li>Compression = <b>surface the hidden objection</b>: "before we move on — anything about X feel off?"</li><li>Insertion = <b>reassure on that exact topic</b> before advancing anything.</li></ul>' },
+  { t: 'Real vs performed', focus: 'False facial expressions: asymmetry and sudden stops.', how: '<ul><li>Watch every big expression this week for the two tells: <b>stronger on one side, or snapping off instead of fading</b>.</li><li>Group photos and forced laughs are your <b>practice lab</b>.</li></ul>', why: '<ul><li>Real emotion is symmetric and <b>dissolves slowly</b>.</li><li>Performed emotion is managed and <b>drops when the audience looks away</b>.</li></ul>', use: '<ul><li>Performed agreement is not agreement — <b>keep working the real objection</b>.</li><li>Performed delight at your offer means the real number is different; <b>renegotiate</b>.</li></ul>' },
+  { t: 'Nose & hush', focus: 'Nostril flaring and mouth-covering, with context.', how: '<ul><li><b>Log each flare and each hush</b> with what was being said: disagreement brewing, or excitement about your idea?</li><li><b>Context decides everything</b> with these two.</li></ul>', why: '<ul><li>Flaring is raw adrenaline — <b>the topic tells you which flavor</b>.</li><li>Hushing is self-silencing: <b>the hand physically holds words in</b>.</li></ul>', use: '<ul><li>Flare + lean-in on your idea = <b>push now while the adrenaline\'s on your side</b>.</li><li>A hush after your question = they know something — <b>circle back privately, never in front of the group</b>.</li></ul>' },
+  { t: 'Limb geography', focus: 'Arm crosses, fig leaf, single-arm wraps — and the hands inside them.', how: '<ul><li>Every time arms cross this week, immediately <b>check the fingers: fists or relaxed</b>?</li><li><b>Note the sentence that triggered</b> the movement into the position.</li></ul>', why: '<ul><li>The cross itself is weather; <b>the hands inside it are the forecast</b>.</li><li>Fists and relaxed palms <b>mean opposite things</b> under the same crossed arms.</li></ul>', use: '<ul><li>Fists = <b>drop the pressure and rebuild safety</b> before continuing.</li><li>Palms flat on the body = <b>they need comforting, not convincing</b>.</li></ul>' },
+  { t: 'The hand dial', focus: 'Digital flexion and extension through whole conversations.', how: '<ul><li>In every seated conversation, <b>park part of your attention on their fingers</b> the entire time.</li><li><b>Note the topic</b> for every opening and every curl.</li></ul>', why: '<ul><li>Hands are a live agree/disagree meter that nobody thinks to manage — <b>the most honest dial on the body</b>.</li></ul>', use: '<ul><li>The extension topic is your closer — <b>replay it right before the ask</b>.</li><li>Flexion tells you exactly <b>which point still needs work</b>.</li></ul>' },
+  { t: 'Feet week', focus: 'Where feet point, everywhere you go.', how: '<ul><li>Coffee lines: <b>whose feet point at the cashier, whose at the exit</b>?</li><li>Groups: find the person <b>collecting the most feet</b> — that\'s the real leader.</li><li>Meetings: <b>watch feet rotate</b> as interest changes.</li></ul>', why: '<ul><li>Feet are the <b>least-managed part of the body</b> — faces are trained, feet aren\'t.</li><li>They <b>broadcast intent with no filter</b>.</li></ul>', use: '<ul><li>Feet at you = <b>extend the conversation and the ask</b>.</li><li>Feet at the door = <b>land your one key point and release them</b>.</li><li>The group\'s foot-target = <b>your real audience</b>.</li></ul>' },
+  { t: 'Torso trio', focus: 'Belly exposure, dominant hand, and breathing location.', how: '<ul><li><b>Count exposed-torso postures</b> (comfort).</li><li><b>Speed-spot dominant hands</b> — watch side, phone hand, wallet pocket.</li><li><b>Log chest-vs-belly breathing</b> at the START of each conversation, then hunt for the shift and its trigger.</li></ul>', why: '<ul><li>An exposed torso means <b>no threat is felt</b>.</li><li>The breathing SHIFT — not the state — <b>marks the moment a topic actually lands</b>.</li></ul>', use: '<ul><li>A shift to belly breathing during a topic = <b>that\'s what they truly care about</b>.</li><li><b>Build your offer on that topic</b>, not the one they said mattered.</li></ul>' },
+  { t: 'Shoulder week', focus: 'Shrugs, single-sided shrugs, dominant-shoulder retreat, and the compliance wedge.', how: '<ul><li>Shoulders only, all week. <b>Catch single-sided shrugs</b> on confident statements.</li><li>Find the writing hand, then <b>watch that shoulder for retreat</b> on hard topics.</li><li>Try one small stance shift and <b>see if their shoulders follow you</b>.</li></ul>', why: '<ul><li>Shoulders guard the neck — ancient threat wiring — and <b>they vote before words do</b>.</li></ul>', use: '<ul><li>A one-sided shrug on "I\'m sure" means they\'re not — <b>press gently</b>.</li><li>Dominant retreat at your number = the unvoiced no; <b>address it now</b>.</li><li>Shoulders following your wedge = <b>leadership established</b>.</li></ul>' },
+  { t: 'Barrier week', focus: 'Every barrier placement and removal, with its trigger.', how: '<ul><li><b>Note each object placed between you</b> — phone, cup, buttoned jacket (when it\'s not cold) — AND each removal, with the exact sentence that caused it.</li></ul>', why: '<ul><li>Barriers are a live threat-meter: <b>placement = protection needed, removal = safety restored</b>.</li></ul>', use: '<ul><li>Placement = <b>slow down and warm the topic</b> before advancing.</li><li>Removal = doors open, <b>move the ask forward</b>.</li><li>Or <b>force the removal</b> — hand them something.</li></ul>' },
+  { t: 'Preening week', focus: 'Hygienic gestures and what triggers them.', how: '<ul><li><b>Log every posture-straighten, lip lick, and hair fix</b> — plus the detail being discussed or the person who just arrived when it happened.</li></ul>', why: '<ul><li>Grooming is the body <b>preparing to matter to someone present</b>.</li><li>It <b>fires on pride, attraction, and wanting to impress</b>.</li></ul>', use: '<ul><li>Preening at your arrival = <b>you have influence here</b>.</li><li>Preening when a topic lands = they want to shine on that topic — <b>hand them the spotlight</b> and they\'ll love you for it.</li></ul>' },
+  { t: 'Stress detector', focus: 'Deception as stress clusters — review and drill.', how: '<ul><li>Reread every Deception card, run Weak Spots on that unit, then watch interview and interrogation clips on YouTube <b>tallying stress cues per question-answer window</b>.</li></ul>', why: '<ul><li>Deception is read through <b>stress clusters scored inside windows</b> — never single cues, never vibes.</li><li>The 11-point discipline <b>kills both paranoia and gullibility</b>.</li></ul>', use: '<ul><li>A heavy window = <b>dig, never accuse</b> — re-ask the stress sentence later, casually.</li><li>Clean windows = <b>believe them and relax the frame</b>; trust given accurately is rapport.</li></ul>' },
+  { t: 'Statements, not questions', focus: 'Live elicitation with as few questions as possible.', how: '<ul><li>Write 3-5 provocative statements for YOUR life ("bet the gym\'s dead at 6am," "I heard this league\'s a grind") and <b>deploy them all week</b>.</li><li><b>Review nightly</b>: did people open up? Did you slide back into questions? Tweak the statements.</li></ul>', why: '<ul><li>Statements <b>trigger the correction and expansion reflexes</b>; questions trigger guardedness.</li><li>People <b>open to statements and clam to interrogation</b>.</li></ul>', use: '<ul><li><b>Information flows without pressure</b> — and they remember the conversation as warm, not probed.</li><li>That memory <b>is the relationship</b>.</li></ul>' },
+  { t: 'One secret per person', focus: 'A daily elicitation target using every technique.', how: '<ul><li>Set a goal: <b>one piece of information per person</b> you talk to — a hobby, a budget, a timeline — rotating through the tools (bracket, disbelief, naivety, hourglass, hand-off, echo, citation).</li><li><b>Keep a sample line</b> for each technique on your phone.</li></ul>', why: '<ul><li>Reps across all the tools <b>build range</b>, and the more they talk, the more profile data every OTHER technique gets to work with.</li></ul>', use: '<ul><li>Elicitation is the <b>data pump for the whole system</b>: everything they volunteer feeds your needs, pillar, and locus reads for free.</li></ul>' },
+  { t: 'Needs in the wild', focus: 'Needs + fears mapping, live and online.', how: '<ul><li><b>Write the need AND its fears</b> for 9 real people into your phone contacts\' notes.</li><li>Profile 13 friends from their socials — read what they say about OTHERS: <b>the compliments people give are the compliments they crave</b>.</li><li>On LinkedIn, <b>read their comments on other people\'s posts</b>, not their own bio.</li></ul>', why: '<ul><li>Praise offered mirrors praise desired — it\'s the <b>cleanest window into the need</b>.</li><li>And the fears <b>explain every past blowup</b> they\'ve ever had.</li></ul>', use: '<ul><li><b>Feed the need, never touch the fear</b>.</li><li>Old conflicts with these people suddenly make sense — and future ones become <b>avoidable on purpose</b>.</li></ul>' },
+  { t: 'Pillar spotting', focus: 'Place 12 people on the decision map.', how: '<ul><li><b>Map 12 people this week</b>, starting with close friends (they\'re probably on YOUR pillar — birds of a pillar flock together).</li><li>For each, recall their last big decision and <b>watch the pattern they can\'t see</b>.</li><li>Watch interviews and practice: <b>how would you sell each person a restaurant</b>? Argue a case to them on a jury?</li></ul>', why: '<ul><li>Pillar patterns <b>repeat in every decision</b> a person has ever made.</li><li>Spot it once and <b>you can predict the next hundred choices</b>.</li></ul>', use: '<ul><li><b>Learn to describe the SAME thing six ways</b>: unique / first / reaction-getting / peer-approved / high-return / purely necessary.</li><li>That\'s <b>one product, six pitches</b>.</li></ul>' },
+  { t: 'Needs + pillars live', focus: 'Both reads, within minutes, on everyone.', how: '<ul><li>All week: prove to yourself you can <b>name the need AND the pillar</b> of anyone within the first few minutes of conversation.</li><li><b>No notes, no hesitation</b>.</li></ul>', why: '<ul><li>The need is the drug; <b>the pillar is the buying logic</b>.</li><li>Together they\'re <b>most of persuasion in two data points</b>.</li></ul>', use: '<ul><li>The full pitch skeleton: <b>feed the need first</b> (that\'s rapport), then frame the ask to the pillar (that\'s the decision).</li><li>Everything else is <b>decoration</b>.</li></ul>' },
+  { t: 'Sensory week', focus: 'V/A/K detection everywhere.', how: '<ul><li>Listen to a podcast purely to <b>guess the host\'s sensory preference</b>.</li><li>Read a celebrity interview transcript and <b>highlight every sense word</b>.</li><li><b>Classify your friends by their verbs</b>: see/look, hear/sound, feel/grasp.</li></ul>', why: '<ul><li>The channel is <b>how a person encodes AND retrieves their life</b>.</li><li>Words in their channel <b>feel ten times truer to them</b> — they literally resonate.</li></ul>', use: '<ul><li>Uncover: their channel words show you <b>how they relive memories</b>.</li><li>Persuade: "picture this" / "sounds like" / "feels solid" — <b>delivered in THEIR channel</b>, not yours.</li></ul>' },
+  { t: 'Pronoun week', focus: 'Self / team / others — 15 identifications minimum.', how: '<ul><li><b>Identify pronoun style 15 times</b> this week, live or online.</li><li>Scan a friend\'s posts and comments: <b>is it I, we, or "those people"</b>?</li></ul>', why: '<ul><li>Pronouns reveal <b>where identity lives</b> — in the self, the tribe, or the outside world.</li><li>It\'s a <b>personality X-ray hiding in grammar</b>.</li></ul>', use: '<ul><li>Pitch <b>the self-person their personal gain</b>, the team-person the group\'s gain, the others-person the wider effect.</li><li>Speaking to a crowd? <b>Hit all three in one pitch</b>.</li></ul>' },
+  { t: 'Adjective week', focus: 'Harvest positive and negative adjectives from everyone.', how: '<ul><li>Ask about a vacation, then <b>steer to traffic jams or a bad boss</b>.</li><li>Collect both lists — <b>the words they use for joy and the words they use for misery</b>. Keep them.</li></ul>', why: '<ul><li>Those exact words are <b>pre-wired emotional triggers</b>: "amazing" already means good to them; their negative words already carry sting.</li></ul>', use: '<ul><li><b>Describe your offer with THEIR positive adjectives</b> and what to avoid with their negative ones.</li><li>You\'re not persuading anymore — <b>their own vocabulary is</b>.</li></ul>' },
+  { t: 'Quadrant reps', focus: 'The Quad tab, daily, loaded with your weakest skills.', how: '<ul><li><b>Run a quadrant</b> on every meaningful interaction this week.</li><li>Load it with <b>the elements you struggle with most</b> — not your favorites — and swap out anything you\'ve mastered.</li></ul>', why: '<ul><li>Writing forces observation, and <b>rotating elements forces breadth</b>.</li><li>Comfort picks <b>train nothing</b>.</li></ul>', use: '<ul><li>Every circled entry is a found cause — <b>a trigger you can deliberately use or avoid</b> next time you talk to that person.</li><li>Saved reads <b>become playbooks</b>.</li></ul>' },
+  { t: 'The full compass', focus: 'Everything at once — the complete profile, unassisted.', how: '<ul><li>The challenge: <b>watch a show with real people</b> alongside someone and compete for who catches more compass items.</li><li>Then run it for real: before your next important conversation, <b>answer the compass questions</b> — how does this person view the world? What are they afraid of in THIS decision? How do their need and pillar shape it? Which sensory words, pronouns, and adjectives fit them? Which way do I lean for the ask? What did their body say when the key topic came up?</li></ul>', why: '<ul><li>The compass is the <b>graduation exercise</b>: every technique in the system converging on one page about one person.</li></ul>', use: '<ul><li>The final question is the whole game: <b>what does this person need in order to feel like the HERO of their own story</b>?</li><li>Give them that, and <b>persuasion stops being something you do to them</b>.</li></ul>' },
 ];
 /* Which library category each week studies — powers the Study button. */
 const PLAN_LIB = ['Foundations', 'Eyes', 'Eyes', 'Eyes', 'Face', 'Face', 'Face', 'Body', 'Body', 'Body', 'Body', 'Body', 'Body', 'Body', 'Deception — verbal', 'Elicitation — extracting information', 'Elicitation — extracting information', 'Needs — the mask they wear', 'Decision Map — how people choose', 'Needs — the mask they wear', 'Advanced reads — compliance & control', 'Advanced reads — compliance & control', 'Advanced reads — compliance & control', 'The BTE — scoring behavior like a scientist', 'The BTE — scoring behavior like a scientist'];
@@ -2705,10 +2570,10 @@ const CONF_FLAT = {};
 PRIN_FLAT.forEach(x => { CONF_FLAT[x.h] = { read: x.p }; });
 CONFIDENCE_DRILLS.forEach(x => { if (!CONF_FLAT[x.name]) CONF_FLAT[x.name] = { read: x.why, use: x.do }; });
 const CONF_PLAN = [
-  { t: 'Build the base', focus: 'Rewire what confidence actually is, kill the inner critic, and forgive your past completely — the three foundations everything else in this system sits on.', how: 'Before anything that makes you nervous, run one line silently: "However this goes, I\'ll be OK," and pair it with pace — never move faster than you would in a pool. When self-doubt fires, picture it as a 6-year-old tugging your hand saying "somebody\'s gonna laugh at you" — consider the source, smile at it. And pick one old memory that still stings; forgive it completely, daily, until it stops carrying a charge.', why: 'Composure reads as authority because a body that isn\'t bracing for a verdict signals safety to everyone around it. Hearing the inner critic as fiction breaks its grip instantly — you can\'t stay scared of something you\'ve already relabeled as make-believe. And a nervous system still punishing you for old mistakes can\'t relax into the present, no matter what you achieve next.', use: 'Use the safety line and the pace together before any room that used to intimidate you. Use the fiction-relabel as your fastest in-the-moment reset, mid-conversation or mid-anything. And clear the account on old failures before any performance where they might creep back in.' },
-  { t: 'Identity, outsourcing, and the daily weapons', focus: 'Decide who you are instead of waiting to feel it, stop handing your confidence to other people\'s reactions, drop the ranking instinct entirely, then arm yourself with three tools you\'ll use every single day: observation mode, canceling worry, and setting shame down.', how: 'Pick a role for the week — pro, captain, host — and act from its built-in permission, the way a firefighter runs into a building because the uniform grants it. Catch every moment you check a face for approval before deciding how you feel, and self-approve first instead. Run the only competition allowed: most comfortable person in the room, not who outranks who. The instant you feel self-conscious, flip your attention outward and profile someone instead. Every time you catch yourself worrying, run one deliberate rep of the same thing going right. And when you\'re carrying shame over something old, ask if feeling bad right now actually changes what happened — it doesn\'t — then zoom out on it like Google Maps until it shrinks to size.', why: 'Waiting to feel confident first has it backwards — the role grants the permission, and the feeling follows the behavior. If other people\'s opinions can raise your confidence, they can also take it away, so you stay programmable as long as the remote sits in their hands. Status-scanning is what turns confidence toxic, not confidence itself — drop the ranking and judgment has nothing left to attach to. Anxiety needs you looking inward to survive; the second your attention goes outward, the loop has nothing to run on. Your brain can\'t tell a rehearsed worry from a rehearsed win, so make it log the right one. And shame convinces you your suffering is doing something useful — it isn\'t, it\'s just weight nobody asked you to carry.', use: 'Act from the role the moment you\'re hesitating on something you\'d obviously do if you already had the title. Self-approve the instant you catch yourself scanning for reactions. Ask "can I be the most comfortable person here" instead of "where do I rank" walking into any room. Profile somebody, anybody, as your emergency exit from any spiral. Run one positive rep per worry loop, every time it fires. And set the bag down the moment old guilt bleeds into a moment that doesn\'t deserve it.' },
-  { t: 'No tigers', focus: 'Recognize social fear for what it actually is — an ancient survival circuit firing at nothing, and everyone around you is running the exact same wiring.', how: 'Every time anxiety spikes, name it out loud in your head: "tiger brain — there\'s no tiger here." Then do the thing anyway while the feeling is still on. Deliberately risk one small social injury daily — nothing happens, and that\'s the point.', why: 'The fear circuit evolved to keep you from being banished by the tribe or eaten in the dark — it can\'t tell a real predator from asking a stranger a question. None of your ancestors died a virgin; the catastrophe your brain predicts has never once actually happened. And the #1 thing anxious people lack isn\'t courage, it\'s the realization that everyone around them is exactly as insecure and masked as they are.', use: 'The master override for every version of social fear — parties, asks, walk-ups, tryouts. Name the tiger, act anyway, log the evidence that nothing happened. Your brain is unconsciously keeping score every single time.' },
-  { t: 'Author-ity & the mastery test', focus: 'Stop waiting for permission that is never coming, become the author of every moment, then use everything you\'ve built to make everyone around you a little more confident too — that\'s the actual finish line.', how: 'Pick one situation daily and be its author: initiate, direct, decide — without waiting for a cue or sign that it\'s okay. Afterward, do not check a single face for how it landed. Then flip the skill outward: make one person visibly more confident every day, handing a nervous person the frame "you\'ve got this, you pick, you lead."', why: 'Nobody is ever going to tap you on the shoulder and say "you\'re allowed now." People read authorship as authority — when you act like you already have standing, their brains assume you must, and they hand you real acceptance back. The whole point was never to feel bulletproof, it was to stop needing to — once you\'re not scanning for status or approval, you have surplus calm, and the only useful thing to do with surplus is hand it to someone else. There\'s no "faking it" either — if people see confident, that\'s just what confidence looks like from outside, and there\'s no graduation ceremony waiting for you. Even Chase felt like a fraud the first time he taught this. Unfamiliar isn\'t unqualified.', use: 'Go first the moment you catch yourself waiting for an invitation or a green light. And you\'ll know you\'ve actually mastered this — not just learned it — when you\'re the reason someone else in the room stops giving a f*** too.' },
+  { t: 'Build the base', focus: 'Rewire what confidence actually is, kill the inner critic, and forgive your past completely — the three foundations everything else in this system sits on.', how: '<ul><li>Before anything that makes you nervous, run one line silently: "However this goes, I\'ll be OK," and pair it with pace — <b>never move faster than you would in a pool</b>. The only competition in the room: who can move slower.</li><li>When self-doubt fires, <b>picture it as a 6-year-old tugging your hand</b> saying "somebody\'s gonna laugh at you" — consider the source, smile at it.</li><li>Pick one old memory that still stings; <b>forgive it completely, daily</b>, until it stops carrying a charge.</li></ul>', why: '<ul><li><b>Composure reads as authority</b> — a body that isn\'t bracing for a verdict signals safety to everyone around it.</li><li><b>Hearing the inner critic as fiction breaks its grip instantly</b> — you can\'t stay scared of something you\'ve already relabeled as make-believe.</li><li>A nervous system still punishing you for old mistakes <b>can\'t relax into the present</b>, no matter what you achieve next.</li></ul>', use: '<ul><li>Use the safety line and the pace together before any room that used to intimidate you — <b>the goal isn\'t to impress it, it\'s to be the most comfortable person in it</b>.</li><li>Use the fiction-relabel as your <b>fastest in-the-moment reset</b>, mid-conversation or mid-anything.</li><li><b>Clear the account on old failures</b> before any performance where they might creep back in.</li></ul>' },
+  { t: 'Identity, outsourcing, and the daily weapons', focus: 'Decide who you are instead of waiting to feel it, stop handing your confidence to other people\'s reactions, drop the ranking instinct entirely, then arm yourself with three tools you\'ll use every single day: observation mode, canceling worry, and setting shame down.', how: '<ul><li>Pick a role for the week — pro, captain, host — and <b>act from its built-in permission</b>, the way a firefighter runs into a building because the uniform grants it.</li><li>Catch every moment you check a face for approval before deciding how you feel, and <b>self-approve first</b> instead.</li><li>Run the only competition allowed: <b>most comfortable person in the room</b>, not who outranks who.</li><li>The instant you feel self-conscious, <b>flip your attention outward</b> and profile someone instead.</li><li>Every time you catch yourself worrying, <b>run one deliberate rep of the same thing going right</b>.</li><li>When you\'re carrying shame over something old, ask if feeling bad right now actually changes what happened — it doesn\'t — then <b>zoom out on it like Google Maps</b> until it shrinks to size.</li></ul>', why: '<ul><li>Waiting to feel confident first has it backwards — the role grants the permission, and <b>the feeling follows the behavior</b>.</li><li>If other people\'s opinions can raise your confidence, they can also take it away, so you stay programmable as long as <b>the remote sits in their hands</b>.</li><li><b>Status-scanning is what turns confidence toxic</b>, not confidence itself — drop the ranking and judgment has nothing left to attach to.</li><li>Anxiety needs you looking inward to survive; <b>the second your attention goes outward, the loop has nothing to run on</b>.</li><li>Your brain <b>can\'t tell a rehearsed worry from a rehearsed win</b>, so make it log the right one.</li><li>Shame convinces you your suffering is doing something useful — <b>it isn\'t, it\'s just weight nobody asked you to carry</b>.</li></ul>', use: '<ul><li><b>Act from the role</b> the moment you\'re hesitating on something you\'d obviously do if you already had the title.</li><li><b>Self-approve the instant</b> you catch yourself scanning for reactions.</li><li>Ask <b>"can I be the most comfortable person here"</b> instead of "where do I rank" walking into any room.</li><li>Profile somebody, anybody, as your <b>emergency exit from any spiral</b>.</li><li><b>Run one positive rep</b> per worry loop, every time it fires.</li><li><b>Set the bag down</b> the moment old guilt bleeds into a moment that doesn\'t deserve it.</li></ul>' },
+  { t: 'No tigers', focus: 'Recognize social fear for what it actually is — an ancient survival circuit firing at nothing, and everyone around you is running the exact same wiring.', how: '<ul><li>Every time anxiety spikes, name it out loud in your head: <b>"tiger brain — there\'s no tiger here."</b></li><li>Then <b>do the thing anyway while the feeling is still on</b>.</li><li>Deliberately <b>risk one small social injury daily</b> — nothing happens, and that\'s the point.</li></ul>', why: '<ul><li>The fear circuit evolved to keep you from being banished by the tribe or eaten in the dark — <b>it can\'t tell a real predator from asking a stranger a question</b>.</li><li>None of your ancestors died a virgin; <b>the catastrophe your brain predicts has never once actually happened</b>.</li><li>The #1 thing anxious people lack isn\'t courage, it\'s the realization that <b>everyone around them is exactly as insecure and masked as they are</b>.</li></ul>', use: '<ul><li><b>The master override for every version of social fear</b> — parties, asks, walk-ups, tryouts.</li><li><b>Name the tiger, act anyway, log the evidence</b> that nothing happened.</li><li>Your brain is <b>unconsciously keeping score</b> every single time.</li></ul>' },
+  { t: 'Author-ity & the mastery test', focus: 'Stop waiting for permission that is never coming, become the author of every moment, then use everything you\'ve built to make everyone around you a little more confident too — that\'s the actual finish line.', how: '<ul><li>Pick one situation daily and <b>be its author</b>: initiate, direct, decide — without waiting for a cue or sign that it\'s okay.</li><li>Afterward, <b>do not check a single face</b> for how it landed.</li><li>Then flip the skill outward: <b>make one person visibly more confident every day</b>, handing a nervous person the frame "you\'ve got this, you pick, you lead."</li></ul>', why: '<ul><li><b>Nobody is ever going to tap you on the shoulder</b> and say "you\'re allowed now."</li><li><b>People read authorship as authority</b> — when you act like you already have standing, their brains assume you must, and they hand you real acceptance back.</li><li>The whole point was never to feel bulletproof, it was to stop needing to — once you\'re not scanning for status or approval, you have surplus calm, and <b>the only useful thing to do with surplus is hand it to someone else</b>.</li><li><b>There\'s no "faking it" either</b> — if people see confident, that\'s just what confidence looks like from outside, and there\'s no graduation ceremony waiting for you.</li><li>Even Chase felt like a fraud the first time he taught this — <b>unfamiliar isn\'t unqualified</b>.</li></ul>', use: '<ul><li><b>Go first</b> the moment you catch yourself waiting for an invitation or a green light.</li><li>You\'ll know you\'ve actually mastered this — not just learned it — when you\'re <b>the reason someone else in the room stops giving a f*** too</b>.</li></ul>' },
 ];
 
 const CONF_CARDS = [
@@ -3360,62 +3225,17 @@ function wpShuffleLine() {
   }
   renderWallpaperPreview();
 }
-function downloadWallpaper() {
-  const W = 1170, H = 2532;
-  const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, '#1a2433');
-  grad.addColorStop(1, '#0d1219');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-  const line = WALLPAPER_LINES[wpIdx];
-  ctx.fillStyle = '#e9e4d8';
-  ctx.textAlign = 'center';
-  const maxWidth = W * 0.8;
-  let fontSize = 92;
-  const wrapText = (text, maxW) => {
-    const words = text.split(' ');
-    const lines = [];
-    let cur = '';
-    words.forEach(w => {
-      const test = cur ? cur + ' ' + w : w;
-      if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
-      else cur = test;
-    });
-    if (cur) lines.push(cur);
-    return lines;
-  };
-  ctx.font = 'italic 700 ' + fontSize + 'px Georgia, serif';
-  let lines = wrapText(line, maxWidth);
-  while (lines.length > 6 && fontSize > 48) {
-    fontSize -= 6;
-    ctx.font = 'italic 700 ' + fontSize + 'px Georgia, serif';
-    lines = wrapText(line, maxWidth);
-  }
-  ctx.textBaseline = 'middle';
-  const lineHeight = fontSize * 1.4;
-  const totalH = lines.length * lineHeight;
-  let y = H / 2 - totalH / 2 + lineHeight / 2;
-  lines.forEach(l => { ctx.fillText(l, W / 2, y); y += lineHeight; });
-  ctx.font = '600 26px -apple-system, sans-serif';
-  ctx.fillStyle = '#8b95a3';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText('X-RAY TRAINER', W / 2, H - 90);
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'confidence-wallpaper.png';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-  }, 'image/png');
+let mantraIdx = null;
+function shuffleMantra() {
+  if (MANTRAS.length > 1) {
+    let next;
+    do { next = Math.floor(Math.random() * MANTRAS.length); } while (next === mantraIdx);
+    mantraIdx = next;
+  } else mantraIdx = 0;
+  document.getElementById('mantraText').textContent = MANTRAS[mantraIdx];
 }
 document.getElementById('wpShuffle').onclick = wpShuffleLine;
-document.getElementById('wpDownload').onclick = downloadWallpaper;
+document.getElementById('hockeyExamplesBtn').onclick = () => openWex(1, HOCKEY_EXAMPLES, 'Flow');
 renderWallpaperPreview();
 
 initToday();
