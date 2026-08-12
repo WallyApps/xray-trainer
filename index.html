@@ -1333,6 +1333,7 @@ const GAMEDAY_CHECKS = [
   'Catch every "what if I mess up" loop and cancel it with one rep of the same moment going right.',
   'Step into the role. Your role: pro — play with the permission it grants.',
   'Pool speed in the room and in warmups. Slow hands, slow head turns.',
+  'Pre-game sentence — "However this goes, I\'m OK — so I\'m swinging."',
 ];
 
 const CONFIDENCE_PRINCIPLES = [
@@ -1445,7 +1446,7 @@ if (state.today !== todayKey) {
   save(state);
 }
 if (!state.checks) state.checks = [false, false, false, false, false, false, false];
-if (!state.gamedayChecks) state.gamedayChecks = [false, false, false, false];
+if (!state.gamedayChecks) state.gamedayChecks = [false, false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
 if (!state.weeks) state.weeks = [];
