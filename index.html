@@ -112,8 +112,14 @@
     font-size: 13px; color: var(--ink);
   }
   .check.on .box { background: var(--green); border-color: var(--green); }
-  .check .q { font-family: var(--serif); font-style: italic; font-size: 15px; line-height: 1.45; }
+  .check .q { flex: 1; font-family: var(--serif); font-style: italic; font-size: 15px; line-height: 1.45; }
   .check.on .q { color: var(--muted); }
+  .check.focus:not(.on) .q { color: var(--amber); font-weight: 700; }
+  .check-arrow {
+    flex: none; align-self: center; color: var(--muted); font-size: 20px; line-height: 1;
+    padding: 4px 0 4px 8px; cursor: pointer;
+  }
+  .check-arrow:active { color: var(--amber); }
 
   .allclear {
     text-align: center; padding: 14px; border-radius: 10px; margin-top: 14px;
@@ -505,7 +511,7 @@
     <div id="dailyChecks"></div>
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
-    <footer>All nine daily-check questions, plus spotting the cue — that's what counts toward your streak.</footer>
+    <footer>All eleven daily-check questions, plus spotting the cue — that's what counts toward your streak.</footer>
   </main>
 
   <!-- ==================== LEARN (Duolingo path) ==================== -->
@@ -1325,10 +1331,13 @@ const DAILY_CHECKS = [
   'Have I run the line — however this goes, I\'ll be OK?',
   'Am I hearing today\'s self-doubt as fiction — no tigers?',
   'Have I gotten curious about someone instead of watching myself?',
+  'Have I canceled today\'s worry loop with one rep of it going right?',
   'Can I be more comfortable than anyone else in the room?',
   'Have I gone first today — acted like the author instead of waiting for permission?',
+  'Have I made someone else more confident today?',
   'Am I okay with social injury?',
 ];
+const DAILY_CHECK_WEEKS = [1, 3, 1, 1, 3, 2, 2, 2, 4, 4, 3];
 
 const GAMEDAY_CHECKS = [
   'Identity line — "I\'m the type of player that…" — same words, every game.',
@@ -1442,12 +1451,12 @@ function save(s) { localStorage.setItem('xray', JSON.stringify(s)); }
 let state = load();
 if (state.today !== todayKey) {
   state.today = todayKey;
-  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false, false, false, false, false, false];
+  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false, false, false, false, false, false, false, false];
   state.counted = false;
   state.cue = null; state.debrief = null; state.debriefXP = false;
   save(state);
 }
-if (!state.checks) state.checks = [false, false, false, false, false, false, false, false, false];
+if (!state.checks) state.checks = [false, false, false, false, false, false, false, false, false, false, false];
 if (!state.gamedayChecks) state.gamedayChecks = [false, false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
@@ -1499,12 +1508,20 @@ function initToday() {
   document.getElementById('spotNo').onclick = () => { state.debrief = 'miss'; save(state); render(); };
 }
 
+function jumpToConfWeek(week) {
+  confPlanSel = week;
+  showTab('confidence', document.querySelectorAll('nav button')[3]);
+  renderConfPlan();
+  setTimeout(() => document.getElementById('confPlanDetail').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
 const checksEl = document.getElementById('dailyChecks');
 DAILY_CHECKS.forEach((q, i) => {
   const d = document.createElement('div');
   d.className = 'check';
-  d.innerHTML = '<div class="box">✓</div><div class="q">' + q + '</div>';
+  d.innerHTML = '<div class="box">✓</div><div class="q">' + q + '</div><div class="check-arrow">›</div>';
   d.onclick = () => { state.checks[i] = !state.checks[i]; save(state); checkDayComplete(); render(); };
+  d.querySelector('.check-arrow').onclick = (e) => { e.stopPropagation(); jumpToConfWeek(DAILY_CHECK_WEEKS[i]); };
   checksEl.appendChild(d);
 });
 
@@ -1546,6 +1563,9 @@ function toggleDrill(which) {
 
 function render() {
   document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
+  const focusStart = dayIndex % DAILY_CHECKS.length;
+  const focusIdx = [0, 1, 2].map(k => (focusStart + k) % DAILY_CHECKS.length);
+  document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('focus', focusIdx.includes(i)));
   document.querySelectorAll('#gamedayChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.gamedayChecks[i]));
   const launch = document.getElementById('quizLaunch');
   const goLearn = () => showTab('learn', document.querySelectorAll('nav button')[1]);
