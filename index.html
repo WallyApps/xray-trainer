@@ -505,7 +505,7 @@
     <div id="dailyChecks"></div>
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
-    <footer>All eight daily-check questions, plus spotting the cue — that's what counts toward your streak.</footer>
+    <footer>All nine daily-check questions, plus spotting the cue — that's what counts toward your streak.</footer>
   </main>
 
   <!-- ==================== LEARN (Duolingo path) ==================== -->
@@ -1326,6 +1326,7 @@ const DAILY_CHECKS = [
   'Am I hearing today\'s self-doubt as fiction — no tigers?',
   'Have I gotten curious about someone instead of watching myself?',
   'Can I be more comfortable than anyone else in the room?',
+  'Have I gone first today — acted like the author instead of waiting for permission?',
   'Am I okay with social injury?',
 ];
 
@@ -1441,12 +1442,12 @@ function save(s) { localStorage.setItem('xray', JSON.stringify(s)); }
 let state = load();
 if (state.today !== todayKey) {
   state.today = todayKey;
-  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false, false, false, false, false];
+  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false, false, false, false, false, false];
   state.counted = false;
   state.cue = null; state.debrief = null; state.debriefXP = false;
   save(state);
 }
-if (!state.checks) state.checks = [false, false, false, false, false, false, false, false];
+if (!state.checks) state.checks = [false, false, false, false, false, false, false, false, false];
 if (!state.gamedayChecks) state.gamedayChecks = [false, false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
