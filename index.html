@@ -258,6 +258,11 @@
   .mantra p { font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.45; text-wrap: balance; }
   .mantra.negative { border-color: var(--red); background: var(--red-dim); }
   .mantra.negative .lbl { color: var(--red); }
+  .mantra-row { display: flex; gap: 10px; margin-top: 4px; }
+  .mantra-row .mantra { flex: 1; min-width: 0; padding: 14px 12px; margin-top: 0; }
+  .mantra-row .mantra .lbl { font-size: 9px; margin-bottom: 6px; }
+  .mantra-row .mantra p { font-size: 14px; line-height: 1.35; }
+  .mantra-row .shufflebtn { margin-top: 8px; padding: 6px 12px; font-size: 11px; }
   .shufflebtn {
     margin-top: 12px; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: inline-block;
     border: 1px solid var(--line); background: var(--panel-2); color: var(--bone);
@@ -455,16 +460,18 @@
   <main id="tab-today" class="on">
     <div class="eyebrow first" id="todayDate"></div>
 
-    <div class="mantra">
-      <div class="lbl">Today's frame</div>
-      <p id="mantraText"></p>
-      <button class="shufflebtn" onclick="shuffleMantra()">Shuffle</button>
-    </div>
+    <div class="mantra-row">
+      <div class="mantra">
+        <div class="lbl">Today's frame</div>
+        <p id="mantraText"></p>
+        <button class="shufflebtn" onclick="shuffleMantra()">Shuffle</button>
+      </div>
 
-    <div class="mantra negative">
-      <div class="lbl">Your wallpaper</div>
-      <p id="wpText"></p>
-      <button class="shufflebtn" id="wpShuffle">Shuffle</button>
+      <div class="mantra negative">
+        <div class="lbl">Your wallpaper</div>
+        <p id="wpText"></p>
+        <button class="shufflebtn" id="wpShuffle">Shuffle</button>
+      </div>
     </div>
 
     <div class="eyebrow">Cue of the day</div>
@@ -1326,10 +1333,10 @@ const MANTRAS = [
 
 const DAILY_CHECKS = [
   'Am I delusionally self-forgiving?',
-  'Am I the rule, not the exception — is everyone here just as insecure and masked as me?',
+  'Have I remembered I\'m the rule, not the exception — everyone here is just as insecure and masked as me?',
   'Can I move slower than the other person today?',
   'Have I run the line — however this goes, I\'ll be OK?',
-  'Am I hearing today\'s self-doubt as fiction — no tigers?',
+  'Have I heard today\'s self-doubt as fiction — no tigers?',
   'Have I gotten curious about someone instead of watching myself?',
   'Have I canceled today\'s worry loop with one rep of it going right?',
   'Can I be more comfortable than anyone else in the room?',
