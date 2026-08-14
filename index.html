@@ -518,7 +518,7 @@
     <div id="dailyChecks"></div>
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
-    <footer>All thirteen daily-check questions, plus spotting the cue — that's what counts toward your streak.</footer>
+    <footer>All fifteen daily-check questions, plus spotting the cue — that's what counts toward your streak.</footer>
   </main>
 
   <!-- ==================== LEARN (Duolingo path) ==================== -->
@@ -1334,6 +1334,8 @@ const MANTRAS = [
 const DAILY_CHECKS = [
   'Am I delusionally self-forgiving?',
   'Have I remembered I\'m the rule, not the exception — everyone here is just as insecure and masked as me?',
+  'Have I remembered everyone I meet is just a grown-up kid chasing the same safety they needed as a kid?',
+  'Have I treated today like a game instead of a verdict?',
   'Can I move slower than the other person today?',
   'Have I run the line — however this goes, I\'ll be OK?',
   'Have I heard today\'s self-doubt as fiction — no tigers?',
@@ -1346,7 +1348,12 @@ const DAILY_CHECKS = [
   'Have I made someone else more confident today?',
   'Am I okay with social injury?',
 ];
-const DAILY_CHECK_WEEKS = [1, 3, 1, 1, 3, 2, 2, 2, 2, 2, 4, 4, 3];
+const DAILY_CHECK_SOURCE = [
+  ['confidence', 1], ['confidence', 3], ['xray', 1], ['confidence', 1],
+  ['confidence', 1], ['confidence', 1], ['confidence', 3], ['confidence', 2],
+  ['confidence', 2], ['confidence', 2], ['confidence', 2], ['confidence', 2],
+  ['confidence', 4], ['confidence', 4], ['confidence', 3],
+];
 
 const GAMEDAY_CHECKS = [
   'Identity line — "I\'m the type of player that…" — same words, every game.',
@@ -1460,12 +1467,12 @@ function save(s) { localStorage.setItem('xray', JSON.stringify(s)); }
 let state = load();
 if (state.today !== todayKey) {
   state.today = todayKey;
-  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false, false, false, false, false, false, false, false, false, false];
+  state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
   state.counted = false;
   state.cue = null; state.debrief = null; state.debriefXP = false;
   save(state);
 }
-if (!state.checks) state.checks = [false, false, false, false, false, false, false, false, false, false, false, false, false];
+if (!state.checks) state.checks = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
 if (!state.gamedayChecks) state.gamedayChecks = [false, false, false, false, false];
 if (!state.units) state.units = [];
 if (!state.xp) state.xp = 0;
@@ -1517,11 +1524,19 @@ function initToday() {
   document.getElementById('spotNo').onclick = () => { state.debrief = 'miss'; save(state); render(); };
 }
 
-function jumpToConfWeek(week) {
-  confPlanSel = week;
-  showTab('confidence', document.querySelectorAll('nav button')[3]);
-  renderConfPlan();
-  setTimeout(() => document.getElementById('confPlanDetail').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+function jumpToCheckSource(plan, week) {
+  if (plan === 'xray') {
+    planSel = week;
+    planDetailOpen = true;
+    showTab('profiling', document.querySelectorAll('nav button')[2]);
+    renderPlan();
+    setTimeout(() => document.getElementById('planDetail').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  } else {
+    confPlanSel = week;
+    showTab('confidence', document.querySelectorAll('nav button')[3]);
+    renderConfPlan();
+    setTimeout(() => document.getElementById('confPlanDetail').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  }
 }
 
 const checksEl = document.getElementById('dailyChecks');
@@ -1530,7 +1545,7 @@ DAILY_CHECKS.forEach((q, i) => {
   d.className = 'check';
   d.innerHTML = '<div class="box">✓</div><div class="q">' + q + '</div><div class="check-arrow">›</div>';
   d.onclick = () => { state.checks[i] = !state.checks[i]; save(state); checkDayComplete(); render(); };
-  d.querySelector('.check-arrow').onclick = (e) => { e.stopPropagation(); jumpToConfWeek(DAILY_CHECK_WEEKS[i]); };
+  d.querySelector('.check-arrow').onclick = (e) => { e.stopPropagation(); jumpToCheckSource(DAILY_CHECK_SOURCE[i][0], DAILY_CHECK_SOURCE[i][1]); };
   checksEl.appendChild(d);
 });
 
