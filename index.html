@@ -269,6 +269,13 @@
     font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
   }
   .shufflebtn:active { transform: scale(0.96); }
+  #notifyBar { margin: 6px 0 2px; }
+  #notifyBar button {
+    width: 100%; padding: 10px; border-radius: 8px; cursor: pointer;
+    border: 1px solid rgba(224, 164, 88, 0.35); background: var(--amber-dim); color: var(--amber);
+    font-family: var(--sans); font-size: 12.5px; font-weight: 600;
+  }
+  #notifyBar .on-state { border-color: var(--green); background: var(--green-dim); color: var(--green); cursor: default; }
 
   /* ---------- learn path ---------- */
   .xpwrap { display: flex; align-items: center; gap: 12px; }
@@ -464,6 +471,7 @@
   <!-- ==================== TODAY ==================== -->
   <main id="tab-today" class="on">
     <div class="eyebrow first" id="todayDate"></div>
+    <div id="notifyBar"></div>
 
     <div class="mantra-row">
       <div class="mantra">
@@ -1495,6 +1503,11 @@ function currentConfWeek() {
   const firstOpen = CONF_PLAN.findIndex((_, i) => !doneW.includes(i + 1));
   return firstOpen === -1 ? CONF_PLAN.length : firstOpen + 1;
 }
+function currentXrayWeek() {
+  const doneW = state.weeks || [];
+  const firstOpen = PLAN.findIndex((_, i) => !doneW.includes(i + 1));
+  return firstOpen === -1 ? PLAN.length : firstOpen + 1;
+}
 function initToday() {
   // Cue of the day — one technique from unlocked units, pinned for the day.
   // Prefer units that have field drills so the daily rep can hunt the cue.
@@ -1604,7 +1617,74 @@ function toggleDrill(which) {
   render();
 }
 
+const NOTIFY_BACKEND = 'https://seminars-muze-orders-swap.trycloudflare.com';
+const VAPID_PUBLIC_KEY = 'BC2vwrPDzQXTl8bc3rezzP9A14waFLyRvaif-pPxfJrDaxSmmYyqNpewLQlqIpVR-GBI5DJLdXl62CdJvYye9bA';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+function currentProgressPayload() {
+  const xw = currentXrayWeek(), mw = currentConfWeek();
+  return {
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    xrayWeek: xw, xrayTitle: (PLAN[xw - 1] || {}).t || '',
+    mindWeek: mw, mindTitle: (CONF_PLAN[mw - 1] || {}).t || '',
+  };
+}
+
+function syncProgressToBackend() {
+  if (!state.notifyEnabled) return;
+  fetch(NOTIFY_BACKEND + '/progress', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(currentProgressPayload()),
+  }).catch(() => {});
+}
+
+async function enableNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Push notifications aren\'t supported in this browser.');
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.register('sw.js');
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { renderNotifyBar(); return; }
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+    const payload = Object.assign({ subscription: sub.toJSON() }, currentProgressPayload());
+    await fetch(NOTIFY_BACKEND + '/subscribe', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    state.notifyEnabled = true;
+    save(state);
+  } catch (e) {
+    console.error('enableNotifications failed', e);
+    alert('Couldn\'t turn on notifications: ' + e.message);
+  }
+  renderNotifyBar();
+}
+
+function renderNotifyBar() {
+  const el = document.getElementById('notifyBar');
+  if (!el) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) { el.innerHTML = ''; return; }
+  if (Notification.permission === 'granted' && state.notifyEnabled) {
+    el.innerHTML = '<button class="on-state" disabled>Notifications on — 5x daily</button>';
+  } else {
+    el.innerHTML = '<button id="notifyBtn">Enable reminders (5x daily)</button>';
+    document.getElementById('notifyBtn').onclick = enableNotifications;
+  }
+}
+
 function render() {
+  renderNotifyBar();
   document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
   const focusStart = dayIndex % DAILY_CHECKS.length;
   const focusIdx = [0, 1, 2].map(k => (focusStart + k) % DAILY_CHECKS.length);
@@ -3156,7 +3236,7 @@ function renderPlan() {
     const w = planSel;
     if (state.weeks.includes(w)) state.weeks = state.weeks.filter(x => x !== w);
     else { state.weeks.push(w); state.xp += 25; }
-    save(state); renderPlan(); render();
+    save(state); renderPlan(); render(); syncProgressToBackend();
   };
 }
 
@@ -3221,7 +3301,7 @@ function renderConfPlan() {
     const w = confPlanSel;
     if (state.confWeeks.includes(w)) state.confWeeks = state.confWeeks.filter(x => x !== w);
     else { state.confWeeks.push(w); state.xp += 25; }
-    save(state); renderConfPlan(); render();
+    save(state); renderConfPlan(); render(); syncProgressToBackend();
   };
 }
 
@@ -3309,4 +3389,5 @@ renderQuad();
 renderPlan();
 renderConfPlan();
 render();
+syncProgressToBackend();
 </script>
