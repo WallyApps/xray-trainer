@@ -275,7 +275,7 @@
     border: 1px solid rgba(224, 164, 88, 0.35); background: var(--amber-dim); color: var(--amber);
     font-family: var(--sans); font-size: 12.5px; font-weight: 600;
   }
-  #notifyBar .on-state { border-color: var(--green); background: var(--green-dim); color: var(--green); cursor: default; }
+  #notifyBar .on-state { border-color: var(--green); background: var(--green-dim); color: var(--green); }
 
   /* ---------- learn path ---------- */
   .xpwrap { display: flex; align-items: center; gap: 12px; }
@@ -1618,7 +1618,7 @@ function toggleDrill(which) {
 }
 
 const NOTIFY_BACKEND = 'https://seminars-muze-orders-swap.trycloudflare.com';
-const VAPID_PUBLIC_KEY = 'BC2vwrPDzQXTl8bc3rezzP9A14waFLyRvaif-pPxfJrDaxSmmYyqNpewLQlqIpVR-GBI5DJLdXl62CdJvYye9bA';
+const VAPID_PUBLIC_KEY = 'BFfD70R6NRd4ntj1c-UeO5ckwAW9Ssr--K1A9y6B_DP7FRhowEs1sXxqRFE8yF3QZNhZwrQbll_z-iMem5DSWZw';
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -1653,6 +1653,8 @@ async function enableNotifications() {
     const reg = await navigator.serviceWorker.register('sw.js');
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') { renderNotifyBar(); return; }
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) await existing.unsubscribe();
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
@@ -1675,12 +1677,10 @@ function renderNotifyBar() {
   const el = document.getElementById('notifyBar');
   if (!el) return;
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) { el.innerHTML = ''; return; }
-  if (Notification.permission === 'granted' && state.notifyEnabled) {
-    el.innerHTML = '<button class="on-state" disabled>Notifications on — 5x daily</button>';
-  } else {
-    el.innerHTML = '<button id="notifyBtn">Enable reminders (5x daily)</button>';
-    document.getElementById('notifyBtn').onclick = enableNotifications;
-  }
+  const onState = Notification.permission === 'granted' && state.notifyEnabled;
+  el.innerHTML = '<button id="notifyBtn"' + (onState ? ' class="on-state"' : '') + '>' +
+    (onState ? 'Notifications on — 5x daily' : 'Enable reminders (5x daily)') + '</button>';
+  document.getElementById('notifyBtn').onclick = enableNotifications;
 }
 
 function render() {
