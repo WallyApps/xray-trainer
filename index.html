@@ -1650,11 +1650,19 @@ async function enableNotifications() {
     return;
   }
   try {
-    const reg = await navigator.serviceWorker.register('sw.js');
+    // iOS Safari can keep a push registration pinned to the key it was first
+    // created with even after unsubscribe()+subscribe() with a new key — fully
+    // unregistering the service worker forces a genuinely fresh registration.
+    const oldReg = await navigator.serviceWorker.getRegistration();
+    if (oldReg) {
+      const oldSub = await oldReg.pushManager.getSubscription();
+      if (oldSub) await oldSub.unsubscribe();
+      await oldReg.unregister();
+    }
+    const reg = await navigator.serviceWorker.register('sw.js?v=' + Date.now());
+    await navigator.serviceWorker.ready;
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') { renderNotifyBar(); return; }
-    const existing = await reg.pushManager.getSubscription();
-    if (existing) await existing.unsubscribe();
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
