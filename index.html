@@ -531,7 +531,7 @@
     <div id="dailyChecks"></div>
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
-    <footer>All fifteen daily-check questions, plus spotting the cue — that's what counts toward your streak.</footer>
+    <footer>The 3 bolded checks, plus spotting the cue — that's what counts toward your streak. The rest are here whenever you want them, no pressure to clear the whole list.</footer>
   </main>
 
   <!-- ==================== LEARN (Duolingo path) ==================== -->
@@ -1354,13 +1354,18 @@ const DAILY_CHECKS = [
   'Have I heard today\'s self-doubt as fiction — no tigers?',
   'Have I stepped into my role today — decided who I am instead of waiting to feel it?',
   'Have I gotten curious about someone instead of watching myself?',
-  'Have I stopped outsourcing my confidence today — if they control how I feel, they own me?',
+  'Have I stopped outsourcing my confidence and people-pleasing today — if they control how I feel, they own me?',
   'Have I canceled today\'s worry loop with one rep of it going right?',
   'Can I be more comfortable than anyone else in the room?',
   'Have I gone first today — acted like the author instead of waiting for permission?',
   'Have I made someone else more confident today?',
   'Am I okay with social injury?',
 ];
+// Fixed, not rotating — the three that matter most for Riley specifically,
+// picked from a real conversation about his actual patterns (hierarchy/status
+// comparison, outsourcing confidence/people-pleasing, waiting to feel ready
+// before acting). Indices into DAILY_CHECKS above.
+const DAILY_FOCUS_IDX = [0, 2, 9];
 const DAILY_CHECK_SOURCE = [
   ['confidence', 1], ['confidence', 3], ['xray', 1], ['confidence', 1],
   ['confidence', 1], ['confidence', 1], ['confidence', 3], ['confidence', 2],
@@ -1594,7 +1599,8 @@ document.getElementById('gamedayReset').onclick = () => {
 };
 
 function checkDayComplete() {
-  if (state.checks.every(Boolean) && state.debrief === 'hit' && !state.counted) {
+  const focusDone = DAILY_FOCUS_IDX.every(i => state.checks[i]);
+  if (focusDone && state.debrief === 'hit' && !state.counted) {
     state.counted = true;
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     state.streak = (state.lastComplete === yesterday) ? (state.streak || 0) + 1 : 1;
@@ -1694,9 +1700,7 @@ function renderNotifyBar() {
 function render() {
   renderNotifyBar();
   document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
-  const focusStart = dayIndex % DAILY_CHECKS.length;
-  const focusIdx = [0, 1, 2].map(k => (focusStart + k) % DAILY_CHECKS.length);
-  document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('focus', focusIdx.includes(i)));
+  document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('focus', DAILY_FOCUS_IDX.includes(i)));
   document.querySelectorAll('#gamedayChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.gamedayChecks[i]));
   const launch = document.getElementById('quizLaunch');
   const goLearn = () => showTab('learn', document.querySelectorAll('nav button')[1]);
@@ -1708,7 +1712,7 @@ function render() {
     launch.textContent = 'Daily review — ' + due + ' due';
     launch.onclick = startQuiz;
   }
-  document.getElementById('allClear').classList.toggle('show', state.checks.every(Boolean) && state.debrief === 'hit');
+  document.getElementById('allClear').classList.toggle('show', DAILY_FOCUS_IDX.every(i => state.checks[i]) && state.debrief === 'hit');
   const sy = document.getElementById('spotYes'), sn = document.getElementById('spotNo');
   sy.classList.toggle('done', state.debrief === 'hit');
   sy.textContent = state.debrief === 'hit' ? '✓ Spotted it' : 'Spotted it (+10 XP)';
