@@ -487,23 +487,6 @@
       </div>
     </div>
 
-    <div class="eyebrow">Cue of the day</div>
-    <div class="card">
-      <span class="tag" id="cueTag"></span>
-      <h3 class="cardhead" id="cueHead" onclick="toggleCard('cue')">
-        <span id="cueName"></span><span class="ichev" id="cueChev">▸</span>
-      </h3>
-      <div id="cueBody" class="collapsed">
-        <p id="cueRead"></p>
-        <p class="use" id="cueUse"></p>
-        <p class="sub" id="cueSpotLine"></p>
-        <div class="spotrow">
-          <button class="donebtn" id="spotYes">Spotted it (+10 XP)</button>
-          <button class="donebtn" id="spotNo">Didn't see it</button>
-        </div>
-      </div>
-    </div>
-
     <div class="eyebrow">Always-on anchor</div>
     <div class="card">
       <h3 class="cardhead" id="anchorHead" onclick="toggleCard('anchor')">
@@ -533,7 +516,7 @@
     <div id="dailyChecksMore" class="collapsed"></div>
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
-    <footer>These 3, plus spotting the cue — that's what counts toward your streak.</footer>
+    <footer>These 3 — that's what counts toward your streak.</footer>
   </main>
 
   <!-- ==================== LEARN (Duolingo path) ==================== -->
@@ -1489,7 +1472,6 @@ if (state.today !== todayKey) {
   state.today = todayKey;
   state.p = false; state.c = false; state.q = false; state.quad = false; state.checks = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
   state.counted = false;
-  state.cue = null; state.debrief = null; state.debriefXP = false;
   save(state);
 }
 if (!state.checks) state.checks = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
@@ -1516,37 +1498,11 @@ function currentXrayWeek() {
   return firstOpen === -1 ? PLAN.length : firstOpen + 1;
 }
 function initToday() {
-  // Cue of the day — one technique from unlocked units, pinned for the day.
-  // Prefer units that have field drills so the daily rep can hunt the cue.
-  const drillUnits = new Set(PROFILING_DRILLS.map(d => d.unit));
-  let openFacts = [];
-  const collect = pred => UNITS.forEach((u, i) => { if (pred(u, i)) u.facts.forEach(f => openFacts.push({ cue: f.cue, ans: f.ans, unit: i })); });
-  collect((u, i) => unitUnlocked(i) && drillUnits.has(i));
-  if (!openFacts.length) collect((u, i) => unitUnlocked(i) && u.section === 'xray');
-  if (!openFacts.length) collect((u, i) => unitUnlocked(i));
-  let cue = openFacts.find(f => f.cue === state.cue);
-  if (!cue) {
-    cue = openFacts[dayIndex % openFacts.length];
-    state.cue = cue.cue;
-    save(state);
-  }
-  document.getElementById('cueTag').textContent = UNITS[cue.unit].title;
-  document.getElementById('cueName').textContent = cue.cue;
-  document.getElementById('cueRead').textContent = cue.ans;
-  document.getElementById('cueUse').innerHTML = ITEM_USE[cue.cue] ? '<b>Use it:</b> ' + ITEM_USE[cue.cue] : '';
-  document.getElementById('cueSpotLine').textContent = 'Today\'s cue: "' + cue.cue + '." One tap before bed keeps the loop honest.';
-
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const confWeekCards = (CONF_CARDS[currentConfWeek() - 1] || []).filter(n => CONF_FLAT[n]);
   document.getElementById('mantraText').textContent = confWeekCards.length
     ? CONF_FLAT[confWeekCards[dayIndex % confWeekCards.length]].read
     : MANTRAS[dayIndex % MANTRAS.length];
-  // Cue-spot handlers (XP once per day, choice can be changed).
-  document.getElementById('spotYes').onclick = () => {
-    if (!state.debriefXP) { state.xp += 10; state.debriefXP = true; }
-    state.debrief = 'hit'; save(state); checkDayComplete(); render();
-  };
-  document.getElementById('spotNo').onclick = () => { state.debrief = 'miss'; save(state); render(); };
 }
 
 function flashJumpTarget(id) {
@@ -1609,7 +1565,7 @@ document.getElementById('gamedayReset').onclick = () => {
 
 function checkDayComplete() {
   const focusDone = DAILY_FOCUS_IDX.every(i => state.checks[i]);
-  if (focusDone && state.debrief === 'hit' && !state.counted) {
+  if (focusDone && !state.counted) {
     state.counted = true;
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     state.streak = (state.lastComplete === yesterday) ? (state.streak || 0) + 1 : 1;
@@ -1720,12 +1676,7 @@ function render() {
     launch.textContent = 'Daily review — ' + due + ' due';
     launch.onclick = startQuiz;
   }
-  document.getElementById('allClear').classList.toggle('show', DAILY_FOCUS_IDX.every(i => state.checks[i]) && state.debrief === 'hit');
-  const sy = document.getElementById('spotYes'), sn = document.getElementById('spotNo');
-  sy.classList.toggle('done', state.debrief === 'hit');
-  sy.textContent = state.debrief === 'hit' ? '✓ Spotted it' : 'Spotted it (+10 XP)';
-  sn.classList.toggle('done', state.debrief === 'miss');
-  sn.textContent = state.debrief === 'miss' ? '✓ Logged — hunt it again tomorrow' : 'Didn\'t see it';
+  document.getElementById('allClear').classList.toggle('show', DAILY_FOCUS_IDX.every(i => state.checks[i]));
   renderLearn();
   let streak = state.streak || 0;
   if (streak > 0 && state.lastComplete !== todayKey) {
