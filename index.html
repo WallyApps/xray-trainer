@@ -1513,6 +1513,19 @@ function flashJumpTarget(id) {
   el.classList.add('jump-flash');
 }
 
+const WEEK_QUIZ_PASS_RATE = 0.7;
+function autoCompleteWeek(plan, week) {
+  const arr = plan === 'xray' ? state.weeks : state.confWeeks;
+  if (!arr.includes(week)) {
+    arr.push(week);
+    state.xp += 25;
+    save(state);
+    if (plan === 'xray') renderPlan(); else renderConfPlan();
+    render();
+    syncProgressToBackend();
+  }
+}
+
 function jumpToCheckSource(plan, week) {
   if (plan === 'xray') {
     planSel = week;
@@ -2101,7 +2114,20 @@ function showCard() {
     document.getElementById('qBack').style.display = 'none';
     document.getElementById('qProg').textContent = 'Done';
     if (mode === 'drill') {
+      const weekQuizKey = activeWeekQuizKey;
       if (activeWeekQuizKey) { delete state.quizProgress[activeWeekQuizKey]; save(state); activeWeekQuizKey = null; }
+      if (weekQuizKey) {
+        const sep = weekQuizKey.lastIndexOf(':');
+        const label = weekQuizKey.slice(0, sep), week = +weekQuizKey.slice(sep + 1);
+        const plan = label === 'X-Ray' ? 'xray' : 'confidence';
+        const passed = (hits / qi) >= WEEK_QUIZ_PASS_RATE;
+        if (passed) autoCompleteWeek(plan, week);
+        card.innerHTML = '<div class="qdone' + (passed ? ' win' : '') + '"><div class="big">' + hits + ' / ' + qi + '</div><p>' +
+          (passed
+            ? 'Passed — this week is marked complete automatically. <b class="lessonxp">+25 XP</b>'
+            : 'Need ' + Math.round(WEEK_QUIZ_PASS_RATE * 100) + '% to auto-advance — run it back when you\'re ready, or mark the week yourself if you\'d rather move on anyway.') + '</p></div>';
+        return;
+      }
       card.innerHTML = '<div class="qdone win"><div class="big">' + hits + ' right of ' + qi + '</div><p>Pool cleared — nothing left in this rotation. That\'s mastery doing its job.</p></div>';
       return;
     }
