@@ -529,9 +529,11 @@
 
     <div class="eyebrow">The daily check — ask yourself</div>
     <div id="dailyChecks"></div>
+    <button class="shufflebtn" id="dailyChecksMoreBtn">Show 12 more</button>
+    <div id="dailyChecksMore" class="collapsed"></div>
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
-    <footer>The 3 bolded checks, plus spotting the cue — that's what counts toward your streak. The rest are here whenever you want them, no pressure to clear the whole list.</footer>
+    <footer>These 3, plus spotting the cue — that's what counts toward your streak.</footer>
   </main>
 
   <!-- ==================== LEARN (Duolingo path) ==================== -->
@@ -1577,14 +1579,21 @@ function jumpToCheckSource(plan, week) {
 }
 
 const checksEl = document.getElementById('dailyChecks');
+const checksMoreEl = document.getElementById('dailyChecksMore');
 DAILY_CHECKS.forEach((q, i) => {
   const d = document.createElement('div');
-  d.className = 'check';
+  d.className = 'check' + (DAILY_FOCUS_IDX.includes(i) ? ' focus' : '');
+  d.dataset.idx = i;
   d.innerHTML = '<div class="box">✓</div><div class="q">' + q + '</div><div class="check-arrow">›</div>';
   d.onclick = () => { state.checks[i] = !state.checks[i]; save(state); checkDayComplete(); render(); };
   d.querySelector('.check-arrow').onclick = (e) => { e.stopPropagation(); jumpToCheckSource(DAILY_CHECK_SOURCE[i][0], DAILY_CHECK_SOURCE[i][1]); };
-  checksEl.appendChild(d);
+  (DAILY_FOCUS_IDX.includes(i) ? checksEl : checksMoreEl).appendChild(d);
 });
+document.getElementById('dailyChecksMoreBtn').onclick = () => {
+  const open = !checksMoreEl.classList.contains('collapsed');
+  checksMoreEl.classList.toggle('collapsed', open);
+  document.getElementById('dailyChecksMoreBtn').textContent = open ? 'Show 12 more' : 'Hide the rest';
+};
 
 const gamedayEl = document.getElementById('gamedayChecks');
 GAMEDAY_CHECKS.forEach((q, i) => {
@@ -1699,8 +1708,7 @@ function renderNotifyBar() {
 
 function render() {
   renderNotifyBar();
-  document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.checks[i]));
-  document.querySelectorAll('#dailyChecks .check').forEach((el, i) => el.classList.toggle('focus', DAILY_FOCUS_IDX.includes(i)));
+  document.querySelectorAll('#dailyChecks .check, #dailyChecksMore .check').forEach(el => el.classList.toggle('on', !!state.checks[+el.dataset.idx]));
   document.querySelectorAll('#gamedayChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.gamedayChecks[i]));
   const launch = document.getElementById('quizLaunch');
   const goLearn = () => showTab('learn', document.querySelectorAll('nav button')[1]);
