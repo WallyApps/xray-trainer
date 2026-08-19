@@ -512,7 +512,7 @@
 
     <div class="eyebrow">The daily check — ask yourself</div>
     <div id="dailyChecks"></div>
-    <button class="shufflebtn" id="dailyChecksMoreBtn">Show 12 more</button>
+    <button class="shufflebtn" id="dailyChecksMoreBtn">Show 11 more</button>
     <div id="dailyChecksMore" class="collapsed"></div>
 
     <div class="allclear" id="allClear">Day complete. Streak updated. Move like you're in a pool.</div>
@@ -1346,11 +1346,11 @@ const DAILY_CHECKS = [
   'Have I made someone else more confident today?',
   'Am I okay with social injury?',
 ];
-// Fixed, not rotating — the three that matter most for Riley specifically,
-// picked from a real conversation about his actual patterns (hierarchy/status
-// comparison, outsourcing confidence/people-pleasing, waiting to feel ready
-// before acting). Indices into DAILY_CHECKS above.
-const DAILY_FOCUS_IDX = [0, 2, 9];
+// Fixed, not rotating — Riley's own pick of Chase Hughes' foundational trio
+// (self-forgiveness, everyone's insecure/masked, no tigers) plus confidence =
+// safety-not-certainty, the definitional idea underneath all three of them.
+// Indices into DAILY_CHECKS above.
+const DAILY_FOCUS_IDX = [0, 1, 5, 6];
 const DAILY_CHECK_SOURCE = [
   ['confidence', 1], ['confidence', 3], ['xray', 1], ['confidence', 1],
   ['confidence', 1], ['confidence', 1], ['confidence', 3], ['confidence', 2],
@@ -1548,7 +1548,7 @@ DAILY_CHECKS.forEach((q, i) => {
 document.getElementById('dailyChecksMoreBtn').onclick = () => {
   const open = !checksMoreEl.classList.contains('collapsed');
   checksMoreEl.classList.toggle('collapsed', open);
-  document.getElementById('dailyChecksMoreBtn').textContent = open ? 'Show 12 more' : 'Hide the rest';
+  document.getElementById('dailyChecksMoreBtn').textContent = open ? 'Show 11 more' : 'Hide the rest';
 };
 
 const gamedayEl = document.getElementById('gamedayChecks');
