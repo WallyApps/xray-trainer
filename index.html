@@ -157,6 +157,23 @@
     background: var(--green-dim); border: 1px solid var(--green); color: var(--green);
     font-size: 13px; font-weight: 600;
   }
+  /* two plans running -> two compact rows instead of one full mission card */
+  .mstack { display: flex; flex-direction: column; gap: 8px; }
+  .mrow { border: 1px solid var(--line); border-radius: 9px; background: var(--panel-2); padding: 10px 11px; }
+  .mrow .mrchip {
+    display: inline-block; font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--amber); background: var(--amber-dim); border-radius: 4px; padding: 2px 7px; margin-bottom: 7px;
+  }
+  .mrow b { display: block; font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+  .mrow p {
+    margin-top: 4px; font-size: 12.5px; line-height: 1.45; color: var(--muted);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .mrow .mission-btns { margin-top: 10px; gap: 7px; }
+  .mrow .mission-btns button { padding: 9px 8px; font-size: 12.5px; }
+  .mrow.done { border-color: rgba(111, 176, 127, 0.4); opacity: 0.72; }
+  .mrow.done .mrchip { color: var(--green); background: var(--green-dim); }
+  .mrow .mrdone { margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--green); }
   .mdots { display: flex; gap: 5px; align-items: center; justify-content: center; margin: 2px 0 4px; }
   .mdots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); display: block; }
   .mdots i.hit { background: var(--amber); }
@@ -1773,59 +1790,123 @@ function completeMission(note, id) {
   save(state);
   render();
 }
-/* What the TODAY card is actually showing. An active Sway plan day outranks the
-   random draw; once the day is marked, the card shows whatever was completed
-   today — plan day or random — so TODAY stays one mission per calendar day. */
+/* ---------- the plan slot on the TODAY card ----------
+   Any day-plan (Sway, Mind) registers an adapter here. A plan that's mid-week
+   contributes exactly one row; two running plans stack two compact rows, each
+   with its own Debrief / Mark done and its own CompleteDay. The streak stays
+   one per calendar date — completeMission()'s streak block is idempotent per
+   date, so the second plan finished on the same day records its history entry
+   and advances its own plan without bumping the streak again. With no plan
+   registered or running, the card is the random draw, byte-for-byte unchanged.
+
+   Adapter shape: { key, chip(m), doneToday(), override(), fromId(id),
+                    complete(w, d, note), debriefMsg(m, tail) }. */
+const MISSION_PLANS = [];
+function missionPlanRegister(pl) { MISSION_PLANS.push(pl); }
+/* One row per plan with something to show today: the day it already finished
+   today if there is one, otherwise the active week's current day. */
+function missionRows() {
+  const rows = [];
+  MISSION_PLANS.forEach(pl => {
+    let m = null, done = false;
+    try { m = pl.doneToday(); } catch (e) { m = null; }
+    if (m) done = true;
+    else { try { m = pl.override(); } catch (e) { m = null; } }
+    if (m) rows.push({ m: m, done: done, plan: pl });
+  });
+  return rows;
+}
+function missionRow(i) { return missionRows()[i || 0] || null; }
+function missionPlanFromId(id) {
+  for (let i = 0; i < MISSION_PLANS.length; i++) {
+    let m = null;
+    try { m = MISSION_PLANS[i].fromId(id); } catch (e) { m = null; }
+    if (m) return m;
+  }
+  return null;
+}
+/* What the TODAY card leads with. An active plan day outranks the random draw;
+   with no plan running, a completed day still shows whatever was completed
+   today, so TODAY stays one mission per calendar day. */
 function missionToday() {
+  const r = missionRow(0);
+  if (r) return r.m;
   if (missionDone()) {
     const h = missionHist().filter(x => x.date === MISSION_TODAY);
     const last = h.length ? h[h.length - 1] : null;
-    return (last && swayFromId(last.id)) || todaysMission;
+    return (last && missionPlanFromId(last.id)) || todaysMission;
   }
-  return swayOverride() || todaysMission;
+  return todaysMission;
 }
-function missionMarkDone() {
-  const m = missionToday();
-  if (m.sway) { swayCompleteDay(m.week, m.day, 'marked'); return; }
+function missionMarkDone(i) {
+  const r = missionRow(i);
+  if (r) { r.plan.complete(r.m.week, r.m.day, 'marked'); return; }
   completeMission('marked');
 }
-function missionDebrief() {
-  const m = missionToday();
+function missionDebrief(i) {
+  const r = missionRow(i);
+  const m = r ? r.m : missionToday();
   const tail = ' Ask me one question at a time: what I tried, what I actually observed, and how the person responded.' +
     ' Then take my best read of the day and run it through the full 4-part framework (Operational Debrief / Underlying Mechanism / Operational Command / Casual Plain-English Scripts) so I know what to do next time with that person.' +
     ' Keep it to a tight back-and-forth, one question per message. Start now.';
-  const msg = m.sway
-    ? 'Mission debrief: Sway plan week ' + m.week + ' day ' + m.day + ' — ' + m.title + '. The modules in play are ' + swayModules(m.week) + '. The task was: ' + m.brief + tail
+  const msg = r
+    ? r.plan.debriefMsg(m, tail)
     : 'Mission debrief: today\'s mission was \'' + m.title + '\' — ' + m.brief + tail;
-  if (m.sway) swayCompleteDay(m.week, m.day, 'debrief');
+  if (r) r.plan.complete(m.week, m.day, 'debrief');
   else completeMission('debrief');
   chatLog = [];
   openCoach(true);
   coachSend(msg);
 }
 function missionEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+/* Compact row used only when two plans are running at once. */
+function missionRowHtml(r, i) {
+  return '<div class="mrow' + (r.done ? ' done' : '') + '">' +
+    '<div class="mrchip">' + missionEsc(r.plan.chip(r.m)) + '</div>' +
+    '<b>' + (r.done ? '✓ ' : '') + missionEsc(r.m.title) + '</b>' +
+    '<p>' + missionEsc(r.m.brief) + '</p>' +
+    (r.done
+      ? '<div class="mrdone">Done today — day logged.</div>'
+      : '<div class="mission-btns">' +
+        '<button class="go" onclick="missionDebrief(' + i + ')">Debrief</button>' +
+        '<button class="mark" onclick="missionMarkDone(' + i + ')">Mark done</button></div>') +
+  '</div>';
+}
 function renderMission() {
   const card = document.getElementById('missionCard');
   if (!card) return;
-  const m = missionToday(), done = missionDone();
-  card.classList.toggle('done', done);
-  card.innerHTML =
-    '<div class="mtag">' + missionEsc(m.module) + '</div>' +
-    '<h3>' + (done ? '✓ ' : '') + missionEsc(m.title) + '</h3>' +
-    '<p class="brief">' + missionEsc(m.brief) + '</p>' +
-    '<p class="tell">' + missionEsc(m.tell) + '</p>' +
-    (done
-      ? '<div class="mdone">Mission complete — streak safe.</div>'
-      : '<div class="mission-btns">' +
-        '<button class="go" onclick="missionDebrief()">Debrief with the coach</button>' +
-        '<button class="mark" onclick="missionMarkDone()">Mark done</button></div>');
+  const rows = missionRows();
+  if (rows.length > 1) {
+    const allDone = rows.every(r => r.done);
+    card.classList.toggle('done', allDone);
+    card.innerHTML =
+      '<div class="mtag">Today\'s reps · ' + rows.length + ' plans running</div>' +
+      '<div class="mstack">' + rows.map(missionRowHtml).join('') + '</div>' +
+      (allDone ? '<div class="mdone">Both plan days done — streak safe.</div>' : '');
+  } else {
+    const r = rows[0];
+    const m = r ? r.m : missionToday();
+    const done = r ? r.done : missionDone();
+    card.classList.toggle('done', done);
+    card.innerHTML =
+      '<div class="mtag">' + missionEsc(m.module) + '</div>' +
+      '<h3>' + (done ? '✓ ' : '') + missionEsc(m.title) + '</h3>' +
+      '<p class="brief">' + missionEsc(m.brief) + '</p>' +
+      '<p class="tell">' + missionEsc(m.tell) + '</p>' +
+      (done
+        ? '<div class="mdone">Mission complete — streak safe.</div>'
+        : '<div class="mission-btns">' +
+          '<button class="go" onclick="missionDebrief(0)">Debrief with the coach</button>' +
+          '<button class="mark" onclick="missionMarkDone(0)">Mark done</button></div>');
+  }
   const dots = document.getElementById('missionDots');
   if (!dots) return;
   const hist = missionHist();
+  const doneToday = missionDone();
   let html = '';
   for (let i = 13; i >= 0; i--) {
     const key = missionDayKey(new Date(Date.now() - i * 86400000));
-    const hit = (key === MISSION_TODAY) ? done : hist.some(e => e.date === key && e.completed);
+    const hit = (key === MISSION_TODAY) ? doneToday : hist.some(e => e.date === key && e.completed);
     html += '<i class="' + (hit ? 'hit ' : '') + (i === 0 ? 'now' : '') + '"></i>';
   }
   dots.innerHTML = html + '<span>last 14</span>';
@@ -3086,11 +3167,13 @@ function openLibrary(catName) {
   });
 }
 function openMind(catName) {
+  const names = Array.isArray(catName) ? catName : [catName];
   showTab('confidence', document.querySelectorAll('nav button')[3]);
+  let scrolled = false;
   document.querySelectorAll('#principles .cat').forEach(c => {
-    const isTarget = c.querySelector('.name').textContent === catName;
+    const isTarget = names.includes(c.querySelector('.name').textContent);
     c.classList.toggle('open', isTarget);
-    if (isTarget) setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    if (isTarget && !scrolled) { scrolled = true; setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
   });
 }
 function openPersuasion(catName) {
@@ -3125,6 +3208,15 @@ const CONF_LIB = [
   'The weapons',
   'No tigers — where the fear comes from',
   'No tigers — where the fear comes from',
+];
+
+/* Which Mind library sections each week actually studies — powers day 1's
+   "Open the Week N cards" button, same job PERSUASION_WEEK_CATS does for Sway. */
+const CONF_WEEK_CATS = [
+  ['The operating system', 'The weapons'],
+  ['The operating system', 'The weapons'],
+  ['No tigers — where the fear comes from'],
+  ['No tigers — where the fear comes from'],
 ];
 
 const CONF_EXAMPLES = [
@@ -3436,6 +3528,18 @@ function swayOverride() {
   if (d > 7) return null;
   return swayMission(p.week, d);
 }
+/* The plan day this plan already finished on today's date, if any — that's what
+   keeps a completed row on the card once the day is marked. Scans forward so
+   grinding several days in one sitting shows the last one. */
+function swayDoneToday() {
+  if (!swayStorageOK) return null;
+  const p = swayLoad();
+  let hit = null;
+  for (let w = 1; w <= PERSUASION_DAYS.length; w++)
+    for (let d = 1; d <= 7; d++)
+      if (p.done[swayDayKey(w, d)] === MISSION_TODAY) hit = [w, d];
+  return hit ? swayMission(hit[0], hit[1]) : null;
+}
 function swayMission(w, d) {
   const day = swayDay(w, d);
   if (!day) return null;
@@ -3507,6 +3611,17 @@ function swayWeekDebrief(w) {
   openCoach(true);
   coachSend(msg);
 }
+/* Sway takes the first row on the TODAY card. */
+missionPlanRegister({
+  key: 'sway',
+  chip: (m) => 'SWAY · W' + m.week + ' · D' + m.day,
+  doneToday: () => swayDoneToday(),
+  override: () => swayOverride(),
+  fromId: (id) => swayFromId(id),
+  complete: (w, d, note) => swayCompleteDay(w, d, note),
+  debriefMsg: (m, tail) => 'Mission debrief: Sway plan week ' + m.week + ' day ' + m.day + ' — ' +
+    m.title + '. The modules in play are ' + swayModules(m.week) + '. The task was: ' + m.brief + tail,
+});
 
 /* ---------- roleplay sim ----------
    Seeds the existing coach panel with a scene request and sends it through
@@ -3528,6 +3643,204 @@ function persRoleplay(week, catName) {
   openCoach(true);
   coachSend(msg);
 }
+
+/* ================= mind day-plan =================
+   The Mind tab's 4-week confidence plan, broken into 28 days that run through
+   the same daily loop as Sway. Same arc every week, aimed inward because this
+   is self-regulation, not reading other people: learn it, catch your own
+   pattern, interrupt it live, deploy it under real pressure, push the edge,
+   pressure-test it with the coach, then the mastery gate. */
+const CONF_DAYS = [
+  /* ---- Week 1 — Build the base ---- */
+  [
+    { d: 1, title: 'Learn it — the four foundations', task: 'Read every card in the Week 1 Mind material: Confidence = safety, Pool speed, Hear it as fiction, Radical self-forgiveness. Then put the phone down and say each mechanism out loud in one sentence — why confidence is a safety reading and not a personality trait, why speed is the one thing every room reads off you, why the doubt voice is fiction and not information, and why an unforgiven past keeps charging you rent every day. Run the Week 1 flashcards until you can say all four cold.', prove: 'All four cards read, all four mechanisms said out loud from memory, and you can name which of the four you personally break first.' },
+    { d: 2, title: 'Catch it — count the 6-year-old', task: 'Nothing gets fixed today. Every time the doubt voice pipes up — before a message, walking into a room, mid-sentence — just tally it and write down the exact words it used. Do not argue with it, do not reframe it, do not talk yourself out of it. Do the same with your pace: mark every moment your hands, your walk or your words sped up, and what was happening in the second before.', prove: 'A real count on your phone by end of day, three of its sentences written down word for word, and two moments where you caught yourself speeding up.' },
+    { d: 3, title: 'Interrupt it live — the line and the pace', task: 'Low stakes only, in the moment. Before three small things today — ordering, a text you are overthinking, walking into the rink — run the safety line silently: "however this goes, I will be OK." Then move the whole way through at pool speed: slow hands, slow walk, no rushed words. When the doubt voice fires mid-moment, hear it in a 6-year-old\'s voice and keep moving anyway.', prove: 'Three live interrupts you can name, and at least one where the spike dropped after you ran the line instead of before.' },
+    { d: 4, title: 'Deploy it where it costs you', task: 'One moment today with something actually on the line — a rate conversation, a coach, a room where you are the new guy. Run the safety line before you walk in, then hold pool speed the entire way through: slow reach, slow hands, one full beat of silence before you answer anything hard. No speeding up the second it gets uncomfortable.', prove: 'You can name the pressure moment, quote the line you ran, and point to the exact second you wanted to speed up and did not.' },
+    { d: 5, title: 'Push the edge — forgive the thing you flinch from', task: 'Pick the memory you actually flinch from — the game, the conversation, the version of you that still makes you wince. Write it out plainly, then forgive it out loud, once, in full: you did what you knew how to do at the time. No hedging, no "but". Then go do one thing today that this memory has quietly been vetoing.', prove: 'The memory named, forgiven out loud with no "but" on the end, and one action taken today that it had been stopping.' },
+    { d: 6, title: 'Pressure test — the GM who watches you fold', task: 'Run the Week 1 roleplay sim with the coach — a GM who interviews you cold, gives you nothing back and is watching for the moment you collapse. Enter slow, run the safety line, hold pool speed when he goes quiet on you. Then run the Week 1 drills: pool speed day, the fiction filter, the forgiveness rep.', prove: 'You got through the sim without speeding up or rushing to fill his silence, and the coach called your pace steady at least once.' },
+    { d: 7, title: 'Mastery gate — week 1', task: 'Pass the Week 1 quiz. Then run one more real rep today — the safety line plus pool speed in a live moment that actually matters. Then debrief the week with the coach: which of the four foundations you drop the second it gets real.', prove: 'Quiz passed, one more real rep in the book, and one honest sentence about which foundation goes first under pressure.' },
+  ],
+  /* ---- Week 2 — Identity, outsourcing, and the daily weapons ---- */
+  [
+    { d: 1, title: 'Learn it — the role and the three weapons', task: 'Read every card in the Week 2 Mind material: Step into a role, Identity drives behavior, Stop outsourcing, Kill hierarchy thinking, Observation mode, Worry is rehearsal for failure, Shame = narcissism, Zoom out. Say each mechanism out loud in one sentence — why a role hands you permission you would never give yourself, why other people\'s reactions are a terrible power supply, why ranking a room is a game you lose either way, why curiosity and self-consciousness cannot run at the same time, why worry is you rehearsing the loss, and why carrying shame is still making it about you. Run the Week 2 flashcards until you can list all six weapons cold.', prove: 'Every Week 2 card read, all six mechanisms said out loud from memory, and the one weapon you already know you will forget to use.' },
+    { d: 2, title: 'Catch it — where your approval leaks out', task: 'Observation only, on yourself. Count the outsourcing today: every face you check for a reaction, every time you replay something somebody said about you, every time you silently rank yourself against a guy in the room. Tally each one. Mark every worry loop too — the imagined conversation, the thing going badly in your head — and roughly how long each one ran. Fix nothing.', prove: 'A written count of face-checks, rank-checks and worry loops, plus the name of the one person whose reaction you check the most.' },
+    { d: 3, title: 'Interrupt it live — observation mode on the spike', task: 'Mid-moment, low stakes. Every time the nerves land today, flip into observation mode on the spot: get curious about the other person — their hands, their pace, what they actually want out of this — instead of about how you are coming across. And every worry loop you catch, cancel it in your head with one rep you genuinely did well instead of riding it out.', prove: 'Three live flips into observation mode you can point to, and three worry loops canceled with a real rep.' },
+    { d: 4, title: 'Deploy under pressure — self-approve in the room that matters', task: 'One moment today where somebody\'s approval genuinely matters to you — a coach, a brand contact, someone whose opinion you feel in your chest. Pick the role before you walk in — pro, captain, the guy who runs this — and act from its built-in permission the whole way. Decide your own verdict on how it went before you leave, and do not audit a single face for the answer.', prove: 'The role named before you walked in, no face-check on the way out, and your own verdict written down before anyone else handed you one.' },
+    { d: 5, title: 'Push the edge — set the bag down in front of someone', task: 'Two stretch reps. First: run one entire conversation as a comfort contest instead of a ranking one — your only job is to be the most comfortable person in it and to leave the other person more comfortable than you found them. Second: say out loud to one real person the thing you have been carrying shame about. Not a scene, not a speech — one plain sentence, then carry on.', prove: 'One conversation where you can name exactly what you did to make the other person comfortable, and one thing said out loud that you have been hiding.' },
+    { d: 6, title: 'Pressure test — the approval you would normally chase', task: 'Run the Week 2 roleplay sim with the coach — someone whose approval you would normally chase, baiting you for face-checks and little bids for reassurance. Hold your own verdict, stay in observation mode, and refuse every bid without going cold. Then run the Week 2 drills: step into the role, cancel the outsourcing, the comfort contest, drop the bag.', prove: 'You never fished for a reaction across the whole sim, and you can quote one moment you stayed curious instead of self-conscious.' },
+    { d: 7, title: 'Mastery gate — week 2', task: 'Pass the Week 2 quiz. Then run one more real rep today — one role-permission moment or one worry loop canceled live. Then debrief the week with the coach: whose approval you are still quietly running on.', prove: 'Quiz passed, one more real rep, and one name said honestly — the person you are still outsourcing to.' },
+  ],
+  /* ---- Week 3 — No tigers ---- */
+  [
+    { d: 1, title: 'Learn it — the tiger that is not there', task: 'Read every card in the Week 3 Mind material: Everyone is insecure, The tiger brain, Fear is a liar, Your brain is collecting evidence, Talk to the 9-year-old like an authority. Say each mechanism out loud in one sentence — why the circuit that once kept you from being thrown out of the tribe now fires at asking for a number, why the feeling is real but the danger is not, why every rep you do files evidence whether you notice or not, and why everyone in the room is running the identical wiring. Run the Week 3 flashcards until you can say it without the cards.', prove: 'Every Week 3 card read, each mechanism said out loud from memory, and one situation named where your body has been calling a non-threat a tiger for years.' },
+    { d: 2, title: 'Catch it — count the false alarms', task: 'Observation only. Every time the fear spike lands today — sending the message, speaking up in a room, walking up to someone — stop and log two things: what your body predicted was about to happen, and what actually happened. No fixing, no pushing through for its own sake. Just build the evidence file the honest way.', prove: 'At least five spikes logged with the prediction next to the outcome, and a straight count of how many predictions came true.' },
+    { d: 3, title: 'Interrupt it live — name it while it is still on', task: 'Real time only, low stakes. The second anxiety fires today, name it silently: "tiger brain — there is no tiger here." Then do the thing anyway while the feeling is still running, not after it fades. Small stuff: ask the question, say the thing, hold the eye contact one beat longer. Answer the body like a 9-year-old — appreciate the warning, decide as a human anyway.', prove: 'Three moments where you named it and moved while the feeling was still on, and one where you can describe how fast it dropped once you moved.' },
+    { d: 4, title: 'Deploy under pressure — the ask you have been sitting on', task: 'One ask you have actually been avoiding — the number, the favor, the conversation you keep pushing to next week. Name the tiger, then make the ask today, plainly, without softening it into something nobody could say no to. Your body will run the full alarm. Make the ask anyway.', prove: 'The ask made today in real words, and one honest note on what your body swore would happen versus what did.' },
+    { d: 5, title: 'Push the edge — take one real no', task: 'One deliberate social-risk rep where you could genuinely get turned down and it would sting. Ask for the discount you have not earned, ask a stranger for something small, invite the person you assume will say no, pitch the guy you think is out of your league. Do not pre-soften it, do not build the escape hatch. If you get the no, take it clean and stay in the conversation ten more seconds.', prove: 'A real ask with a real chance of rejection, made and survived — and if the no came, you stayed in the room instead of evaporating.' },
+    { d: 6, title: 'Pressure test — a string of strangers and gatekeepers', task: 'Run the Week 3 roleplay sim with the coach — a run of social-risk asks where he plays strangers, gatekeepers and the guy who is not interested, and calls out your tiger-brain narration every time it shows up in your wording. Then run the Week 3 drills: tiger check, one social injury, everyone likes you, talk to the kid.', prove: 'You made every ask in the sim without pre-apologizing, and you can name the exact tiger-brain phrase the coach caught you using.' },
+    { d: 7, title: 'Mastery gate — week 3', task: 'Pass the Week 3 quiz. Then take one more real social risk today with something genuinely on the line. Then debrief the week with the coach: which specific situation still gets read as a tiger, and how many of your predictions came true this week.', prove: 'Quiz passed, one more real risk taken, and the honest ratio — predicted disasters versus actual ones.' },
+  ],
+  /* ---- Week 4 — Author-ity & the mastery test ---- */
+  [
+    { d: 1, title: 'Learn it — nobody is coming with permission', task: 'Read every card in the Week 4 Mind material: Nobody is coming with permission, Author-ity, Confidence transfers, There is no "faking it", Even Chase feels like a fraud. Say each mechanism out loud in one sentence — why the permission you are waiting on is never being issued, why authoring a moment makes people assume you already had the standing, why acting confident simply reads as confident so faking is not a real category, and why the finish line is how confident you make everyone else. Run the Week 4 flashcards until you can say it cold.', prove: 'Every Week 4 card read, each mechanism said out loud from memory, and one place named where you have been waiting for a permission that is not coming.' },
+    { d: 2, title: 'Catch it — count the moments you waited', task: 'Observation only. Today, count every moment you waited: waited for a gap to speak, waited for someone else to decide where you were going, waited for a nod before you committed, waited for a sign it was okay to lead. Log what you were waiting on and who you were waiting for. Author nothing yet — just find out how often you hand the pen over.', prove: 'A count of the waiting moments with what you were waiting for in each, and the one room where you hand the pen over every single time.' },
+    { d: 3, title: 'Interrupt it live — author three small moments', task: 'Low stakes, in the moment. Three times today, be the one who decides: pick the place, start the conversation, call the drill, make the plan concrete instead of leaving it hanging. No cue, no sign-off, no "if that works for everyone?" tacked on the end. Then walk away without checking a single face for how it landed.', prove: 'Three small moments you authored, each with no permission asked and no face checked afterward.' },
+    { d: 4, title: 'Deploy under pressure — author the room that matters', task: 'One real moment today with something on the line where you take the pen: set the agenda on the call, name the number first, direct the group, decide what happens next. Say it as a statement, not a question with a lilt on the end. Then do the hard part — no face-checking, no reading the room afterward for a verdict you already gave yourself.', prove: 'One real moment authored under pressure, stated flat with no upward lilt, and zero face-checks after.' },
+    { d: 5, title: 'Push the edge — author a room that intimidates you', task: 'Pick the room that actually intimidates you — the older guys, the agency call, the group where you are the least established person in it. Walk in and author a moment in it: make the call, ask the question nobody is asking, take the lead on something small and concrete. You will feel unqualified. Unfamiliar is not unqualified. Do it anyway.', prove: 'A moment authored in the room you would normally stay quiet in, and one honest line on what the fraud feeling told you right before you did it.' },
+    { d: 6, title: 'Pressure test — the passive room and the nervous teammate', task: 'Run the Week 4 roleplay sim with the coach — first a flat, passive room waiting for anybody to lead, then a nervous teammate you have to hand confidence to. Author the first without waiting for a cue; in the second, make him more confident than you found him. Then run the Week 4 drills: author one moment, permission slip, transfer rep.', prove: 'You led the passive room without being invited, and you can quote the specific line that visibly settled the nervous teammate.' },
+    { d: 7, title: 'Mastery gate — the whole plan', task: 'Pass the Week 4 quiz. Then run one more real rep today — author one live moment and make one real person more confident than you found them. Then debrief the whole plan with the coach: all four weeks, which tools you actually own now, and which one you still only use when it is easy.', prove: 'Quiz passed, one authored moment plus one person you visibly steadied, and two tools named honestly as the ones you still dodge.' },
+  ],
+];
+
+/* ---------- mind day-plan state ----------
+   Identical model to the Sway plan, its own storage key: one plan object, every
+   read and write try/caught, blocked storage just hides the strip while the
+   rest of the app keeps running. Both plans can be mid-week at once — the TODAY
+   card stacks a row each and the streak still counts once per date. */
+const MIND_KEY = 'xray_mind_plan';
+let mindStorageOK = true;
+try {
+  localStorage.setItem(MIND_KEY + '_probe', '1');
+  localStorage.removeItem(MIND_KEY + '_probe');
+} catch (e) { mindStorageOK = false; }
+
+function mindLoad() {
+  let p = null;
+  try { p = JSON.parse(localStorage.getItem(MIND_KEY) || 'null'); } catch (e) { p = null; }
+  if (!p || typeof p !== 'object') p = {};
+  if (!p.done || typeof p.done !== 'object') p.done = {};
+  if (!(p.week >= 1 && p.week <= CONF_DAYS.length)) p.week = null;
+  return p;
+}
+function mindSave(p) { try { localStorage.setItem(MIND_KEY, JSON.stringify(p)); } catch (e) {} }
+function mindDayKey(w, d) { return 'w' + w + 'd' + d; }
+function mindDayDone(p, w, d) { return !!(p && p.done && p.done[mindDayKey(w, d)]); }
+function mindCurrentDay(p, w) {
+  for (let d = 1; d <= 7; d++) if (!mindDayDone(p, w, d)) return d;
+  return 8;
+}
+/* Completion-gated, never calendar-gated — a missed day pauses you, never
+   resets you. */
+function mindDayUnlocked(p, w, d) { return d === 1 || mindDayDone(p, w, d - 1); }
+function mindWeekComplete(p, w) { return mindCurrentDay(p, w) > 7; }
+function mindDay(w, d) { return (CONF_DAYS[w - 1] || [])[d - 1] || null; }
+function mindModules(w) { return (CONF_PLAN[w - 1] || {}).t || ''; }
+function mindWeekTouched(p, w) {
+  if (p.week === w) return true;
+  for (let d = 1; d <= 7; d++) if (mindDayDone(p, w, d)) return true;
+  return false;
+}
+function mindOverride() {
+  if (!mindStorageOK) return null;
+  const p = mindLoad();
+  if (!p.week) return null;
+  const d = mindCurrentDay(p, p.week);
+  if (d > 7) return null;
+  return mindMission(p.week, d);
+}
+function mindDoneToday() {
+  if (!mindStorageOK) return null;
+  const p = mindLoad();
+  let hit = null;
+  for (let w = 1; w <= CONF_DAYS.length; w++)
+    for (let d = 1; d <= 7; d++)
+      if (p.done[mindDayKey(w, d)] === MISSION_TODAY) hit = [w, d];
+  return hit ? mindMission(hit[0], hit[1]) : null;
+}
+function mindMission(w, d) {
+  const day = mindDay(w, d);
+  if (!day) return null;
+  return {
+    mind: true, week: w, day: d,
+    id: 'mind-' + mindDayKey(w, d),
+    module: 'Mind · Week ' + w + ' · Day ' + d,
+    title: day.title, brief: day.task, tell: day.prove,
+  };
+}
+function mindFromId(id) {
+  const m = /^mind-w(\d+)d(\d+)$/.exec(id || '');
+  return m ? mindMission(+m[1], +m[2]) : null;
+}
+function mindStart(w) {
+  if (!mindStorageOK) return;
+  const p = mindLoad();
+  p.week = w;
+  p.day = mindCurrentDay(p, w);
+  mindSave(p);
+  confDayOpen = null;
+  renderConfPlan();
+  render();
+}
+function mindRestart(w) {
+  if (!mindStorageOK) return;
+  const p = mindLoad();
+  for (let d = 1; d <= 7; d++) delete p.done[mindDayKey(w, d)];
+  if (p.week === w) p.day = 1;
+  mindSave(p);
+  if (state.confWeeks) state.confWeeks = state.confWeeks.filter(x => x !== w);
+  save(state);
+  confDayOpen = null;
+  renderConfPlan();
+  render();
+  syncProgressToBackend();
+}
+function mindCompleteDay(w, d, note) {
+  if (!mindStorageOK) return;
+  const p = mindLoad();
+  if (!mindDayUnlocked(p, w, d) || mindDayDone(p, w, d)) return;
+  p.done[mindDayKey(w, d)] = MISSION_TODAY;
+  p.week = w;
+  p.day = mindCurrentDay(p, w);
+  mindSave(p);
+  if (mindWeekComplete(p, w) && state.confWeeks && !state.confWeeks.includes(w)) {
+    state.confWeeks.push(w);
+    state.xp = (state.xp || 0) + 25;
+    save(state);
+  }
+  completeMission(note || 'mind', 'mind-' + mindDayKey(w, d));
+  renderConfPlan();
+  syncProgressToBackend();
+}
+function mindWeekDebrief(w) {
+  const msg = 'Week debrief: I just ran week ' + w + ' of the confidence plan — ' + mindModules(w) + '.' +
+    ' Ask me one question at a time: which tool I actually ran live, where it held, and where I reverted to my old default.' +
+    ' Then take my weakest moment of the week and run it through the full 4-part framework (Operational Debrief / Underlying Mechanism / Operational Command / Casual Plain-English Scripts) so I know exactly what to change.' +
+    ' Keep it to a tight back-and-forth, one question per message. Start now.';
+  chatLog = [];
+  openCoach(true);
+  coachSend(msg);
+}
+/* Mind takes the second row on the TODAY card, under Sway. */
+missionPlanRegister({
+  key: 'mind',
+  chip: (m) => 'MIND · W' + m.week + ' · D' + m.day,
+  doneToday: () => mindDoneToday(),
+  override: () => mindOverride(),
+  fromId: (id) => mindFromId(id),
+  complete: (w, d, note) => mindCompleteDay(w, d, note),
+  debriefMsg: (m, tail) => 'Mission debrief: Mind plan week ' + m.week + ' day ' + m.day + ' — ' +
+    m.title + '. The week is ' + mindModules(m.week) + '. The task was: ' + m.brief + tail,
+});
+
+/* Day 6's roleplay — same coach pipeline as persRoleplay, no AI_SYS changes. */
+const MIND_ROLEPLAY = [
+  { who: 'a pro GM interviewing me cold — you have my file, you are unimpressed, you ask short blunt questions and you leave long silences on purpose', goal: 'Watch for the moment I collapse or start talking fast, and push on it. Give me nothing warm early. Make me earn the room slowly.' },
+  { who: 'someone whose approval I would normally chase — an established guy in my sport who is friendly, a little dismissive, and keeps dangling small bits of praise', goal: 'Bait me into checking your face and fishing for reassurance. Withhold the clear verdict all the way through so I have to give myself one.' },
+  { who: 'a run of strangers and gatekeepers — a front-desk person, a busy stranger, an agency contact who is not interested — one after another, each in their own short scene', goal: 'Make me actually ask, and say no at least twice. Call out every hedge, pre-apology and escape hatch I build into my wording before I even finish the ask.' },
+  { who: 'first a flat, passive room of teammates where nobody will decide anything and everyone is waiting for someone else to lead — then, in the second half, a nervous teammate before a big game who is quietly falling apart', goal: 'Give me no cue and no invitation to lead in the first scene. In the second, stay nervous until I actually hand you something real — do not settle just because I said something nice.' },
+];
+function mindRoleplay(week) {
+  const rp = MIND_ROLEPLAY[week - 1];
+  if (!rp) return;
+  const msg = 'Roleplay drill — Mind plan week ' + week + '. You play ' + rp.who + '. I\'m practicing ' + mindModules(week) +
+    ' — the confidence tools from that week. ' + rp.goal +
+    ' Stay in character the whole way through and respond realistically to whatever I say — do not be easy on me. After each of my replies, add one short out-of-character line starting with "Coach:" that tells me in one sentence how I ran the tool and what to fix, then continue the scene in character. Open the scene now with your first line.';
+  chatLog = [];
+  openCoach(true);
+  coachSend(msg);
+}
+/* ================= end mind day-plan ================= */
 
 const PERSUASION_EXAMPLES = [
   [
@@ -4149,6 +4462,85 @@ function renderPlan() {
 
 let confPlanSel = null;
 let confPlanEx = false;
+let confDayOpen = null; /* 'w2d3' of the one expanded Mind day row, or null */
+
+/* The Mind tab's 7-day strip — same shape, states and gating as the Sway one,
+   reusing the same sway-plan and swd CSS classes. */
+function mindWeekBlock(w) {
+  if (!mindStorageOK) return '';
+  const days = CONF_DAYS[w - 1] || [];
+  if (!days.length) return '';
+  const p = mindLoad();
+  const active = p.week === w;
+  const cur = mindCurrentDay(p, w);
+  const complete = cur > 7;
+  const touched = mindWeekTouched(p, w);
+  let head = '';
+  if (complete) {
+    head += '<div class="sway-banner">✓ Week ' + w + ' mastered — ' + missionEsc(mindModules(w)) + '</div>';
+    const allDone = CONF_DAYS.every((_, i) => mindCurrentDay(p, i + 1) > 7);
+    if (allDone) head += '<div class="sway-note">The whole confidence system is running. Restart any week the moment it starts slipping.</div>';
+    else if (w < CONF_DAYS.length && mindCurrentDay(p, w + 1) <= 7 && p.week !== w + 1)
+      head += '<button class="donebtn" id="mindStartNextBtn">Start week ' + (w + 1) + ' — ' + missionEsc(mindModules(w + 1)) + '</button>';
+  } else if (active) {
+    head += '<div class="sway-now">Running now — day ' + cur + ' of 7. This is what today\'s field mission is showing you.</div>';
+  } else {
+    head += '<button class="donebtn" id="mindStartBtn">' +
+      (touched ? 'Resume week ' + w + ' — pick back up at day ' + cur : 'Start this week — day 1 becomes your daily mission') + '</button>';
+  }
+  const rows = days.map((day, i) => {
+    const d = i + 1;
+    const isDone = mindDayDone(p, w, d);
+    const unlocked = mindDayUnlocked(p, w, d);
+    const key = mindDayKey(w, d);
+    const open = confDayOpen === key;
+    const cls = isDone ? 'done' : (!unlocked ? 'lock' : (active && d === cur ? 'now' : 'open'));
+    let body = '';
+    if (open) {
+      body = '<div class="swd-body"><p>' + missionEsc(day.task) + '</p>' +
+        '<p class="swd-prove">' + missionEsc(day.prove) + '</p>';
+      if (d === 1) body += '<button class="examplesbtn" data-act="study" data-d="1">Open the Week ' + w + ' cards</button>';
+      if (d === 6) body += '<button class="examplesbtn" data-act="roleplay" data-d="6">Run the Week ' + w + ' roleplay sim</button>';
+      if (d === 7) body += '<button class="quizbtn" data-act="quiz" data-d="7">Take the Week ' + w + ' quiz</button>' +
+        '<button class="examplesbtn" data-act="debrief" data-d="7">Debrief the week with the coach</button>';
+      if (isDone) body += '<div class="sway-note">Done ' + missionEsc(p.done[key]) + '.</div>';
+      else if (!unlocked) body += '<div class="sway-note">Finish day ' + (d - 1) + ' and this opens. No calendar pressure — a missed day just pauses you, it never resets you.</div>';
+      else if (!active) body += '<div class="sway-note">Start this week to run it.</div>';
+      else body += '<button class="donebtn" data-act="done" data-d="' + d + '">Mark day ' + d + ' done</button>';
+      body += '</div>';
+    }
+    return '<div class="swd ' + cls + (open ? ' on' : '') + '">' +
+      '<button class="swd-head" data-k="' + key + '"><i>' + (isDone ? '✓' : d) + '</i>' +
+      '<span><b>' + missionEsc(day.title) + '</b><em>' + missionEsc(day.task) + '</em></span></button>' +
+      body + '</div>';
+  }).join('');
+  return '<div class="sway-plan">' + head + '<div class="sway-days">' + rows + '</div>' +
+    (touched ? '<button class="examplesbtn sway-restart" id="mindRestartBtn">Restart week ' + w + '</button>' : '') + '</div>';
+}
+function wireMindWeekBlock() {
+  const host = document.querySelector('#confPlanDetail .sway-plan');
+  if (!host) return;
+  host.querySelectorAll('.swd-head').forEach(b => {
+    b.onclick = () => { confDayOpen = (confDayOpen === b.dataset.k) ? null : b.dataset.k; renderConfPlan(); };
+  });
+  const startBtn = document.getElementById('mindStartBtn');
+  if (startBtn) startBtn.onclick = () => mindStart(confPlanSel);
+  const nextBtn = document.getElementById('mindStartNextBtn');
+  if (nextBtn) nextBtn.onclick = () => { confPlanSel = Math.min(CONF_DAYS.length, confPlanSel + 1); mindStart(confPlanSel); };
+  const restartBtn = document.getElementById('mindRestartBtn');
+  if (restartBtn) restartBtn.onclick = () => mindRestart(confPlanSel);
+  host.querySelectorAll('button[data-act]').forEach(b => {
+    const act = b.dataset.act, d = +b.dataset.d, w = confPlanSel;
+    b.onclick = (e) => {
+      e.stopPropagation();
+      if (act === 'study') openMind(CONF_WEEK_CATS[w - 1]);
+      else if (act === 'roleplay') mindRoleplay(w);
+      else if (act === 'quiz') startWeekQuiz(CONF_QUIZ, w, 'Confidence');
+      else if (act === 'debrief') mindWeekDebrief(w);
+      else if (act === 'done') mindCompleteDay(w, d, 'marked');
+    };
+  });
+}
 function confPlanExamples() {
   const names = (CONF_CARDS[confPlanSel - 1] || []).filter(n => CONF_FLAT[n]);
   if (!names.length) return '';
@@ -4175,12 +4567,13 @@ function renderConfPlan() {
     const w = i + 1;
     return '<button class="plan-pill' + (doneW.includes(w) ? ' done' : '') + (confPlanSel === w ? ' on' : '') + '" data-w="' + w + '">W' + w + '</button>';
   }).join('');
-  pills.querySelectorAll('.plan-pill').forEach(b => b.onclick = () => { confPlanSel = +b.dataset.w; renderConfPlan(); });
+  pills.querySelectorAll('.plan-pill').forEach(b => b.onclick = () => { confPlanSel = +b.dataset.w; confDayOpen = null; renderConfPlan(); });
   const p = CONF_PLAN[confPlanSel - 1];
   const isDone = doneW.includes(confPlanSel);
   document.getElementById('confPlanDetail').innerHTML =
     '<span class="tag">Week ' + confPlanSel + (isDone ? ' · complete' : '') + '</span>' +
     '<h3>' + p.t + '</h3>' +
+    mindWeekBlock(confPlanSel) +
     '<div class="fld"><b>Focus —</b> ' + p.focus + '</div>' +
     '<div class="fld"><b>How to train it —</b> ' + p.how + '</div>' +
     '<div class="fld"><b>Why it works —</b> ' + p.why + '</div>' +
@@ -4190,6 +4583,7 @@ function renderConfPlan() {
     '<button class="quizbtn" id="confPlanQuizBtn">Test yourself — ' + (CONF_QUIZ[confPlanSel - 1] || []).length + ' hard questions on this week</button>' +
     '<button class="donebtn" id="confPlanStudyBtn">Study this — open ' + CONF_LIB[confPlanSel - 1].split(' — ')[0] + ' cards</button>' +
     '<button class="donebtn' + (isDone ? ' done' : '') + '" id="confPlanDoneBtn">' + (isDone ? '✓ Week complete' : 'Mark week complete') + '</button>';
+  wireMindWeekBlock();
   const exBtn = document.getElementById('confPlanExBtn');
   if (exBtn) exBtn.onclick = () => { confPlanEx = !confPlanEx; renderConfPlan(); };
   const names = (CONF_CARDS[confPlanSel - 1] || []).filter(n => CONF_FLAT[n]);
