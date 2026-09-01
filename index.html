@@ -393,6 +393,52 @@
     100% { box-shadow: 0 0 0 3px rgba(224, 164, 88, 0), 0 0 0 0 rgba(224, 164, 88, 0); }
   }
   .plan-detail.jump-flash { animation: checkJumpFlash 1.8s ease-out; }
+
+  /* ---------- sway 7-day strip ---------- */
+  .sway-plan { margin: 12px 0 4px; }
+  .sway-banner {
+    font-size: 12.5px; font-weight: 700; line-height: 1.45; color: var(--green);
+    background: var(--green-dim); border: 1px solid rgba(111, 176, 127, 0.45);
+    border-radius: 8px; padding: 9px 11px; margin-bottom: 9px;
+  }
+  .sway-now {
+    font-size: 12.5px; line-height: 1.45; color: var(--amber);
+    background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.35);
+    border-radius: 8px; padding: 9px 11px; margin-bottom: 9px;
+  }
+  .sway-note { font-size: 12px; line-height: 1.5; color: var(--muted); margin: 8px 0 2px; }
+  .sway-days { display: flex; flex-direction: column; gap: 6px; }
+  .swd { border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); overflow: hidden; }
+  .swd-head {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: none; border: none; color: var(--bone); padding: 10px 11px;
+    cursor: pointer; font-family: var(--sans);
+  }
+  .swd-head i {
+    flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--line);
+    color: var(--muted); font-style: normal; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .swd-head > span { min-width: 0; flex: 1; }
+  .swd-head b { display: block; font-size: 13px; font-weight: 600; line-height: 1.35; }
+  .swd-head em {
+    display: block; font-style: normal; font-size: 11.5px; color: var(--muted);
+    margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .swd.on .swd-head em { display: none; }
+  .swd.now { border-color: var(--amber); }
+  .swd.now .swd-head i { background: var(--amber-dim); color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber); }
+  .swd.now .swd-head b { color: var(--amber); }
+  .swd.done { border-color: rgba(111, 176, 127, 0.4); }
+  .swd.done .swd-head i { background: var(--green-dim); color: var(--green); }
+  .swd.done .swd-head b, .swd.done .swd-head em { color: var(--muted); }
+  .swd.lock { opacity: 0.45; }
+  .swd-body { padding: 0 11px 11px; }
+  .swd-body p { font-size: 13px; line-height: 1.55; color: var(--bone); }
+  .swd-body p.swd-prove { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  .swd-body p.swd-prove::before { content: 'DONE LOOKS LIKE — '; color: var(--amber); font-size: 10px; letter-spacing: 0.12em; }
+  .swd-body .donebtn, .swd-body .examplesbtn, .swd-body .quizbtn { margin-top: 9px; padding: 11px; font-size: 13px; }
+  .sway-restart { margin-top: 12px; padding: 11px; font-size: 13px; }
   .plan-ex { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
   .ex-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
     background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.35); border-radius: 8px;
@@ -1708,11 +1754,15 @@ function missionDone() { return missionGet('done') === '1'; }
   }
 })();
 
-function completeMission(note) {
-  if (missionDone()) return;
+function completeMission(note, id) {
+  /* Plan days pass an explicit id and are let through even when today is
+     already marked — that's how grinding several Sway days in one sitting still
+     records each day in history. The streak block below is idempotent per date,
+     so it can never count the same calendar day twice. */
+  if (missionDone() && !id) return;
   missionSet('done', '1');
   const h = missionHist().filter(e => e.date !== MISSION_TODAY);
-  h.push({ date: MISSION_TODAY, id: todaysMission.id, completed: true, note: note || '' });
+  h.push({ date: MISSION_TODAY, id: id || todaysMission.id, completed: true, note: note || '' });
   h.sort((a, b) => (a.date < b.date ? -1 : 1));
   try { missionSet('hist', JSON.stringify(h.slice(-120))); } catch (e) {}
   if (state.lastComplete === MISSION_TODAY) state.streak = state.streak || 1;
@@ -1723,14 +1773,32 @@ function completeMission(note) {
   save(state);
   render();
 }
-function missionMarkDone() { completeMission('marked'); }
+/* What the TODAY card is actually showing. An active Sway plan day outranks the
+   random draw; once the day is marked, the card shows whatever was completed
+   today — plan day or random — so TODAY stays one mission per calendar day. */
+function missionToday() {
+  if (missionDone()) {
+    const h = missionHist().filter(x => x.date === MISSION_TODAY);
+    const last = h.length ? h[h.length - 1] : null;
+    return (last && swayFromId(last.id)) || todaysMission;
+  }
+  return swayOverride() || todaysMission;
+}
+function missionMarkDone() {
+  const m = missionToday();
+  if (m.sway) { swayCompleteDay(m.week, m.day, 'marked'); return; }
+  completeMission('marked');
+}
 function missionDebrief() {
-  const m = todaysMission;
-  const msg = 'Mission debrief: today\'s mission was \'' + m.title + '\' — ' + m.brief +
-    ' Ask me one question at a time: what I tried, what I actually observed, and how the person responded.' +
+  const m = missionToday();
+  const tail = ' Ask me one question at a time: what I tried, what I actually observed, and how the person responded.' +
     ' Then take my best read of the day and run it through the full 4-part framework (Operational Debrief / Underlying Mechanism / Operational Command / Casual Plain-English Scripts) so I know what to do next time with that person.' +
     ' Keep it to a tight back-and-forth, one question per message. Start now.';
-  completeMission('debrief');
+  const msg = m.sway
+    ? 'Mission debrief: Sway plan week ' + m.week + ' day ' + m.day + ' — ' + m.title + '. The modules in play are ' + swayModules(m.week) + '. The task was: ' + m.brief + tail
+    : 'Mission debrief: today\'s mission was \'' + m.title + '\' — ' + m.brief + tail;
+  if (m.sway) swayCompleteDay(m.week, m.day, 'debrief');
+  else completeMission('debrief');
   chatLog = [];
   openCoach(true);
   coachSend(msg);
@@ -1739,7 +1807,7 @@ function missionEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '
 function renderMission() {
   const card = document.getElementById('missionCard');
   if (!card) return;
-  const m = todaysMission, done = missionDone();
+  const m = missionToday(), done = missionDone();
   card.classList.toggle('done', done);
   card.innerHTML =
     '<div class="mtag">' + missionEsc(m.module) + '</div>' +
@@ -3264,6 +3332,180 @@ const PERSUASION_CARDS = PERSUASION_WEEK_SLICES.map(([a, b]) => PERSUASION_LIBRA
 
 const PERSUASION_LIB = ['Strategic Alignment Checklist (PCP)', 'Professional Presence & Composure', 'Empathy-First Objection Handling', 'The Socratic Discovery Method'];
 
+/* ---------- the 28 days ----------
+   Every week runs the same seven-step arc against that week's own modules:
+   learn it, spot it, name it live, deploy it cheap, deploy it where it costs
+   you, pressure-test it, then gate on mastery. `task` is the instruction for
+   the day, `prove` is what finished actually looks like. These are what the
+   TODAY field-mission card shows while a week is running. */
+const PERSUASION_DAYS = [
+  /* ---- Week 1 — Strategic Alignment Checklist (PCP) + Need-Based Message Tailoring ---- */
+  [
+    { d: 1, title: 'Learn it — PCP and the six pillars', task: 'Read every card in both Week 1 modules: Strategic Alignment Checklist (PCP) and Need-Based Message Tailoring. Then put the phone down and say each mechanism out loud in one sentence — why Perception, Context and Permission have to run in that order, and what the six pillars are actually for. Run the Week 1 flashcards until you can name all six cold: deviance, novelty, social proof, conformity, investment, necessity.', prove: 'Both sentences said out loud with nothing in front of you, and all six pillars listed from memory. If you had to peek at one, you are not done.' },
+    { d: 2, title: 'Spot it — which pillar are they buying on', task: 'Nothing gets deployed today. Watch two conversations you are not running — a podcast, a call you are only sitting in on, two guys going back and forth in the room — and name which of the six pillars each person is actually buying on.', prove: 'Two conversations, two pillar calls written down, plus one moment you can point at where an ask died because perception or context was not there yet.' },
+    { d: 3, title: 'Name it mid-conversation', task: 'Real time only. Inside conversations you are actually in today, silently name the pillar the other person is running on before they finish making their point — and silently run PCP on yourself: what box am I in right now, is this the right moment, does a no feel safe here. Say none of it out loud.', prove: 'At least three live reads made while the conversation was still happening, not reconstructed in the car afterward.' },
+    { d: 4, title: 'First deploy — PCP on something cheap', task: 'Run the full PCP sequence on one ask where the answer barely matters. Something off-menu at the coffee shop, the favor you have been sitting on with family, a request in the group chat. Perception, context, permission, then the ask — and build the exit in out loud: "totally fine if this is not a fit."', prove: 'You ran all three steps before the ask and you actually said the exit line. Whether they said yes does not count today; the sequence does.' },
+    { d: 5, title: 'Deploy it where it costs you', task: 'One rep in a conversation with something on it — a brand email, a rate call, a coach. First thirty seconds fixing perception with one real result, get the actual context on the table, hand them a safe no, then ask. Write the pitch in their pillar\'s vocabulary, not the one you like.', prove: 'You can name the pillar you pitched to and quote the permission line you gave them. If you dropped the permission line because you wanted the yes, that is the rep to run again.' },
+    { d: 6, title: 'Pressure test — the skeptical brand manager', task: 'Run the Week 1 roleplay sim with the coach — the supplement brand manager who has not decided you are worth the budget — and make him show you which pillar he is running on. Then run the Week 1 drill deck end to end.', prove: 'You got through the sim without opening with the ask, and you called his pillar before the coach handed it to you.' },
+    { d: 7, title: 'Mastery gate — week 1', task: 'Pass the Week 1 quiz. Then run one more real PCP ask in a live conversation today. Then debrief the week with the coach: what broke, and which of the three doors you keep walking past.', prove: 'Quiz passed, one more real rep in the book, and one honest sentence about which step you skip when you are nervous.' },
+  ],
+  /* ---- Week 2 — Professional Presence & Composure + Identity Validation ---- */
+  [
+    { d: 1, title: 'Learn it — the presence axis and the specific label', task: 'Read every card in both Week 2 modules: Professional Presence & Composure and Identity Validation. Then say each mechanism out loud in one sentence — why a room reads collapse as low status and posturing as trying too hard, and why one specific true label lands where "good job" never does. Run the Week 2 flashcards until the axis is automatic.', prove: 'Both sentences out loud with no notes, and you can name the three points on the presence axis without looking: collapse, composure, posturing.' },
+    { d: 2, title: 'Spot it — collapse or posturing', task: 'Observation only. Catch two people today sliding to one end of the axis — the guy who shrinks the second he gets challenged, the guy who gets louder and starts listing his resume. Watch what the room does to each of them in the ten seconds after.', prove: 'Two people, both ends named, and one note on how the room\'s respect visibly moved right after each one.' },
+    { d: 3, title: 'Name your own state live', task: 'Today you profile yourself in real time. Every time your body spikes — a hard message, someone pushing on your number, a coach\'s tone — silently name which way you defaulted before you speak. Collapse, posture, or hold. Then take the slow exhale and one full second of silence before the next word leaves your mouth.', prove: 'Three spikes caught and named while they were happening, and at least one where the exhale got in before the sentence did.' },
+    { d: 4, title: 'First deploy — three true labels, nothing attached', task: 'Give three specific, true validations today in places that cost you nothing. Not "good job" — the exact thing you actually saw, in the moment you saw it. A kid on the ice, a teammate, the barista, your family. No ask attached to the back of any of them.', prove: 'Three labels, each one specific enough that nobody else in the room could have given it, and zero asks bolted on the end.' },
+    { d: 5, title: 'Deploy where it counts — hold your number', task: 'One rep where composure is the whole game: say your number, or hold your position, and then say nothing. If they push, repeat it once at the same volume and count to three. Same day, land one identity validation on somebody whose opinion of you actually matters.', prove: 'You said the number and stopped — no justification, no discount, no nervous add-on. And the label was true enough that you would have said it whether or not it bought you anything.' },
+    { d: 6, title: 'Pressure test — the kid who shut down', task: 'Run the Week 2 roleplay sim with the coach — the thirteen-year-old who got benched and is giving you one-word answers — and hold your composure when he pushes on it. Then run the Week 2 drill deck.', prove: 'You landed one true, specific thing about him before you tried to fix anything, and you let his silence sit instead of filling it.' },
+    { d: 7, title: 'Mastery gate — week 2', task: 'Pass the Week 2 quiz. Then run one more real rep — one composure hold or one true label in a live conversation. Then debrief the week with the coach: which end of the axis is your default under pressure.', prove: 'Quiz passed, one more real rep, and an honest answer about whether you collapse or posture when it gets uncomfortable.' },
+  ],
+  /* ---- Week 3 — Consultative Data Discovery + Empathy-First Objection Handling ---- */
+  [
+    { d: 1, title: 'Learn it — statements instead of questions', task: 'Read every card in both Week 3 modules: Consultative Data Discovery and Empathy-First Objection Handling. Say each mechanism out loud in one sentence — why a statement pulls more truth than a question, and why naming an objection before they do is what makes it safe to say. Run the Week 3 flashcards until you can list the four empathy moves cold: normalize, right-size, give a reason, reframe outward.', prove: 'Both sentences out loud from memory, and all four empathy moves named without looking at anything.' },
+    { d: 2, title: 'Spot it — find what nobody is saying', task: 'Watch only. In two conversations today, find the thing the other person is not saying — the hedge, the "we\'ll see", the topic they keep steering around. Do not pull it out, do not fix it. Name it to yourself and note the exact words they used instead.', prove: 'Two unspoken objections identified, and for each one the exact phrase they used to avoid it.' },
+    { d: 3, title: 'Name the correction reflex live', task: 'Mid-conversation today, catch the moment somebody corrects your read of them — and clock how much more they volunteer while fixing you than they ever would have handed a question. Mark it silently every time it happens, in them and in yourself.', prove: 'Two live catches, and one moment you can point to where detail only came out because someone was correcting a read.' },
+    { d: 4, title: 'First deploy — two statements, two corrections', task: 'Somewhere that costs you nothing, swap two questions for presumptive statements. "You\'ve been doing this a while" instead of "how long have you worked here?" "I imagine the weekend shift is the brutal one." Then stop talking and let the correction land.', prove: 'Two statements deployed and two corrections received, each one carrying more detail than the question version would have.' },
+    { d: 5, title: 'Deploy where it counts — the call that matters', task: 'One discovery conversation that matters — a brand contact, an agency lead, a hard one at home. Write three "I imagine…" lines before it, deliver one early, and normalize the objection before they have to raise it: "budget is usually the first thing here, and that is fair."', prove: 'The real objection was on the table in the first few minutes instead of dying as a silent thread two weeks later, and you can quote what they actually said.' },
+    { d: 6, title: 'Pressure test — the lead who went quiet', task: 'Run the Week 3 roleplay sim with the coach — the partnerships lead who went silent after your rate card and is sitting on the real objection. Pull it out with statements, not questions. Then run the Week 3 drill deck.', prove: 'You surfaced the real objection without asking a single direct question about it, and you right-sized it honestly instead of talking it away.' },
+    { d: 7, title: 'Mastery gate — week 3', task: 'Pass the Week 3 quiz. Then run one more real rep — one presumptive statement into a conversation that matters. Then debrief the week with the coach: where you reverted to interrogating.', prove: 'Quiz passed, one more rep, and an honest count of how many times you asked when you should have stated.' },
+  ],
+  /* ---- Week 4 — Micro-Commitment Sequencing + Socratic Discovery + Spatial Pacing + Assumptive Options ---- */
+  [
+    { d: 1, title: 'Learn it — the four closing tools', task: 'Read every card in all four Week 4 modules: Micro-Commitment Sequencing, The Socratic Discovery Method, Non-Threatening Spatial Pacing, Assumptive Options Closing. One sentence out loud for each mechanism — why four small yeses beat one big one, why a conclusion someone reaches themselves gets defended like property, why an open angle drops the pressure, and why two options and a date beat "let me know your thoughts." Then run the Week 4 flashcards.', prove: 'Four sentences, out loud, no notes. Whichever one comes out fuzzy is the module you re-read tonight.' },
+    { d: 2, title: 'Spot it — watch a close happen', task: 'Observation only. Find two closes today — an ad, a sales conversation, a coach getting buy-in, someone in your family steering a decision — and mark which of the four tools was in play and which one was missing. Count how many of your own conversations happened squared up versus at an angle.', prove: 'Two closes broken down by tool, plus a note on how the tone differed between the squared-up conversations and the side-by-side ones.' },
+    { d: 3, title: 'Name the sequence live', task: 'In a live conversation today, silently count the small yeses as they land, and clock the exact moment the real ask should go in — and whether whoever is running it jumped straight there instead. Name your own body angle every time a conversation gets tense.', prove: 'One conversation mapped into its small agreements in real time, and at least one moment you caught yourself squared up and quietly opened the angle.' },
+    { d: 4, title: 'First deploy — the angle and the two options', task: 'Two cheap reps. Run one low-stakes conversation entirely at an angle — walking, driving, side by side at a counter — instead of face to face. And end one message today with two real options and a date instead of "let me know your thoughts."', prove: 'You can name something that came out of the side-by-side conversation that would never have come out across a table, and the message went out with two options and a date on it.' },
+    { d: 5, title: 'Deploy where it counts — close a live one', task: 'One live negotiation, restructured. Sequence it — timeline, then deliverable, then usage, then the number — and flag the real ask out loud when you get there: "okay, here is the actual ask." Close with two genuinely good options, the honest effort difference named, and a date. Leave "neither" on the table.', prove: 'Four small clear yeses before the number, and a close that offered two options instead of asking for thoughts. If it stalled, you know exactly which yes it stalled on.' },
+    { d: 6, title: 'Pressure test — the brand manager who keeps deferring', task: 'Run the Week 4 roleplay sim with the coach — the manager who likes it but keeps pushing you to next quarter — and close him with the sequence, two verifiable facts and two honest options. Take the "neither" cleanly when it comes. Then run the Week 4 drill deck.', prove: 'You never stated your own conclusion — you laid the two facts down, asked what he made of them, and held three full seconds of silence. And you took the "neither" without flinching.' },
+    { d: 7, title: 'Mastery gate — week 4', task: 'Pass the Week 4 quiz. Then run one more real rep — one sequenced ask or one two-option close in a live conversation. Then debrief the whole plan with the coach: all ten frameworks, which two you actually own now and which two you still dodge.', prove: 'Quiz passed, one more rep, and two frameworks named honestly as the ones you avoid. Those are the weeks you restart first.' },
+  ],
+];
+
+/* ---------- sway day-plan state ----------
+   One daily unit and one streak: the active week's current day takes over the
+   TODAY field-mission card, and finishing it there marks the plan day and the
+   mission in the same move. Everything sits in one localStorage key, every read
+   and write is try/caught, and a blocked storage just hides the plan while the
+   random missions keep running. */
+const SWAY_KEY = 'xray_sway_plan';
+let swayStorageOK = true;
+try {
+  localStorage.setItem(SWAY_KEY + '_probe', '1');
+  localStorage.removeItem(SWAY_KEY + '_probe');
+} catch (e) { swayStorageOK = false; }
+
+function swayLoad() {
+  let p = null;
+  try { p = JSON.parse(localStorage.getItem(SWAY_KEY) || 'null'); } catch (e) { p = null; }
+  if (!p || typeof p !== 'object') p = {};
+  if (!p.done || typeof p.done !== 'object') p.done = {};
+  if (!(p.week >= 1 && p.week <= PERSUASION_DAYS.length)) p.week = null;
+  return p;
+}
+function swaySave(p) { try { localStorage.setItem(SWAY_KEY, JSON.stringify(p)); } catch (e) {} }
+function swayDayKey(w, d) { return 'w' + w + 'd' + d; }
+function swayDayDone(p, w, d) { return !!(p && p.done && p.done[swayDayKey(w, d)]); }
+/* First unfinished day of a week. 8 means the week is finished. */
+function swayCurrentDay(p, w) {
+  for (let d = 1; d <= 7; d++) if (!swayDayDone(p, w, d)) return d;
+  return 8;
+}
+/* Completion-gated, never calendar-gated — day 1 is always open and every later
+   day opens the second the one before it is done. A missed calendar day pauses
+   progress; it never resets it. */
+function swayDayUnlocked(p, w, d) { return d === 1 || swayDayDone(p, w, d - 1); }
+function swayWeekComplete(p, w) { return swayCurrentDay(p, w) > 7; }
+function swayDay(w, d) { return (PERSUASION_DAYS[w - 1] || [])[d - 1] || null; }
+function swayModules(w) { return (PERSUASION_WEEK_CATS[w - 1] || []).join(' + '); }
+function swayWeekTouched(p, w) {
+  if (p.week === w) return true;
+  for (let d = 1; d <= 7; d++) if (swayDayDone(p, w, d)) return true;
+  return false;
+}
+
+/* The TODAY override. Returns the active week's current day shaped like a
+   FIELD_MISSIONS entry so the mission card renders it unchanged — or null when
+   no week is running, the week is finished, or storage is blocked. */
+function swayOverride() {
+  if (!swayStorageOK) return null;
+  const p = swayLoad();
+  if (!p.week) return null;
+  const d = swayCurrentDay(p, p.week);
+  if (d > 7) return null;
+  return swayMission(p.week, d);
+}
+function swayMission(w, d) {
+  const day = swayDay(w, d);
+  if (!day) return null;
+  return {
+    sway: true, week: w, day: d,
+    id: 'sway-' + swayDayKey(w, d),
+    module: 'Sway · Week ' + w + ' · Day ' + d,
+    title: day.title, brief: day.task, tell: day.prove,
+  };
+}
+/* Rebuild a completed plan day out of its history id, so a card that's already
+   done for the day still shows what was actually run. */
+function swayFromId(id) {
+  const m = /^sway-w(\d+)d(\d+)$/.exec(id || '');
+  return m ? swayMission(+m[1], +m[2]) : null;
+}
+function swayStart(w) {
+  if (!swayStorageOK) return;
+  const p = swayLoad();
+  p.week = w;
+  p.day = swayCurrentDay(p, w);
+  swaySave(p);
+  persDayOpen = null;
+  renderPersuasionPlan();
+  render();
+}
+function swayRestart(w) {
+  if (!swayStorageOK) return;
+  const p = swayLoad();
+  for (let d = 1; d <= 7; d++) delete p.done[swayDayKey(w, d)];
+  if (p.week === w) p.day = 1;
+  swaySave(p);
+  if (state.persWeeks) state.persWeeks = state.persWeeks.filter(x => x !== w);
+  save(state);
+  persDayOpen = null;
+  renderPersuasionPlan();
+  render();
+  syncProgressToBackend();
+}
+/* Completing a plan day marks the day, advances the week, and feeds the exact
+   same pipeline the random missions use. completeMission() stays the single
+   source for streak, history and dots — and its streak block is already
+   idempotent per date, so grinding two days on one calendar day can't
+   double-count. */
+function swayCompleteDay(w, d, note) {
+  if (!swayStorageOK) return;
+  const p = swayLoad();
+  if (!swayDayUnlocked(p, w, d) || swayDayDone(p, w, d)) return;
+  p.done[swayDayKey(w, d)] = MISSION_TODAY;
+  p.week = w;
+  p.day = swayCurrentDay(p, w);
+  swaySave(p);
+  if (swayWeekComplete(p, w) && state.persWeeks && !state.persWeeks.includes(w)) {
+    state.persWeeks.push(w);
+    state.xp = (state.xp || 0) + 25;
+    save(state);
+  }
+  completeMission(note || 'sway', 'sway-' + swayDayKey(w, d));
+  renderPersuasionPlan();
+  syncProgressToBackend();
+}
+/* Day 7's week debrief — same coach pipeline as persRoleplay/missionDebrief. */
+function swayWeekDebrief(w) {
+  const msg = 'Week debrief: I just ran week ' + w + ' of the persuasion plan — ' + swayModules(w) + '.' +
+    ' Ask me one question at a time: which module I actually deployed, where it worked, and where I reverted to my old habit.' +
+    ' Then take my weakest rep of the week and run it through the full 4-part framework (Operational Debrief / Underlying Mechanism / Operational Command / Casual Plain-English Scripts) so I know exactly what to change.' +
+    ' Keep it to a tight back-and-forth, one question per message. Start now.';
+  chatLog = [];
+  openCoach(true);
+  coachSend(msg);
+}
+
 /* ---------- roleplay sim ----------
    Seeds the existing coach panel with a scene request and sends it through
    the normal coachSend() pipeline, exactly as if Riley had typed it. No
@@ -3970,6 +4212,85 @@ function renderConfPlan() {
 
 let persPlanSel = null;
 let persPlanEx = false;
+let persDayOpen = null; /* 'w2d3' of the one expanded day row, or null */
+
+/* The 7-day strip that sits at the top of a week's detail: a banner (start /
+   running / mastered), seven completion-gated rows, and a per-week restart. */
+function swayWeekBlock(w) {
+  if (!swayStorageOK) return '';
+  const days = PERSUASION_DAYS[w - 1] || [];
+  if (!days.length) return '';
+  const p = swayLoad();
+  const active = p.week === w;
+  const cur = swayCurrentDay(p, w);
+  const complete = cur > 7;
+  const touched = swayWeekTouched(p, w);
+  let head = '';
+  if (complete) {
+    head += '<div class="sway-banner">✓ Week ' + w + ' mastered — ' + missionEsc(swayModules(w)) + '</div>';
+    const allDone = PERSUASION_DAYS.every((_, i) => swayCurrentDay(p, i + 1) > 7);
+    if (allDone) head += '<div class="sway-note">All ten frameworks deployed. Restart any week whenever a skill gets rusty.</div>';
+    else if (w < PERSUASION_DAYS.length && swayCurrentDay(p, w + 1) <= 7 && p.week !== w + 1)
+      head += '<button class="donebtn" id="swayStartNextBtn">Start week ' + (w + 1) + ' — ' + missionEsc(swayModules(w + 1)) + '</button>';
+  } else if (active) {
+    head += '<div class="sway-now">Running now — day ' + cur + ' of 7. This is what today\'s field mission is showing you.</div>';
+  } else {
+    head += '<button class="donebtn" id="swayStartBtn">' +
+      (touched ? 'Resume week ' + w + ' — pick back up at day ' + cur : 'Start this week — day 1 becomes your daily mission') + '</button>';
+  }
+  const rows = days.map((day, i) => {
+    const d = i + 1;
+    const isDone = swayDayDone(p, w, d);
+    const unlocked = swayDayUnlocked(p, w, d);
+    const key = swayDayKey(w, d);
+    const open = persDayOpen === key;
+    const cls = isDone ? 'done' : (!unlocked ? 'lock' : (active && d === cur ? 'now' : 'open'));
+    let body = '';
+    if (open) {
+      body = '<div class="swd-body"><p>' + missionEsc(day.task) + '</p>' +
+        '<p class="swd-prove">' + missionEsc(day.prove) + '</p>';
+      if (d === 1) body += '<button class="examplesbtn" data-act="study" data-d="1">Open the Week ' + w + ' cards</button>';
+      if (d === 6) body += '<button class="examplesbtn" data-act="roleplay" data-d="6">Run the Week ' + w + ' roleplay sim</button>';
+      if (d === 7) body += '<button class="quizbtn" data-act="quiz" data-d="7">Take the Week ' + w + ' quiz</button>' +
+        '<button class="examplesbtn" data-act="debrief" data-d="7">Debrief the week with the coach</button>';
+      if (isDone) body += '<div class="sway-note">Done ' + missionEsc(p.done[key]) + '.</div>';
+      else if (!unlocked) body += '<div class="sway-note">Finish day ' + (d - 1) + ' and this opens. No calendar pressure — a missed day just pauses you, it never resets you.</div>';
+      else if (!active) body += '<div class="sway-note">Start this week to run it.</div>';
+      else body += '<button class="donebtn" data-act="done" data-d="' + d + '">Mark day ' + d + ' done</button>';
+      body += '</div>';
+    }
+    return '<div class="swd ' + cls + (open ? ' on' : '') + '">' +
+      '<button class="swd-head" data-k="' + key + '"><i>' + (isDone ? '✓' : d) + '</i>' +
+      '<span><b>' + missionEsc(day.title) + '</b><em>' + missionEsc(day.task) + '</em></span></button>' +
+      body + '</div>';
+  }).join('');
+  return '<div class="sway-plan">' + head + '<div class="sway-days">' + rows + '</div>' +
+    (touched ? '<button class="examplesbtn sway-restart" id="swayRestartBtn">Restart week ' + w + '</button>' : '') + '</div>';
+}
+function wireSwayWeekBlock() {
+  const host = document.querySelector('#persPlanDetail .sway-plan');
+  if (!host) return;
+  host.querySelectorAll('.swd-head').forEach(b => {
+    b.onclick = () => { persDayOpen = (persDayOpen === b.dataset.k) ? null : b.dataset.k; renderPersuasionPlan(); };
+  });
+  const startBtn = document.getElementById('swayStartBtn');
+  if (startBtn) startBtn.onclick = () => swayStart(persPlanSel);
+  const nextBtn = document.getElementById('swayStartNextBtn');
+  if (nextBtn) nextBtn.onclick = () => { persPlanSel = Math.min(PERSUASION_DAYS.length, persPlanSel + 1); swayStart(persPlanSel); };
+  const restartBtn = document.getElementById('swayRestartBtn');
+  if (restartBtn) restartBtn.onclick = () => swayRestart(persPlanSel);
+  host.querySelectorAll('button[data-act]').forEach(b => {
+    const act = b.dataset.act, d = +b.dataset.d, w = persPlanSel;
+    b.onclick = (e) => {
+      e.stopPropagation();
+      if (act === 'study') openPersuasion(PERSUASION_LIB[w - 1]);
+      else if (act === 'roleplay') persRoleplay(w);
+      else if (act === 'quiz') startWeekQuiz(PERSUASION_QUIZ, w, 'Persuasion');
+      else if (act === 'debrief') swayWeekDebrief(w);
+      else if (act === 'done') swayCompleteDay(w, d, 'marked');
+    };
+  });
+}
 function persPlanExamples() {
   const names = (PERSUASION_CARDS[persPlanSel - 1] || []).filter(n => PERSUASION_FLAT[n]);
   if (!names.length) return '';
@@ -3996,12 +4317,13 @@ function renderPersuasionPlan() {
     const w = i + 1;
     return '<button class="plan-pill' + (doneW.includes(w) ? ' done' : '') + (persPlanSel === w ? ' on' : '') + '" data-w="' + w + '">W' + w + '</button>';
   }).join('');
-  pills.querySelectorAll('.plan-pill').forEach(b => b.onclick = () => { persPlanSel = +b.dataset.w; renderPersuasionPlan(); });
+  pills.querySelectorAll('.plan-pill').forEach(b => b.onclick = () => { persPlanSel = +b.dataset.w; persDayOpen = null; renderPersuasionPlan(); });
   const p = PERSUASION_PLAN[persPlanSel - 1];
   const isDone = doneW.includes(persPlanSel);
   document.getElementById('persPlanDetail').innerHTML =
     '<span class="tag">Week ' + persPlanSel + (isDone ? ' · complete' : '') + '</span>' +
     '<h3>' + p.t + '</h3>' +
+    swayWeekBlock(persPlanSel) +
     '<div class="fld"><b>Focus —</b> ' + p.focus + '</div>' +
     '<div class="fld"><b>How to train it —</b> ' + p.how + '</div>' +
     '<div class="fld"><b>Why it works —</b> ' + p.why + '</div>' +
@@ -4012,6 +4334,7 @@ function renderPersuasionPlan() {
     '<button class="donebtn" id="persPlanStudyBtn">Study this — open ' + PERSUASION_LIB[persPlanSel - 1] + ' cards</button>' +
     '<button class="examplesbtn" id="persPlanRoleplayBtn">Roleplay this week with the coach</button>' +
     '<button class="donebtn' + (isDone ? ' done' : '') + '" id="persPlanDoneBtn">' + (isDone ? '✓ Week complete' : 'Mark week complete') + '</button>';
+  wireSwayWeekBlock();
   const exBtn = document.getElementById('persPlanExBtn');
   if (exBtn) exBtn.onclick = () => { persPlanEx = !persPlanEx; renderPersuasionPlan(); };
   const names = (PERSUASION_CARDS[persPlanSel - 1] || []).filter(n => PERSUASION_FLAT[n]);
