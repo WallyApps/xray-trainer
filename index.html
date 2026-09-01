@@ -562,6 +562,8 @@
   .coach-input button { background: var(--amber); border: none; color: var(--ink); font-weight: 700; font-size: 14px; border-radius: 10px; padding: 0 16px; cursor: pointer; }
   .coach-input .micbtn { display: none; background: var(--panel-2); border: 1px solid var(--line); color: var(--bone); font-size: 17px; padding: 0 14px; }
   .coach-input .micbtn.listening { background: var(--red); border-color: var(--red); color: #fff; }
+#principles .cat.focus .item{opacity:.35;transition:opacity .3s}
+#principles .cat.focus .item.spot{opacity:1;border-left:2px solid var(--amber);padding-left:10px}
 </style>
 
 <div class="wrap">
@@ -2138,7 +2140,13 @@ function buildAccordion(hostId, groups) {
       (it.use ? '<div class="use">' + it.use + '</div>' : '') + '</div>'
     ).join('');
     c.innerHTML = '<button><span class="name">' + g.cat + '</span><span class="count">' + g.items.length + '</span></button><div class="items">' + items + '</div>';
-    c.querySelector('button').onclick = () => c.classList.toggle('open');
+    c.querySelector('button').onclick = () => {
+      c.classList.toggle('open');
+      if (!c.classList.contains('open')) {
+        c.classList.remove('focus');
+        c.querySelectorAll('.item.spot').forEach(i => i.classList.remove('spot'));
+      }
+    };
     host.appendChild(c);
   });
 }
@@ -3166,14 +3174,27 @@ function openLibrary(catName) {
     if (isTarget) setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
   });
 }
-function openMind(catName) {
+function openMind(catName, itemNames) {
   const names = Array.isArray(catName) ? catName : [catName];
+  const spots = (itemNames && itemNames.length) ? itemNames : null;
   showTab('confidence', document.querySelectorAll('nav button')[3]);
   let scrolled = false;
   document.querySelectorAll('#principles .cat').forEach(c => {
-    const isTarget = names.includes(c.querySelector('.name').textContent);
+    c.classList.remove('focus');
+    let anySpot = false;
+    c.querySelectorAll('.item').forEach(it => {
+      const hit = !!spots && spots.includes(it.querySelector('h4').textContent);
+      it.classList.toggle('spot', hit);
+      if (hit) anySpot = true;
+    });
+    const isTarget = spots ? anySpot : names.includes(c.querySelector('.name').textContent);
     c.classList.toggle('open', isTarget);
-    if (isTarget && !scrolled) { scrolled = true; setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
+    c.classList.toggle('focus', isTarget && anySpot);
+    if (isTarget && !scrolled) {
+      scrolled = true;
+      const target = anySpot ? c.querySelector('.item.spot') : c;
+      setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: anySpot ? 'center' : 'start' }), 120);
+    }
   });
 }
 function openPersuasion(catName) {
@@ -3218,6 +3239,11 @@ const CONF_WEEK_CATS = [
   ['No tigers — where the fear comes from'],
   ['No tigers — where the fear comes from'],
 ];
+
+/* Item-level focus for day 1's study button: exactly the accordion cards each
+   week studies, derived from CONF_CARDS filtered to what the library holds. */
+const CONF_PRINCIPLE_NAMES = new Set(CONFIDENCE_PRINCIPLES.flatMap(g => g.items.map(p => p.h)));
+function confWeekItems(w) { return (CONF_CARDS[w - 1] || []).filter(n => CONF_PRINCIPLE_NAMES.has(n)); }
 
 const CONF_EXAMPLES = [
   [
@@ -4500,6 +4526,7 @@ function mindWeekBlock(w) {
       body = '<div class="swd-body"><p>' + missionEsc(day.task) + '</p>' +
         '<p class="swd-prove">' + missionEsc(day.prove) + '</p>';
       if (d === 1) body += '<button class="examplesbtn" data-act="study" data-d="1">Open the Week ' + w + ' cards</button>';
+      if (d >= 2 && d <= 5) body += '<button class="examplesbtn" data-act="study" data-d="' + d + '">Review the week\'s cards</button>';
       if (d === 6) body += '<button class="examplesbtn" data-act="roleplay" data-d="6">Run the Week ' + w + ' roleplay sim</button>';
       if (d === 7) body += '<button class="quizbtn" data-act="quiz" data-d="7">Take the Week ' + w + ' quiz</button>' +
         '<button class="examplesbtn" data-act="debrief" data-d="7">Debrief the week with the coach</button>';
@@ -4533,7 +4560,7 @@ function wireMindWeekBlock() {
     const act = b.dataset.act, d = +b.dataset.d, w = confPlanSel;
     b.onclick = (e) => {
       e.stopPropagation();
-      if (act === 'study') openMind(CONF_WEEK_CATS[w - 1]);
+      if (act === 'study') openMind(CONF_WEEK_CATS[w - 1], confWeekItems(w));
       else if (act === 'roleplay') mindRoleplay(w);
       else if (act === 'quiz') startWeekQuiz(CONF_QUIZ, w, 'Confidence');
       else if (act === 'debrief') mindWeekDebrief(w);
@@ -4646,6 +4673,7 @@ function swayWeekBlock(w) {
       body = '<div class="swd-body"><p>' + missionEsc(day.task) + '</p>' +
         '<p class="swd-prove">' + missionEsc(day.prove) + '</p>';
       if (d === 1) body += '<button class="examplesbtn" data-act="study" data-d="1">Open the Week ' + w + ' cards</button>';
+      if (d >= 2 && d <= 5) body += '<button class="examplesbtn" data-act="study" data-d="' + d + '">Review the week\'s cards</button>';
       if (d === 6) body += '<button class="examplesbtn" data-act="roleplay" data-d="6">Run the Week ' + w + ' roleplay sim</button>';
       if (d === 7) body += '<button class="quizbtn" data-act="quiz" data-d="7">Take the Week ' + w + ' quiz</button>' +
         '<button class="examplesbtn" data-act="debrief" data-d="7">Debrief the week with the coach</button>';
