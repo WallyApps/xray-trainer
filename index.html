@@ -564,6 +564,57 @@
   .coach-input .micbtn.listening { background: var(--red); border-color: var(--red); color: #fff; }
 #principles .cat.focus .item{opacity:.35;transition:opacity .3s}
 #principles .cat.focus .item.spot{opacity:1;border-left:2px solid var(--amber);padding-left:10px}
+
+  /* ---------- home / goal tabs / library (5-tab nav) ---------- */
+  .backlink {
+    display: inline-block; margin-top: 16px; padding: 6px 0; background: none; border: none; cursor: pointer;
+    color: var(--amber); font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .backlink + .eyebrow.first { margin-top: 8px; }
+  .morechecks { margin-top: 2px; padding: 6px 12px; font-size: 11px; color: var(--muted); }
+  #dailyChecksMore { margin-top: 10px; }
+  .quizlaunch.askcoach { margin: 22px 0 0; padding: 17px; font-size: 16px; }
+  body:has(#tab-today.on) #coachBtn { display: none; } /* Home has its own big button */
+  .usetiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .usetiles button {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
+    padding: 12px 10px; text-align: left; color: var(--bone); font-family: var(--sans);
+    display: flex; flex-direction: column; justify-content: space-between; gap: 8px; min-height: 76px;
+  }
+  .usetiles button b { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+  .usetiles button span { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+  .usetiles button:active, .godeep button:active, .librow:active { transform: scale(0.97); }
+  .usenow { border-color: rgba(224, 164, 88, 0.55); background: linear-gradient(180deg, rgba(224, 164, 88, 0.12), var(--panel) 70%); }
+  .usenow .gl { font-size: 14.5px; line-height: 1.5; margin-top: 10px; }
+  .usenow .gl:first-of-type { margin-top: 4px; }
+  .usenow .gl b { color: var(--amber); font-weight: 700; }
+  .usenow .gl-go {
+    display: block; width: 100%; margin-top: 12px; padding: 11px 12px; border-radius: 8px; cursor: pointer; text-align: left;
+    background: var(--amber-dim); border: 1px solid rgba(224, 164, 88, 0.45); color: var(--bone);
+    font-family: var(--sans); font-size: 14.5px; line-height: 1.45;
+  }
+  .usenow .gl-go b { color: var(--amber); }
+  .goalhits .items { display: block; border-top: none; }
+  .goalhits .item { padding: 0 16px; }
+  .goalhits .item h4.itemhead { padding: 13px 0; font-size: 14.5px; }
+  .goalhits .item .read { padding-bottom: 13px; }
+  .goalcoach { display: flex; flex-direction: column; gap: 8px; }
+  .goalcoach button {
+    width: 100%; text-align: left; padding: 12px 14px; border-radius: 10px; cursor: pointer;
+    background: var(--panel-2); border: 1px solid rgba(224, 164, 88, 0.55); color: var(--bone);
+    font-family: var(--sans); font-size: 14px; font-weight: 600; line-height: 1.35;
+  }
+  .goalcoach button::before { content: '💬  '; }
+  .godeep { display: flex; flex-direction: column; gap: 8px; }
+  .godeep button, .librow {
+    width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; cursor: pointer;
+    color: var(--bone); font-family: var(--sans); font-size: 14px; font-weight: 600;
+  }
+  .godeep button::after, .librow::after { content: '›'; color: var(--muted); font-size: 20px; font-weight: 400; }
+  .librow { margin-bottom: 8px; }
+  .librow small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+  .libintro { font-size: 13px; color: var(--muted); line-height: 1.5; margin: -2px 0 4px; }
 </style>
 
 <div class="wrap">
@@ -572,35 +623,46 @@
     <div class="streak">Streak <b id="streakN">0</b></div>
   </header>
 
-  <!-- ==================== TODAY ==================== -->
+  <!-- ==================== HOME ==================== -->
   <main id="tab-today" class="on">
     <div class="eyebrow first" id="todayDate"></div>
     <div id="notifyBar"></div>
 
-    <div class="eyebrow">Today's field mission</div>
-    <div class="card mission" id="missionCard"></div>
-    <div class="mdots" id="missionDots"></div>
+    <div class="eyebrow">The daily check — ask yourself</div>
+    <div id="dailyChecks"></div>
+    <div class="allclear" id="allClear">Day complete. Move like you're in a pool.</div>
+    <button class="shufflebtn morechecks" id="dailyChecksMoreBtn">More checks</button>
+    <div id="dailyChecksMore" class="collapsed"></div>
 
-    <div class="mantra-row">
-      <div class="mantra">
-        <div class="lbl">Today's frame</div>
-        <p id="mantraText"></p>
-        <button class="shufflebtn" onclick="shuffleMantra()">Shuffle</button>
-      </div>
+    <button class="quizlaunch askcoach" onclick="openCoach()">Ask the coach</button>
 
-      <div class="mantra negative">
-        <div class="lbl">Your wallpaper</div>
-        <p id="wpText"></p>
-        <button class="shufflebtn" id="wpShuffle">Shuffle</button>
-      </div>
+    <div class="eyebrow">Use it now</div>
+    <div class="usetiles">
+      <button onclick="showTab('ice')"><b>Before the ice</b><span>Ice</span></button>
+      <button onclick="showTab('social')"><b>Walking into a room</b><span>Social</span></button>
+      <button onclick="showTab('read')"><b>Read someone</b><span>Read</span></button>
     </div>
+    <footer>Tick all five and the day counts toward your streak.</footer>
+  </main>
 
-    <div class="eyebrow">Always-on anchor</div>
+  <!-- ==================== GOAL TABS (content lives in GOALS) ==================== -->
+  <main id="tab-ice">
+    <div data-goal-now="ice"></div>
+    <div data-goal-rest="ice"></div>
+    <footer>A body that feels safe. Eyes on the next target's tape.</footer>
+  </main>
+  <main id="tab-social">
+    <div data-goal-now="social"></div>
+    <div data-goal-rest="social"></div>
+    <footer>There are no tigers. Go read someone.</footer>
+  </main>
+  <main id="tab-read">
+    <div data-goal-now="read"></div>
     <div class="card">
       <h3 class="cardhead" id="anchorHead" onclick="toggleCard('anchor')">
-        The 3-second scan<span class="ichev" id="anchorChev">▸</span>
+        The scan key<span class="ichev" id="anchorChev">▸</span>
       </h3>
-      <p style="margin-top: 4px;">Every new person you talk to today: <b style="color:var(--amber)">Feet → Hands → Blink.</b></p>
+      <p class="sub" style="margin-top: 2px;">What feet, hands and blink are telling you — plus the 60-second profile.</p>
       <div id="anchorBody" class="collapsed">
         <p>Three seconds, every single time, until it runs without you. Here's how to read what you see:</p>
         <div class="scan-key">
@@ -618,17 +680,45 @@
       </div>
     </div>
 
-    <div class="eyebrow">The daily check — ask yourself</div>
-    <div id="dailyChecks"></div>
-    <button class="shufflebtn" id="dailyChecksMoreBtn">Show 11 more</button>
-    <div id="dailyChecksMore" class="collapsed"></div>
+    <div data-goal-rest="read"></div>
+    <footer>Attention out is anxiety off.</footer>
+  </main>
 
-    <div class="allclear" id="allClear">Day complete. Move like you're in a pool.</div>
-    <footer>These 3 keep the day honest. The field mission is what counts toward your streak.</footer>
+  <!-- ==================== LIBRARY (index of the old tabs) ==================== -->
+  <main id="tab-library">
+    <div class="eyebrow first">Library</div>
+    <p class="libintro">Everything that used to be a tab. Open any of it, then tap back.</p>
+    <div id="libraryIndex"></div>
+    <footer>Optional. The daily check and the three goal tabs are the job.</footer>
+  </main>
+
+  <!-- ==================== FIELD MISSION (Library > Training) ==================== -->
+  <main id="tab-mission">
+    <button class="backlink" onclick="tabBack()">← Library</button>
+    <div class="eyebrow first">Today's field mission</div>
+    <div class="card mission" id="missionCard"></div>
+    <div class="mdots" id="missionDots"></div>
+
+    <div class="mantra-row">
+      <div class="mantra">
+        <div class="lbl">Today's frame</div>
+        <p id="mantraText"></p>
+        <button class="shufflebtn" onclick="shuffleMantra()">Shuffle</button>
+      </div>
+
+      <div class="mantra negative">
+        <div class="lbl">Your wallpaper</div>
+        <p id="wpText"></p>
+        <button class="shufflebtn" id="wpShuffle">Shuffle</button>
+      </div>
+    </div>
+
+    <footer>Optional. A finished mission or plan day also counts toward your streak.</footer>
   </main>
 
   <!-- ==================== LEARN (Duolingo path) ==================== -->
   <main id="tab-learn">
+    <button class="backlink" onclick="tabBack()">← Library</button>
     <div class="eyebrow first">Your level</div>
     <div class="xpwrap">
       <div class="lvlbadge" id="lvlBadge">LVL 1</div>
@@ -653,6 +743,7 @@
 
   <!-- ==================== PROFILING ==================== -->
   <main id="tab-profiling">
+    <button class="backlink" onclick="tabBack()">← Library</button>
     <div class="eyebrow first">The 25-week plan</div>
     <div class="card">
       <h3 class="cardhead" id="planIntroHead" onclick="toggleCard('planIntro')">
@@ -676,6 +767,7 @@
 
   <!-- ==================== CONFIDENCE ==================== -->
   <main id="tab-confidence">
+    <button class="backlink" onclick="tabBack()">← Library</button>
     <div class="eyebrow first">The confidence plan</div>
     <div class="card">
       <h3>Not giving a f*** is a skill</h3>
@@ -692,6 +784,7 @@
 
   <!-- ==================== PERSUASION ==================== -->
   <main id="tab-persuasion">
+    <button class="backlink" onclick="tabBack()">← Library</button>
     <div class="eyebrow first">The persuasion plan</div>
     <div class="card">
       <h3>Ten frameworks you actually run</h3>
@@ -708,6 +801,7 @@
 
   <!-- ==================== QUAD (live profiling) ==================== -->
   <main id="tab-quad">
+    <button class="backlink" onclick="tabBack()">← Library</button>
     <div class="eyebrow first">The quadrant — live profile</div>
     <div class="card">
       <div class="qd-top">
@@ -727,6 +821,7 @@
 
   <!-- ==================== HOCKEY ==================== -->
   <main id="tab-hockey">
+    <button class="backlink" onclick="tabBack()">← Library</button>
     <div class="eyebrow first">The frame</div>
     <div class="mantra">
       <div class="lbl">Flow, defined</div>
@@ -821,13 +916,11 @@
 
 <nav>
   <div class="nav-inner">
-    <button class="on" onclick="showTab('today', this)">Today</button>
-    <button onclick="showTab('learn', this)">Learn</button>
-    <button onclick="showTab('profiling', this)">X-Ray</button>
-    <button onclick="showTab('confidence', this)">Mind</button>
-    <button onclick="showTab('persuasion', this)">Sway</button>
-    <button onclick="showTab('hockey', this)">Hockey</button>
-    <button onclick="showTab('quad', this)">Quad</button>
+    <button class="on" data-tab="today" onclick="showTab('today')">Home</button>
+    <button data-tab="ice" onclick="showTab('ice')">Ice</button>
+    <button data-tab="social" onclick="showTab('social')">Social</button>
+    <button data-tab="read" onclick="showTab('read')">Read</button>
+    <button data-tab="library" onclick="showTab('library')">Library</button>
   </div>
 </nav>
 
@@ -1576,6 +1669,106 @@ const HOCKEY_EXAMPLES = [
   ],
 ];
 
+/* GOALS — the Ice / Social / Read tabs. Edit freely: each goal has
+   now   = the 20-second "use it now" card (3-4 bold-led lines; a line with
+           `go` renders as a button that runs it),
+   hits  = "when it hits" fixes (title -> 2-4 sentences, tap to open),
+   coach = shortcut buttons: `label` shows, `msg` is what gets sent to the coach,
+   deep  = "go deeper" links into the Library tabs.
+   Rendered by renderGoals(); nothing else needs touching. */
+const GOALS = {
+  ice: {
+    eyebrow: 'Ice · use it now',
+    title: 'Before, during, after',
+    now: [
+      { b: 'Safety before', t: 'in the tunnel: "However this goes, I\'ll be OK." Takes the verdict off the table so your body isn\'t bracing.' },
+      { b: 'Tape during', t: 'long exhale through every release, eyes on the next target\'s tape before the puck arrives. Warmup rhythm: catch, look, gone.' },
+      { b: 'Open hands after', t: 'mistake? Exhale, open your hands on the stick, next rep full speed. If coach screams: eyes, nod, "yep," fix it on the very next rep.' },
+      { b: 'Bench', t: 'wide eyes, one job per shift.' },
+    ],
+    hits: [
+      { h: 'Tunnel vision in games', p: 'Adrenaline narrows your visual field. That\'s chemistry, not a flaw. On the bench: long exhale and a soft, panoramic gaze for 30 seconds, both corners of the glass at once. Widen the eyes and the body follows you out of threat-state.' },
+      { h: 'One job per shift', p: 'Pick an action you control, never an outcome: "win my wall battles," "first on the forecheck," "scan early." One job is something your body can do. "Don\'t mess up" is something it can only brace against.' },
+      { h: 'Crash the first shift', p: 'Skate hard, finish a check, put one deep. The first shift burns off the spike, and your hands show up soft on shift two.' },
+      { h: 'Tensing on static passes', p: 'Self-paced skills invite overthinking because there\'s time to think. Kill the pause, not the thought: exhale through the release. Catch, look, gone. Your hands have 100,000 reps; thinking is interference.' },
+      { h: 'Afraid of turnovers', p: 'One word: tape. "Don\'t turn it over" is a worry rep. Find the target before the puck arrives, loose grip between reps. The first turnover is free. Only the one you carry causes the second.' },
+      { h: 'Fear of getting cut', p: 'Exclusion fear is ancient tribal wiring. The roster decision was never yours to hold: contracts, cap, timing. Walk the worst case to the end once and it\'s a detour, not a catastrophe. The guy who\'s okay with getting cut plays free, and the guy who plays free is hard to cut.' },
+      { h: 'Making it not a big deal', p: 'Label it "a skate." Keep the morning boring and identical, no ceremony. Zoom out: nobody\'s career was made by one warmup pass. Hockey is one room of the house.' },
+      { h: 'Nerves = excitement', p: 'Same chemistry, different label, and you pick the label. Heart pounding in the room? "I\'m ready."' },
+    ],
+    coach: [
+      { label: 'I\'ve got a game tonight and I\'m tight — coach me through it', msg: 'I\'ve got a game tonight and I\'m tight — coach me through it. Ask me one question at a time about what I\'m feeling and where it\'s sitting in my body, then give me a short plan for the tunnel, my first shift, and the bench. Keep it blunt and short.' },
+      { label: 'I just made a bad mistake in practice and I\'m carrying it', msg: 'I just made a bad mistake in practice and I\'m carrying it. Ask me what happened, one question at a time, then walk me through setting it down and exactly what to do on the very next rep.' },
+      { label: 'I\'m worried about getting cut', msg: 'I\'m worried about getting cut. Walk the worst case to the end with me, one question at a time, separate what I control from what I don\'t, and leave me with one job for my next skate.' },
+      { label: 'Help me read my coach', msg: 'Help me read my coach. Ask me one question at a time what he actually does — how he corrects guys, who he talks to, what he does right after a mistake, what he praises. Then profile him with the full 4-part framework (Operational Debrief / Underlying Mechanism / Operational Command / Casual Plain-English Scripts) so I know how to play for him.' },
+    ],
+    deep: [
+      { t: 'The on-ice mind — Hockey', go: () => showTab('hockey') },
+      { t: 'Confidence operating system — Mind', go: () => openMind('The operating system') },
+      { t: 'The confidence plan', go: () => jumpToPlan('confidence') },
+    ],
+  },
+  social: {
+    eyebrow: 'Social · use it now',
+    title: 'Walking in',
+    now: [
+      { b: 'There are no tigers', t: 'the alarm is ancient wiring firing at nothing. Name it ("tiger brain") and act while it\'s still on.' },
+      { b: 'You\'re the rule, not the exception', t: 'everyone in the room is as insecure and masked as you.' },
+      { b: 'Okay with social injury', t: 'the worst case is a slightly awkward moment, and you\'ve survived every one.' },
+      { b: 'Emergency exit: go read someone', t: 'you can\'t be curious and self-conscious at the same time.', go: () => showTab('read') },
+    ],
+    hits: [
+      { h: 'Walking into a room of strangers', p: 'Pool speed: the slowest mover in the room wins. The only contest is who\'s the most comfortable person here, and you can win it before you say a word.' },
+      { h: 'Checking faces for approval', p: 'Catch the glance and self-approve before their reaction lands. If their face decides how you feel, the remote is in their hands. It shouldn\'t be. Take it back.' },
+      { h: 'The 6-year-old voice', p: 'Hear the self-doubt as fiction: a 6-year-old tugging your sleeve saying "somebody\'s gonna laugh at you." Consider the source. Smile at it and keep walking.' },
+      { h: 'Body revolts', p: 'Racing heart, knotted stomach: that\'s the old circuit running your organs. Say it: "I appreciate what you\'re trying to do, but I\'m deciding as a human, not an animal." Then go.' },
+      { h: 'Replaying something awkward', p: 'Radical self-forgiveness. Forgive it so completely it feels delusional. Then zoom out like Google Maps: street, city, country, planet. Nobody else is replaying it.' },
+      { h: 'Waiting for permission', p: 'Nobody\'s coming with it. No tap on the shoulder, no green light. Author the moment: start it, decide it, and people assume you already had the permission.' },
+      { h: 'Spotlight effect', p: 'It feels like everyone is watching you. They\'re not. Everyone is running the same self-focused loop, pointed at themselves.' },
+    ],
+    coach: [
+      { label: 'I\'m about to walk into a room where I don\'t know anyone', msg: 'I\'m about to walk into a room where I don\'t know anyone. Coach me through it fast: what to do with my body walking in, who to read first, and one easy opener. Then ask me one question at a time if I want more.' },
+      { label: 'Something awkward happened and I can\'t stop replaying it', msg: 'Something awkward happened and I can\'t stop replaying it. Ask me what happened, one question at a time, then help me forgive it and zoom out on it until it shrinks to size.' },
+      { label: 'I\'ve got a big conversation coming up and I\'m anxious', msg: 'I\'ve got a big conversation coming up and I\'m anxious. Ask me one question at a time who it\'s with and what I want out of it, then give me a plan: how to get my body feeling safe beforehand, what to read in them, and the first line I say.' },
+      { label: 'Roleplay: be a group I\'m joining at a party, call out my tiger brain', msg: 'Roleplay drill. You play a group of three people already mid-conversation at a party that I\'m walking up to join — friendly, but not going to make room for me on their own. Stay in character and respond realistically to whatever I say. After each of my replies, add one short out-of-character line starting with "Coach:" that calls out any tiger brain you see (hedging, over-explaining, apologizing, rushing, checking faces for approval) and what to fix, then continue the scene in character. Open the scene now.' },
+    ],
+    deep: [
+      { t: 'The Mind library — every section', go: () => openMind(CONFIDENCE_PRINCIPLES.map(g => g.cat)) },
+      { t: 'No tigers — where the fear comes from', go: () => openMind('No tigers — where the fear comes from') },
+      { t: 'Confidence drills — the Mind plan', go: () => jumpToPlan('confidence') },
+    ],
+  },
+  read: {
+    eyebrow: 'Read · use it now',
+    title: 'Every person',
+    now: [
+      { b: 'The 3-second scan', t: 'every new person: feet → hands → blink.' },
+      { b: 'The master question', t: '"What do they want me to think about them?" That\'s the need.' },
+      { b: 'Feed the need', t: 'significance → acknowledge, approval → grant it fast, acceptance → include them, intelligence → ask their opinion, power → respect the frame, pity → sympathize first.' },
+      { b: 'Watch changes, not cues', t: 'baseline first. One cue is nothing; two on the same topic is a lead.' },
+    ],
+    hits: [
+      { h: 'Meeting someone new', p: 'Run the scan on the greeting: feet, hands, blink. Then ask about the thing they\'re proud of and watch what lights them up. That\'s your need read.' },
+      { h: 'A teammate or coach is hard to read', p: 'Stop trying to read them in one moment. Baseline them for a week: who are they ventral toward (torso and feet squared up), and what do they do right after a correction? The pattern shows up by Friday.' },
+      { h: 'Brand call / negotiation', p: 'Listen for their pillar (novelty, conformity, investment, necessity, social, deviance), then pitch in their language, not yours. Lip compression = a withheld objection. Name it for them and make it safe to say.' },
+      { h: 'Someone goes cold mid-conversation', p: 'Note the exact topic that triggered the change. That\'s the message. Don\'t push it. Leave a door open and come back later, casually.' },
+      { h: 'Locker room', p: 'Watch who gets the confirmation glances after a joke or a call. That\'s who actually leads the room, not the loudest guy or the letter on the jersey.' },
+      { h: 'Using it to calm yourself', p: 'The instant you feel self-conscious, pick one person and find their feet. The question forces your attention out, and the anxiety has nothing left to run on.' },
+    ],
+    coach: [
+      { label: 'Profile someone I just met', msg: 'Profile someone I just met. Ask me one question at a time what I actually saw and heard — feet, hands, blink, what they talked about, what they bragged about or skipped past. Then run my read through the full 4-part framework (Operational Debrief / Underlying Mechanism / Operational Command / Casual Plain-English Scripts) so I know their need, their pillar, and how to talk to them next time.' },
+      { label: 'I\'ve got a brand call — help me read them and plan it', msg: 'I\'ve got a brand call coming up — help me read them and plan it. Ask me one question at a time what I know about the brand and the person, then give me the plan: how to spot their need and pillar early, what to listen for, which objection is probably hiding, and my first two lines.' },
+      { label: 'Roleplay a skeptical brand manager so I can practice reading them', msg: 'Roleplay drill. You play a skeptical brand manager on a first call about a creator partnership — busy, guarded, and running on one of the six decision pillars and one of the six needs without naming either. Leak small verbal tells I can read. Stay in character and respond realistically to whatever I say. After each of my replies, add one short out-of-character line starting with "Coach:" that tells me what I should have read and how I handled it, then continue the scene in character. When we wrap, ask me to name your need and pillar. Open the scene now.' },
+      { label: 'Read my coach / a teammate', msg: 'Help me read my coach or a teammate. Ask me first who it is, then one question at a time what they actually do — who they square up to, what they do right after a correction, what they joke about, who they look at after they talk. Then profile them with the full 4-part framework (Operational Debrief / Underlying Mechanism / Operational Command / Casual Plain-English Scripts).' },
+    ],
+    deep: [
+      { t: 'The X-Ray library — every cue', go: () => libJump('profiling', 'library') },
+      { t: 'Sway — 10 frameworks + the plan', go: () => showTab('persuasion') },
+      { t: 'Quad — live profiling', go: () => showTab('quad') },
+    ],
+  },
+};
+
 /* LEARN PATH — Duolingo-style units. Each unit: facts (quizzed as generated
    MCs) + a scenario category. 3 lessons of 7 questions beat a unit; 6/7 passes
    a lesson. Units unlock in order within their section. */
@@ -1785,13 +1978,20 @@ function completeMission(note, id) {
   h.push({ date: MISSION_TODAY, id: id || todaysMission.id, completed: true, note: note || '' });
   h.sort((a, b) => (a.date < b.date ? -1 : 1));
   try { missionSet('hist', JSON.stringify(h.slice(-120))); } catch (e) {}
+  streakCountToday();
+  render();
+}
+/* THE streak rule — single source. A local calendar day counts once if EITHER
+   the five fixed daily checks are all ticked (the all-clear) OR a field mission
+   / Sway / Mind plan day is completed. Idempotent per local date: whichever
+   fires second on the same day is a no-op, so nothing can double-bump. */
+function streakCountToday() {
   if (state.lastComplete === MISSION_TODAY) state.streak = state.streak || 1;
   else if (state.lastComplete === MISSION_YESTERDAY) state.streak = (state.streak || 0) + 1;
   else state.streak = 1;
   state.lastComplete = MISSION_TODAY;
   state.counted = true;
   save(state);
-  render();
 }
 /* ---------- the plan slot on the TODAY card ----------
    Any day-plan (Sway, Mind) registers an adapter here. A plan that's mid-week
@@ -1963,7 +2163,7 @@ function jumpToCheckSource(plan, week) {
   if (plan === 'xray') {
     planSel = week;
     planDetailOpen = true;
-    showTab('profiling', document.querySelectorAll('nav button')[2]);
+    showTab('profiling', navBtn('library'));
     renderPlan();
     setTimeout(() => {
       document.getElementById('planDetail').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1971,7 +2171,7 @@ function jumpToCheckSource(plan, week) {
     }, 80);
   } else {
     confPlanSel = week;
-    showTab('confidence', document.querySelectorAll('nav button')[3]);
+    showTab('confidence', navBtn('library'));
     renderConfPlan();
     setTimeout(() => {
       document.getElementById('confPlanDetail').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1991,10 +2191,12 @@ DAILY_CHECKS.forEach((q, i) => {
   d.querySelector('.check-arrow').onclick = (e) => { e.stopPropagation(); jumpToCheckSource(DAILY_CHECK_SOURCE[i][0], DAILY_CHECK_SOURCE[i][1]); };
   (DAILY_FOCUS_IDX.includes(i) ? checksEl : checksMoreEl).appendChild(d);
 });
+const MORE_CHECKS_N = DAILY_CHECKS.length - DAILY_FOCUS_IDX.length;
+document.getElementById('dailyChecksMoreBtn').textContent = 'More checks (' + MORE_CHECKS_N + ')';
 document.getElementById('dailyChecksMoreBtn').onclick = () => {
   const open = !checksMoreEl.classList.contains('collapsed');
   checksMoreEl.classList.toggle('collapsed', open);
-  document.getElementById('dailyChecksMoreBtn').textContent = open ? 'Show 11 more' : 'Hide the rest';
+  document.getElementById('dailyChecksMoreBtn').textContent = open ? 'More checks (' + MORE_CHECKS_N + ')' : 'Hide more checks';
 };
 
 const gamedayEl = document.getElementById('gamedayChecks');
@@ -2009,10 +2211,11 @@ document.getElementById('gamedayReset').onclick = () => {
   state.gamedayChecks = GAMEDAY_CHECKS.map(() => false); save(state); render();
 };
 
-/* The daily checks still light the all-clear banner, but they no longer touch
-   the streak — that comes from the field mission only. Studying isn't a rep. */
+/* All five fixed checks ticked = the all-clear, and that counts the day toward
+   the streak (same idempotent-per-date rule as a completed mission). Unticking
+   afterwards never takes the day back. */
 function checkDayComplete() {
-  if (DAILY_FOCUS_IDX.every(i => state.checks[i])) state.counted = true;
+  if (DAILY_FOCUS_IDX.every(i => state.checks[i])) streakCountToday();
 }
 
 function toggleCard(which) {
@@ -2109,7 +2312,7 @@ function render() {
   document.querySelectorAll('#dailyChecks .check, #dailyChecksMore .check').forEach(el => el.classList.toggle('on', !!state.checks[+el.dataset.idx]));
   document.querySelectorAll('#gamedayChecks .check').forEach((el, i) => el.classList.toggle('on', !!state.gamedayChecks[i]));
   const launch = document.getElementById('quizLaunch');
-  const goLearn = () => showTab('learn', document.querySelectorAll('nav button')[1]);
+  const goLearn = () => showTab('learn', navBtn('library'));
   if (!reviewPool().length) {
     launch.textContent = 'Daily review — pass a lesson to unlock';
     launch.onclick = goLearn;
@@ -2121,8 +2324,9 @@ function render() {
   document.getElementById('allClear').classList.toggle('show', DAILY_FOCUS_IDX.every(i => state.checks[i]));
   renderLearn();
   renderMission();
-  /* streak = consecutive days with a completed field mission. Yesterday's
-     completion holds it alive until local midnight; anything older drops it. */
+  /* streak = consecutive local days that counted (all five checks ticked, or a
+     mission / plan day done — see streakCountToday). Yesterday's count holds it
+     alive until local midnight; anything older drops it. */
   let streak = state.streak || 0;
   if (streak > 0 && state.lastComplete !== MISSION_TODAY && state.lastComplete !== MISSION_YESTERDAY) {
     streak = 0; state.streak = 0; save(state);
@@ -2463,16 +2667,31 @@ function startWeekQuiz(bank, weekIdx, label) {
 }
 
 /* ---- tabs ---- */
+/* Five nav tabs; every other <main> (Learn, X-Ray, Mind, Sway, Hockey, Quad,
+   the field mission) lives under Library. Nav buttons are found by data-tab,
+   never by position — the second arg is accepted for old call sites and ignored. */
+const NAV_TABS = ['today', 'ice', 'social', 'read', 'library'];
+const NAV_LABEL = { today: 'Home', ice: 'Ice', social: 'Social', read: 'Read', library: 'Library' };
+let tabOrigin = 'library';
+function navBtn(name) { return document.querySelector('nav button[data-tab="' + name + '"]'); }
 function showTab(name, btn) {
+  const target = document.getElementById('tab-' + name);
+  if (!target) return;
+  const cur = document.querySelector('main.on');
+  const curName = cur ? cur.id.slice(4) : 'today';
+  const inNav = NAV_TABS.includes(name);
+  /* Remember which nav tab sent us into a library page so "back" returns there. */
+  if (!inNav && NAV_TABS.includes(curName)) tabOrigin = curName;
   document.querySelectorAll('main').forEach(m => m.classList.remove('on'));
-  document.getElementById('tab-' + name).classList.add('on');
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+  target.classList.add('on');
+  const lit = inNav ? name : 'library';
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === lit));
+  if (!inNav) target.querySelectorAll('.backlink').forEach(b => { b.textContent = '← ' + NAV_LABEL[tabOrigin]; });
   window.scrollTo(0, 0);
 }
+function tabBack() { showTab(tabOrigin || 'library'); }
 function jumpToPlan(tab) {
-  const idx = tab === 'profiling' ? 2 : 3;
-  showTab(tab, document.querySelectorAll('nav button')[idx]);
+  showTab(tab);
   if (tab === 'profiling') { planDetailOpen = true; renderPlan(); }
   const pillsId = tab === 'profiling' ? 'planPills' : 'confPlanPills';
   setTimeout(() => document.getElementById(pillsId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
@@ -2985,7 +3204,7 @@ function openCoach(quiet) {
   const box = document.getElementById('coachMsgs');
   box.innerHTML = '';
   coachMsg('What are you walking into? Tap a situation or type it — I\'ll give you the game plan. <i>(Fresh start every time — nothing is saved.)</i>', 'bot');
-  if (!quiet && !missionDone()) coachMsg('Today\'s field mission: <b>' + missionEsc(todaysMission.title) + '</b> — hit <b>Debrief with the coach</b> on the Today tab once you\'ve run it.', 'bot');
+
   const chips = document.getElementById('coachChips');
   chips.innerHTML = '';
   chips.style.display = '';
@@ -3168,7 +3387,7 @@ const PLAN = [
 /* Which library category each week studies — powers the Study button. */
 const PLAN_LIB = ['Foundations', 'Eyes', 'Eyes', 'Eyes', 'Face', 'Face', 'Face', 'Body', 'Body', 'Body', 'Body', 'Body', 'Body', 'Body', 'Deception — verbal', 'Elicitation — extracting information', 'Elicitation — extracting information', 'Needs — the mask they wear', 'Decision Map — how people choose', 'Needs — the mask they wear', 'Advanced reads — compliance & control', 'Advanced reads — compliance & control', 'Advanced reads — compliance & control', 'The BTE — scoring behavior like a scientist', 'The BTE — scoring behavior like a scientist'];
 function openLibrary(catName) {
-  showTab('profiling', document.querySelectorAll('nav button')[2]);
+  showTab('profiling', navBtn('library'));
   document.querySelectorAll('#library .cat').forEach(c => {
     const isTarget = c.querySelector('.name').textContent === catName;
     c.classList.toggle('open', isTarget);
@@ -3178,7 +3397,7 @@ function openLibrary(catName) {
 function openMind(catName, itemNames) {
   const names = Array.isArray(catName) ? catName : [catName];
   const spots = (itemNames && itemNames.length) ? itemNames : null;
-  showTab('confidence', document.querySelectorAll('nav button')[3]);
+  showTab('confidence', navBtn('library'));
   let scrolled = false;
   document.querySelectorAll('#principles .cat').forEach(c => {
     c.classList.remove('focus');
@@ -3200,7 +3419,7 @@ function openMind(catName, itemNames) {
 }
 function openPersuasion(catName) {
   const names = Array.isArray(catName) ? catName : [catName];
-  showTab('persuasion', document.querySelectorAll('nav button')[4]);
+  showTab('persuasion', navBtn('library'));
   let scrolled = false;
   document.querySelectorAll('#persuasionLib .cat').forEach(c => {
     const isTarget = names.includes(c.querySelector('.name').textContent);
@@ -4906,6 +5125,96 @@ function shuffleMantra() {
 document.getElementById('wpShuffle').onclick = wpShuffleLine;
 document.getElementById('hockeyExamplesBtn').onclick = () => openWex(1, HOCKEY_EXAMPLES, 'Flow');
 renderWallpaperPreview();
+
+/* ---- goal tabs (Ice / Social / Read) — content in GOALS ---- */
+function renderGoals() {
+  Object.keys(GOALS).forEach(key => {
+    const g = GOALS[key];
+    const nowHost = document.querySelector('[data-goal-now="' + key + '"]');
+    const restHost = document.querySelector('[data-goal-rest="' + key + '"]');
+    if (!nowHost || !restHost) return;
+    nowHost.innerHTML =
+      '<div class="eyebrow first">' + g.eyebrow + '</div>' +
+      '<div class="card usenow"><h3>' + g.title + '</h3>' +
+      g.now.map((l, i) => l.go
+        ? '<button class="gl-go" onclick="goalNow(\'' + key + '\',' + i + ')"><b>' + l.b + '</b> — ' + l.t + ' ›</button>'
+        : '<p class="gl"><b>' + l.b + '</b> — ' + l.t + '</p>').join('') +
+      '</div>';
+    restHost.innerHTML =
+      '<div class="eyebrow">When it hits</div>' +
+      '<div class="cat goalhits"><div class="items">' +
+      g.hits.map((x, i) =>
+        '<div class="item"><h4 class="itemhead" onclick="goalHit(this)">' + x.h + '<span class="ichev">▸</span></h4>' +
+        '<div class="read collapsed">' + x.p + '</div></div>').join('') +
+      '</div></div>' +
+      '<div class="eyebrow">Talk it through</div>' +
+      '<div class="goalcoach">' + g.coach.map((c, i) =>
+        '<button onclick="goalCoach(\'' + key + '\',' + i + ')">' + c.label + '</button>').join('') + '</div>' +
+      '<div class="eyebrow">Go deeper</div>' +
+      '<div class="godeep">' + g.deep.map((d, i) =>
+        '<button onclick="goalDeep(\'' + key + '\',' + i + ')">' + d.t + '</button>').join('') + '</div>';
+  });
+}
+function goalHit(h) {
+  const body = h.nextElementSibling;
+  const open = !body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', open);
+  h.querySelector('.ichev').textContent = open ? '▸' : '▾';
+}
+function goalNow(key, i) { const l = GOALS[key].now[i]; if (l && l.go) l.go(); }
+function goalDeep(key, i) { const d = GOALS[key].deep[i]; if (d) d.go(); }
+/* Same pipeline as persRoleplay / missionDebrief — no AI_SYS / aiReply changes. */
+function goalCoach(key, i) {
+  const c = GOALS[key].coach[i];
+  if (!c) return;
+  chatLog = [];
+  openCoach(true);
+  coachSend(c.msg);
+}
+/* Open a library tab and land on one element inside it. */
+function libJump(tab, elId) {
+  showTab(tab, navBtn('library'));
+  if (tab === 'profiling') { planDetailOpen = true; renderPlan(); }
+  setTimeout(() => { const el = document.getElementById(elId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+}
+function libReview() {
+  if (reviewPool().length) startQuiz();
+  else showTab('learn', navBtn('library'));
+}
+
+/* ---- Library tab: an index of the old tabs, each opened exactly as before ---- */
+const LIB_INDEX = [
+  { g: 'Learn', rows: [
+    { t: 'Learn path', d: 'Units, XP, weak spots, speed rounds', go: () => showTab('learn') },
+  ]},
+  { g: 'Read people', rows: [
+    { t: 'X-Ray', d: 'The full cue library + the 25-week plan', go: () => showTab('profiling') },
+    { t: 'Sway', d: 'Ten persuasion frameworks + the library', go: () => showTab('persuasion') },
+    { t: 'Quad', d: 'Live profiling quadrant + saved reads', go: () => showTab('quad') },
+  ]},
+  { g: 'Mind & ice', rows: [
+    { t: 'Mind', d: 'The confidence playbook', go: () => showTab('confidence') },
+    { t: 'Hockey', d: 'Game-day protocol + the on-ice mind', go: () => showTab('hockey') },
+  ]},
+  { g: 'Training (optional)', rows: [
+    { t: 'Field mission', d: 'Today\'s rep, the 14-day strip, today\'s frame + wallpaper', go: () => showTab('mission') },
+    { t: 'Sway 28-day plan', d: 'Daily learn / spot / deploy / master', go: () => libJump('persuasion', 'persPlanPills') },
+    { t: 'Mind 28-day plan', d: 'Daily confidence drills + roleplays', go: () => libJump('confidence', 'confPlanPills') },
+    { t: 'X-Ray 25-week plan', d: 'One reading skill per week', go: () => libJump('profiling', 'planPills') },
+    { t: 'Flashcards — daily review', d: 'Spaced repetition over what you\'ve learned', go: () => libReview() },
+  ]},
+];
+function renderLibraryIndex() {
+  const host = document.getElementById('libraryIndex');
+  if (!host) return;
+  host.innerHTML = LIB_INDEX.map((grp, gi) =>
+    '<div class="eyebrow">' + grp.g + '</div>' +
+    grp.rows.map((r, ri) => '<button class="librow" onclick="libOpen(' + gi + ',' + ri + ')"><span>' + r.t + '<small>' + r.d + '</small></span></button>').join('')
+  ).join('');
+}
+function libOpen(gi, ri) { const r = (LIB_INDEX[gi] || { rows: [] }).rows[ri]; if (r) r.go(); }
+renderGoals();
+renderLibraryIndex();
 
 initToday();
 renderQuad();
